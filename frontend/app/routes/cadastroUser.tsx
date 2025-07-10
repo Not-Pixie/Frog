@@ -69,7 +69,7 @@ export default function CadastroUser() {
             {errors.Senha && (<p className='text-red-500'>{errors.Senha.message}</p>)}
         </div>
 
-        <button type='submit' className="bg-blue-500 text-white p-2 w-full">Cadastrar</button>
+        <button type='submit' role='button' className="bg-blue-500 text-white p-2 w-full cursor-pointer">Cadastrar</button>
       </form>
     </div>
   );
