@@ -12,9 +12,9 @@ export function meta({}: Route.MetaArgs) {
 }
 
 interface FormData {
-  Nome: string;
-  Email: string;
-  Senha: string;
+  nome: string;
+  email: string;
+  senha: string;
 }
 
 export default function CadastroUser() {
@@ -44,9 +44,9 @@ export default function CadastroUser() {
               type="text"
               placeholder="Nome"
               className="border p-2 w-full"
-              {...register('Nome', {required: "Todos somos nomeados"})}
+              {...register('nome', {required: "Todos somos nomeados"})}
             />
-            {errors.Nome && (<p className="text-red-500 mb-2">{errors.Nome.message}</p>)}
+            {errors.nome && (<p className="text-red-500 mb-2">{errors.nome.message}</p>)}
         </div>
 
         <div className="mb-4">
@@ -54,9 +54,9 @@ export default function CadastroUser() {
               type="email"
               placeholder="Email"
               className="border p-2 w-full"
-              {...register('Email', {required: "email é obrigatório"})}
+              {...register('email', {required: "email é obrigatório"})}
             />
-            {errors.Email && (<p className='text-red-500'>{errors.Email.message}</p>)}
+            {errors.email && (<p className='text-red-500'>{errors.email.message}</p>)}
         </div>
 
         <div className="mb-4">
@@ -64,9 +64,9 @@ export default function CadastroUser() {
               type="password"
               placeholder="Senha"
               className="border p-2 w-full"
-              {...register('Senha', {required: 'Segurança é essencial!'})}
+              {...register('senha', {required: 'Segurança é essencial!'})}
             />
-            {errors.Senha && (<p className='text-red-500'>{errors.Senha.message}</p>)}
+            {errors.senha && (<p className='text-red-500'>{errors.senha.message}</p>)}
         </div>
 
         <button type='submit' role='button' className="bg-blue-500 text-white p-2 w-full cursor-pointer">Cadastrar</button>

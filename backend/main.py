@@ -9,10 +9,13 @@ from backend.app.routes.userroutes import usuario_bp
 from backend.app.models.usermodel import Base
 
 app = Flask(__name__)
-CORS(app)
+app.url_map.strict_slashes = False
+CORS(app, resources={r"/*": {"origins": "*"}})
+
 app.register_blueprint(usuario_bp)
+
 Base.metadata.create_all(bind=engine)
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 3001))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=port, debug=True)

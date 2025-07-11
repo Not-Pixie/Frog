@@ -20,6 +20,7 @@ def listar():
 def criar():
     db: Session = SessionLocal()
     dados = request.json
+    print("DEBUG criar():", dados)
     usuario = userservice.criar_usuario(db, dados)
     return jsonify({
         "id": usuario.id_usuario,
