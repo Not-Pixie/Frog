@@ -4,5 +4,8 @@
 /.react-router/
 /build/
 
+__pycache__/
+*.pyc
+
 
 
