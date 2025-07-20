@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from backend.app.models.usermodel import Usuario
+from app.models.usermodel import Usuario
 
 def listar_usuarios(db: Session):
     return db.query(Usuario).all()

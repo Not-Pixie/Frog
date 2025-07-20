@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from sqlalchemy.orm import Session
-from backend.config import SessionLocal
-from backend.app.services import userservice
+from config import SessionLocal
+from app.services import userservice
 
 usuario_bp = Blueprint("usuario", __name__, url_prefix="/usuarios")
 

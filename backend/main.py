@@ -1,16 +1,16 @@
-from backend.config import engine
+from config import engine
 import os
 
 print("Conectado com sucesso ao banco!") if engine else print("Erro")
 
 from flask import Flask
 from flask_cors import CORS
-from backend.app.routes.userroutes import usuario_bp
-from backend.app.models.usermodel import Base
+from app.routes.userroutes import usuario_bp
+from app.models.usermodel import Base
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
-CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app)
 
 app.register_blueprint(usuario_bp)
 
