@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const baseUrl = import.meta.env.ViTE_API_URL || "http://localhost:3001";
-const timeout = import.meta.env.VITE_API_TIMEOUT || 5000;
+const timeout = Number(import.meta.env.VITE_API_TIMEOUT || 5000);
 
 const api = axios.create(
     {

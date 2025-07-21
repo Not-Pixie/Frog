@@ -1,0 +1,11 @@
+.DS_Store
+frontend/node_modules/
+frontend/.react-router/
+
+/build/
+
+__pycache__/
+*.pyc
+
+
+
