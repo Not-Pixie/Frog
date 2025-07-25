@@ -6,3 +6,4 @@ export default [
   route("entrar", "./routes/Login-SignIn/cadastroUser.tsx"),
   route("cadastrar", "./routes/Login-SignIn/userPage.tsx")
 ] satisfies RouteConfig;
+
