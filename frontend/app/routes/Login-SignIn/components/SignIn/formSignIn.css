@@ -1,0 +1,143 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  overflow: hidden;
+}
+
+.divFormCriar {
+  position: relative;
+  width: 100%;
+}
+
+.tituloCriar {
+  color: rgba(53, 172, 151, 1);
+  font-family: CocogooseRegular;
+  margin-bottom: 15%;
+  font-size: 2.2rem;
+  text-align: center;
+  width: 100%;
+}
+
+.formCriar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  transition: transform 0.5s ease-in-out;
+}
+
+.formGroupCriar {
+    width: 100%;
+  margin-bottom: 2%;
+}
+
+.formWrapThree {
+  height: 100%;
+  position: relative;
+  transform: translateX(100%);/* mudança de etapa (-100% para avançar para a próxima. Começa do 100%!! ) */
+  width: 100%;
+  transition: transform 0.5s ease-in-out;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.formCriarWrapper {
+  width: 100%;
+  overflow: visible;
+}
+
+.lblCriarConta {
+  position: relative;
+  top: 15px;
+  left: 26.5%;
+  background: white;
+  padding: 0 2px;
+  font-size: 1rem;
+  z-index: 2;
+}
+
+.inputCriarConta {
+  border: black solid 1.5px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  position: relative;
+  outline: none;
+  font-size: 1.1rem;
+  height: 50px;
+}
+
+.inputCriarConta:focus {
+    border:rgba(53, 172, 151, 1) solid 1.5px;
+    color: rgba(53, 172, 151, 1);
+}
+
+.formGroupCriar:focus-within label {
+    color: rgba(53, 172, 151, 1);
+}
+
+.fa-arrow-right, .fa-arrow-left {
+    color: rgba(53, 172, 151, 1);
+    font-size: 1.4rem;
+}
+
+.etapaHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: -5rem;
+  margin-bottom: 1rem;
+  width: 100%;
+  flex-direction: column;
+
+}
+
+.btnVoltar {
+  position: absolute;
+  top: -300px;     /* distância do topo */
+  left: 20px;    /* distância da esquerda */
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: rgba(53, 172, 151, 1);
+  cursor: pointer;
+  padding: 0.3rem;
+}
+
+.descricaoEtapa {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.esconder {
+    visibility: hidden;
+}
+
+.btnCriarConta {
+  background-color: rgba(53, 172, 151, 1);
+  width: 65px;
+  height: 30px;
+  border-radius: 8px;
+  color: white;
+  font-size: 1.1rem;
+}
+
+.btnCriarConta:hover {
+  cursor: pointer;
+}
+
+.btnCentro {
+  margin-bottom: -22px;
+}
+
+#next:hover {
+  cursor: pointer;
+}
+

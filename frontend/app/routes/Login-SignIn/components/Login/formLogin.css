@@ -1,0 +1,114 @@
+* {
+  margin: 0;
+  box-sizing: border-box;
+}
+
+@font-face {
+  font-family: CocogooseRegular;
+  src: url(../../../../../src/fonts/cocogoose/Cocogoose-Pro-Regular-trial.ttf);
+}
+
+@font-face {
+  font-family: ChocolatesRegular;
+  src: url(../../../../../src/fonts/tt_chocolates/TT\ Chocolates\ Trial\ Regular.otf);
+}
+
+.divFormEntrar {
+  width: 100%;
+}
+
+.tituloEntrar {
+  color: rgba(53, 172, 151, 1);
+  font-family: CocogooseRegular;
+  margin-bottom: 10%;
+  font-size: 2.1rem;
+  text-align: center;
+  width: 100%;
+}
+
+.formEntrar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  width: 100%;
+}
+
+.formWrapEntrar {
+  position: relative;
+  margin-bottom: 5%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btnEntrarConta {
+  margin-top: 5%;
+  background-color: rgba(53, 172, 151, 1);
+  width: 65px;
+  height: 30px;
+  border-radius: 8px;
+  color: white;
+  font-size: 1.1rem;
+}
+
+.btnEntrarConta.btnEntrarConta:hover {
+  cursor: pointer;
+}
+
+.lblEntrarConta,
+.inputEntrarConta,
+.btnEntrarConta {
+  font-family: ChocolatesRegular;
+}
+
+.lblEntrarConta {
+  position: absolute;
+  top: -8px;
+  left: 26.5%;
+  background: white;
+  padding: 0 2px;
+  font-size: 1rem;
+  z-index: 1;
+}
+
+.inputEntrarConta {
+  border: black solid 1.5px;
+  width: 50%;
+  padding: 10px;
+  border-radius: 10px;
+  z-index: 0;
+  position: relative;
+  outline: none;
+  font-size: 1.1rem;
+  height: 50px;
+}
+
+.inputEntrarConta:focus {
+    border:rgba(53, 172, 151, 1) solid 1.5px;
+    color: rgba(53, 172, 151, 1);
+}
+
+.formWrapEntrar:focus-within label {
+    color: rgba(53, 172, 151, 1);
+}
+
+.inputWithError {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 50%;
+  margin: 0 auto;
+}
+
+.inputWithError .inputEntrarConta {
+  width: 100%;
+}
+
+.error {
+  margin-top: 5px;
+  color: rgb(187, 25, 25);
+  font-size: 0.9rem;
+}
+

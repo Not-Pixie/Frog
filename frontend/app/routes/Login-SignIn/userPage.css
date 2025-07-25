@@ -1,0 +1,65 @@
+.page {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+.rightContainer {
+  background-color: none;
+  flex-basis: 55%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  height: 100%;
+}
+
+.leftContainer {
+  position: relative;
+  background: rgba(53, 172, 151, 1);
+  flex-basis: 45%;
+  border-radius: 0 20px 20px 0px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  z-index: 3;
+}
+
+p {
+  text-align: center;
+  font-family: ChocolatesRegular;
+}
+
+span:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+span {
+  color: white;
+}
+
+h1 {
+  font-family: CocogooseRegular;
+  font-size: 2.2rem;
+  color: white;
+  text-align: center;
+}
+
+.toggleButton {
+  margin-top: 20px;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  border: none;
+  background-color: rgba(53, 172, 151, 1);
+  color: white;
+  cursor: pointer;
+  width: 100%;
+}
+
+.toggleButton:hover {
+  text-decoration: underline;
+}
+
