@@ -1,5 +1,5 @@
 import "./formLogin.css";
-import type { Route } from "../../../../+types/root";
+import type { Route } from "../../../app/+types/root";
 import { useForm } from "react-hook-form";
 import api from "src/api/axios";
 import { USUARIOS } from "src/api/enpoints";

@@ -6,11 +6,13 @@
 @font-face {
   font-family: CocogooseRegular;
   src: url(../../../../../src/fonts/cocogoose/Cocogoose-Pro-Regular-trial.ttf);
+  /*Lembrar de arrumar as fontes com base em /src/ após refatorar*/
 }
 
 @font-face {
   font-family: ChocolatesRegular;
   src: url(../../../../../src/fonts/tt_chocolates/TT\ Chocolates\ Trial\ Regular.otf);
+  /*Lembrar de arrumar as fontes com base em /src/ após refatorar*/
 }
 
 .divFormEntrar {

@@ -1,0 +1,102 @@
+:root{
+    --slideWidth: 80%;
+    --primaryColor: rgba(53, 172, 151, 1);
+
+    --bodyFont: "CocogooseRegular", sans-serif;
+}
+
+.slider{
+  display: flex;
+  transition: transform 0.5s ease-in-out;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.slide{
+  flex: 0 0 100%;                  
+  width: 100%;
+  /*center div*/
+  display: flex;
+  justify-content: center;
+}
+
+.stepWrapper{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  gap: 5vh;
+  margin-bottom: 5vh;
+  width: var(--slideWidth);
+}
+
+.stepWrapper div {width:100%;}
+
+.formWrapper{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  overflow: hidden;      
+  position: relative;
+}
+
+.controls
+{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: var(--slideWidth);
+    color: rgba(53, 172, 151, 1);
+    font-size: 1.4rem;
+    min-height: 10vh;
+}
+
+.controls * {cursor: pointer;}
+
+.stepWrapper input {
+    border: black solid 1.5px;
+    width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  height: 8vh;
+  font: var(--bodyFont);
+}
+
+.stepWrapper input:focus {
+  outline: none; 
+  border: 1.5px solid var(--primaryColor);
+  color: var(--primaryColor);
+}
+
+.stepWrapper:focus-within label {
+  color: var(--primaryColor);
+}
+
+.stepWrapper label {
+    position: relative;
+    top: 2vh;
+    left: 3%;
+    background: white;
+    padding: 0 6px;
+    font-size: 1rem;
+    z-index: 2;
+  font: var(--bodyFont);
+}
+
+.finalizeButton {
+  background-color: var(--primaryColor);
+  color: white;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  padding: 10px;
+  align-items: center;
+  p {font-size: 1.1rem; margin-right: 0.2vw;font: var(--bodyFont);}
+  i {position: relative; transform: translateY(10%);}
+}

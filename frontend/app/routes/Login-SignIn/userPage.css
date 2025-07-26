@@ -1,3 +1,4 @@
+
 .page {
   display: flex;
   height: 100vh;
@@ -57,6 +58,7 @@ h1 {
   color: white;
   cursor: pointer;
   width: 100%;
+  text-align: center;
 }
 
 .toggleButton:hover {

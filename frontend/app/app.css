@@ -1,8 +1,13 @@
 @import "tailwindcss";
 
-@theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+@font-face {
+  font-family: CocogooseRegular;
+  src: url("..\\src\\assets\\fonts\\cocogoose\\Cocogoose-Pro-Regular-trial.ttf");
+}
+
+@font-face {
+  font-family: ChocolatesRegular;
+  src: url("..\\src\\assets\\fonts\\tt_chocolates\\TT Chocolates Trial Regular.otf");
 }
 
 html,

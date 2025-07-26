@@ -1,27 +1,26 @@
 import { useState } from "react";
 import "./userPage.css";
 
-import FormLogin from "./components/Login/formLogin";
-import FormSignIn from "./components/SignIn/formSignIn";
+import { Link, Outlet } from "react-router";
 
 function UserPage() {
-  const [modo, setModo] = useState<"login" | "signIn">("login");
+  const [isLogin, setIsLogin] = useState(true);
 
-  const toggleModo = () => {
-    setModo((prev) => (prev === "login" ? "signIn" : "login"));
+  const toggleLogin = () => {
+    setIsLogin((prev) => (!prev));
   };
 
   return (
     <div className="page">
       <div className="leftContainer">
         <h1>Seja bem-vindo(a)!</h1>
-        <button onClick={toggleModo} className="toggleButton">
-          {modo === "login" ? "Não tem uma conta? Clique aqui para criar uma" : "Já tem uma conta? Clique aqui para entrar"}
-        </button>
+        <Link onClick={toggleLogin} to={isLogin? "/acessar/cadastrar" : "/acessar"} className="toggleButton">
+          {isLogin ? "Não tem uma conta? Clique aqui para criar uma" : "Já tem uma conta? Clique aqui para entrar"}
+        </Link>
       </div>
 
       <div className="rightContainer">
-        {modo === "login" ? <FormLogin /> : <FormSignIn />}
+        <Outlet/>
       </div>
     </div>
   );

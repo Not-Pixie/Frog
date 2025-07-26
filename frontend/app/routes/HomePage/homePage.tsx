@@ -2,7 +2,6 @@ import { Link } from "react-router";
 import type { Route } from '../../+types/root';
 
 export function meta({}: Route.MetaArgs) {
-  // args.params, args.location, etc...
   return [
     { title: "Frog" },
     { name: "description", content: "Uma nova forma de organizar!" }

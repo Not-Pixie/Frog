@@ -25,32 +25,33 @@ body {
 .formCriar {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 100%;
+  justify-content: space-around;
+  width: 300%;
+  height: 60vh;
   transition: transform 0.5s ease-in-out;
 }
 
 .formGroupCriar {
-    width: 100%;
+  width: 100%;
   margin-bottom: 2%;
 }
 
 .formWrapThree {
   height: 100%;
   position: relative;
-  transform: translateX(100%);/* mudança de etapa (-100% para avançar para a próxima. Começa do 100%!! ) */
-  width: 100%;
+  width: 20%;
   transition: transform 0.5s ease-in-out;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: space-around;
 }
 
 .formCriarWrapper {
   width: 100%;
-  overflow: visible;
+  overflow: hidden;
+  position: relative;
 }
 
 .lblCriarConta {
@@ -68,7 +69,6 @@ body {
   width: 100%;
   padding: 10px;
   border-radius: 10px;
-  position: relative;
   outline: none;
   font-size: 1.1rem;
   height: 50px;
@@ -141,3 +141,6 @@ body {
   cursor: pointer;
 }
 
+.formGroupCriar > div {
+  display: contents;
+}
