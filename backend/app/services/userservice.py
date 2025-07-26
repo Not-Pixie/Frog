@@ -10,3 +10,7 @@ def criar_usuario(db: Session, usuario_data: dict):
     db.commit()
     db.refresh(novo_usuario)
     return novo_usuario
+
+def get_usuario_por_email(db: Session, email: str):
+    return db.query(Usuario).filter(Usuario.email == email).first()
+
