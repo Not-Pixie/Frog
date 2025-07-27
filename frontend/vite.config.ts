@@ -14,5 +14,8 @@ export default defineConfig(({ mode }) => {
       port: port,
       strictPort: true
     },
+    optimizeDeps: {
+    include: ["@hookform/resolvers/zod"],
+    },
   };
 });

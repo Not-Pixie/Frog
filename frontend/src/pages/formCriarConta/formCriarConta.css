@@ -73,7 +73,7 @@
   color: var(--primaryColor);
 }
 
-.stepWrapper:focus-within label {
+.stepWrapper > div:focus-within label {
   color: var(--primaryColor);
 }
 
@@ -99,4 +99,12 @@
   align-items: center;
   p {font-size: 1.1rem; margin-right: 0.2vw;font: var(--bodyFont);}
   i {position: relative; transform: translateY(10%);}
+}
+
+.erro {
+  color: crimson;
+  font-size: 0.9rem;
+  margin-top: 5px;
+  cursor: default;
+  font: var(--bodyFont);
 }
