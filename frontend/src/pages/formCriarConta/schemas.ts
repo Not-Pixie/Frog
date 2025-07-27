@@ -15,9 +15,9 @@ export const step3Schema = z.object({
     confirmarSenha: z.string().min(6, "Confirmação de Senha é obrigatória").max(255, "Confirmação de Senha deve ter no máximo 255 caracteres"),
 });
 
-export const formSchema = step1Schema.merge(step2Schema).merge(step3Schema).refine((data) => data.senha === data.confirmarSenha, {
+export const formSchema = step1Schema.and(step2Schema).and(step3Schema).refine((data) => data.senha === data.confirmarSenha, {
     message: "As senhas não coincidem",
-    path: ["confirmarSenha"],
+    path: ["confirmarSenha", "senha"],
 });
 
 export type FormData = z.infer<typeof formSchema>;
