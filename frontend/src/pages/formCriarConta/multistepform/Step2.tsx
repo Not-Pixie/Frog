@@ -1,3 +1,5 @@
+import { useFormContext } from "react-hook-form";
+import type { FormData } from "../schemas.ts";
 import Input from "src/components/Input";
 
 type props = {
@@ -5,21 +7,29 @@ type props = {
 }
 
 export default function Step2({wrapperClassName}:props){
-    //2 <Input/>: Nome do comercio, nome do proprietario.
-    //1 <button>: next
+    const { register, formState: { errors } } = useFormContext<FormData>();
     return(
         <div className={wrapperClassName}>
-            <Input
-                label="Número de Telefone"
-                type="number"
-                placeholder="Digite seu número"
-                id="tel"/>
+            <div>
+                <Input
+                    label="Número de Telefone"
+                    type="text"
+                    placeholder="Digite seu número"
+                    id="tel"
+                    {...register("telefone")}/>
+                {errors.telefone && <span className="erro">{errors.telefone.message}</span>}
+            </div>
+
             
-            <Input
-                label="Email"
-                type="email"
-                placeholder="Nome do Proprietário"
-                id="email"/>
+            <div>
+                <Input
+                    label="Email"
+                    type="email"
+                    placeholder="Nome do Proprietário"
+                    id="email"
+                    {...register("email")}/>
+                {errors.email && <span className="erro">{errors.email.message}</span>}
+            </div>
         </div>
     )
 
