@@ -8,6 +8,7 @@ services:
       POSTGRES_DB: frog
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./backend/app/database:/docker-entrypoint-initdb.d
     ports:
       - "5433:5432"
     healthcheck:
