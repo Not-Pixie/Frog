@@ -1,7 +1,7 @@
-CREATE TABLE email (
+CREATE TABLE negocio (
     id              SERIAL PRIMARY KEY,
-    endereco         VARCHAR(255)    NOT NULL UNIQUE,
-    verificado     BOOLEAN         NOT NULL DEFAULT FALSE,
+    criador_id      INTEGER         NOT NULL REFERENCES usuario(id),
+    nome            VARCHAR(255)    NOT NULL UNIQUE,
     criado_em      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
     atualizado_em      TIMESTAMPTZ     NOT NULL DEFAULT NOW()
 );
