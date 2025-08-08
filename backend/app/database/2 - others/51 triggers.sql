@@ -1,25 +1,28 @@
--- timestamps
-CREATE TRIGGER set_timestamp_users
-BEFORE UPDATE ON users
+usuario_atual := current_setting('app.usuario_id', true)::INTEGER;
+usuario_atual := COALESCE(usuario_atual, 0);
+
+-- Triggers de timestamp automático
+CREATE TRIGGER trg_set_timestamp_usuarios
+BEFORE UPDATE ON usuarios
 FOR EACH ROW EXECUTE FUNCTION fn_set_timestamp();
 
-CREATE TRIGGER set_timestamp_email
-BEFORE UPDATE ON email
+CREATE TRIGGER trg_set_timestamp_comercios
+BEFORE UPDATE ON comercios
 FOR EACH ROW EXECUTE FUNCTION fn_set_timestamp();
 
-CREATE TRIGGER set_timestamp_business
-BEFORE UPDATE ON business
+CREATE TRIGGER trg_set_timestamp_convites
+BEFORE UPDATE ON convites
 FOR EACH ROW EXECUTE FUNCTION fn_set_timestamp();
 
--- logging 
-CREATE TRIGGER trg_users_changes
-AFTER UPDATE OR DELETE ON users
+-- Triggers de log de alterações
+CREATE TRIGGER trg_log_usuarios
+AFTER UPDATE OR DELETE ON usuarios
 FOR EACH ROW EXECUTE FUNCTION fn_log_updates();
 
-CREATE TRIGGER trg_email_changes
-AFTER UPDATE OR DELETE ON email
+CREATE TRIGGER trg_log_comercios
+AFTER UPDATE OR DELETE ON comercios
 FOR EACH ROW EXECUTE FUNCTION fn_log_updates();
 
-CREATE TRIGGER trg_business_changes
-AFTER UPDATE OR DELETE ON business
+CREATE TRIGGER trg_log_convites
+AFTER UPDATE OR DELETE ON convites
 FOR EACH ROW EXECUTE FUNCTION fn_log_updates();

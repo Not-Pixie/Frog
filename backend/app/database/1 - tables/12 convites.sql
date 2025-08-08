@@ -3,4 +3,5 @@ CREATE TABLE convites (
     id_negocio INTEGER NOT NULL REFERENCES comercios(id),
     link VARCHAR(16) NOT NULL UNIQUE,
     criado_em TIMESTAMPTZ DEFAULT NOW(),
+    atualizado_em TIMESTAMPTZ DEFAULT NOW()
 );
