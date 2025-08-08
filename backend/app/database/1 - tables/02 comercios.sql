@@ -1,4 +1,4 @@
-CREATE TABLE comercio (
+CREATE TABLE comercios (
     id SERIAL PRIMARY KEY,
     proprietario_id INTEGER NOT NULL REFERENCES usuario(id),
     nome VARCHAR(255) NOT NULL UNIQUE,

@@ -1,4 +1,4 @@
-CREATE TABLE comercio_usuario (
+CREATE TABLE comercios_usuarios (
     id SERIAL PRIMARY KEY,
     comercio_id INTEGER NOT NULL REFERENCES comercio(id) ON DELETE CASCADE,
     usuario_id INTEGER NOT NULL REFERENCES usuario(id) ON DELETE CASCADE,
