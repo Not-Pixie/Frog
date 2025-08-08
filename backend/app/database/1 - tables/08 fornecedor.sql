@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS fornecedor (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(150) NOT NULL,
+    cnpj VARCHAR(18) UNIQUE,
+    telefone VARCHAR(20),
+    email VARCHAR(100),
+    criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
