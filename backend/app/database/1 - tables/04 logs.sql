@@ -1,4 +1,4 @@
-CREATE TABLE relatorio_log (
+CREATE TABLE logs (
     id              SERIAL PRIMARY KEY,
     tabela_nome      VARCHAR(100)    NOT NULL,
     record_id       INTEGER         NOT NULL,

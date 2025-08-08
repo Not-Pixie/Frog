@@ -1,7 +1,0 @@
-CREATE TABLE email (
-    id              SERIAL PRIMARY KEY,
-    endereco         VARCHAR(255)    NOT NULL UNIQUE,
-    verificado     BOOLEAN         NOT NULL DEFAULT FALSE,
-    criado_em      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
-    atualizado_em      TIMESTAMPTZ     NOT NULL DEFAULT NOW()
-);
