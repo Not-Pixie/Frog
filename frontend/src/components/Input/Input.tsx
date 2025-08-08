@@ -2,7 +2,7 @@ import type React from "react";
 
 type Customprops = {
     label: string;
-    type: "text" | "email" | "number" | "password";
+    type: "text" | "email" | "number" | "password" | "button";
     id?: string;
     placeholder?: string;
     labelClassName?: string;
