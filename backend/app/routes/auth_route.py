@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from config import get_db
-from backend.app.services.cadastro_service import get_usuario_por_email
+from app.services.cadastro_service import get_usuario_por_email
 import bcrypt
 import jwt
 import datetime
@@ -23,8 +23,7 @@ def login():
         if not usuario:
             return jsonify({"mensagem": "Usuário não encontrado"}), 404
 
-        senha_correta = bcrypt.checkpw(senha.encode('utf-8'), usuario.senha.encode('utf-8'))
-        if not senha_correta:
+        if not bcrypt.checkpw(senha.encode('utf-8'), usuario.senha.encode('utf-8')):
             return jsonify({"mensagem": "Senha incorreta"}), 401
 
         token = jwt.encode({
