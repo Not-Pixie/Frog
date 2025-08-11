@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, make_response, request, jsonify
 from config import get_db
 from app.services.cadastro_service import get_usuario_por_email
 import bcrypt
@@ -31,8 +31,9 @@ def login():
             "email": usuario.email,
             "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
         }, SECRET_KEY, algorithm="HS256")
-
-        return jsonify({
+        
+        resp = make_response(
+            jsonify({
             "token": token,
             "usuario": {
                 "id": usuario.id_usuario,
@@ -40,5 +41,10 @@ def login():
                 "nome": usuario.nome
             }
         })
+        )
+        
+        resp.set_cookie("token", token, httponly=True, samesite='Strict', secure=True)
+
+        return resp; 200
     finally:
         db_gen.close()
