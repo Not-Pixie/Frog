@@ -11,6 +11,7 @@ export default function Step1({wrapperClassName}:props){
     
     return(
         <div className={wrapperClassName}>
+            <p>Vamos começar pelos nomes</p>
             <div>
                 <Input
                     label="Nome do Comércio"

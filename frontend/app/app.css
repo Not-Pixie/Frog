@@ -2,12 +2,17 @@
 
 @font-face {
   font-family: CocogooseRegular;
-  src: url("..\\src\\assets\\fonts\\cocogoose\\Cocogoose-Pro-Regular-trial.ttf");
+  src: url("../src/fonts/cocogoose/Cocogoose-Pro-Regular-trial.ttf");
 }
 
 @font-face {
   font-family: ChocolatesRegular;
-  src: url("..\\src\\assets\\fonts\\tt_chocolates\\TT Chocolates Trial Regular.otf");
+  src: url("../src/fonts/tt_chocolates/TT\ Chocolates\ Trial\ Regular.otf");
+}
+
+@font-face {
+  font-family: ChocolatesBold;
+  src: url("../src/fonts/tt_chocolates/TT\ Chocolates\ Trial\ DemiBold.otf");
 }
 
 html,

@@ -11,6 +11,7 @@ export default function Step3({wrapperClassName}:props){
 
     return(
         <div className={wrapperClassName}>
+            <p>Agora crie sua senha</p>
             <div>
                 <Input
                     label="Senha"
