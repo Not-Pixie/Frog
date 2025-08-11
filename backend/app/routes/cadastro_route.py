@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from sqlalchemy.orm import Session
 from app.services.cadastro_service import cadastrar_completo
 from config import SessionLocal
+import bcrypt
 
 cadastro_bp = Blueprint("cadastro", __name__, url_prefix="/cadastro")
 
@@ -15,11 +16,14 @@ def cadastrar_usuario():
         senha = data["senha"]
         nome_negocio = data["nome_negocio"]
 
-        usuario, negocio = cadastrar_completo(db, nome, email, senha, nome_negocio)
+        # Gera hash seguro
+        senha_hash = bcrypt.hashpw(senha.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+        usuario, negocio = cadastrar_completo(db, nome, email, senha_hash, nome_negocio)
 
         return jsonify({
             "mensagem": "Cadastro realizado com sucesso.",
-            "usuario_id": usuario.id,
+            "usuario_id": usuario.id_usuario,
             "negocio_id": negocio.id
         }), 201
     except Exception as e:

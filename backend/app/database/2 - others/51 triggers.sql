@@ -26,3 +26,12 @@ FOR EACH ROW EXECUTE FUNCTION fn_log_updates();
 CREATE TRIGGER trg_log_convites
 AFTER UPDATE OR DELETE ON convites
 FOR EACH ROW EXECUTE FUNCTION fn_log_updates();
+
+-- crud
+CREATE TRIGGER trg_fornecedor_changes
+AFTER UPDATE OR DELETE ON fornecedor
+FOR EACH ROW EXECUTE FUNCTION fn_log_alteracoes();
+
+CREATE TRIGGER trg_produto_changes
+AFTER UPDATE OR DELETE ON produto
+FOR EACH ROW EXECUTE FUNCTION fn_log_alteracoes();

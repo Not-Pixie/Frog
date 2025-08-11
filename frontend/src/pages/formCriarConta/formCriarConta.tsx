@@ -59,6 +59,7 @@ export default function FormCadastrarUsuario() {
     return (<>
     <FormProvider {...methods}>
         <form onSubmit={methods.handleSubmit(onSubmit)} className="formWrapper">
+            <h2>Cadastrar</h2>
             <div
                   className="slider"
                   style={{ transform: `translateX(-${step * 100}%)` }}
@@ -79,8 +80,7 @@ export default function FormCadastrarUsuario() {
                     </button>}
                     {step === 2 && <button type="submit">
                         <div className="finalizeButton">
-                            <p>Concluir Cadastro</p>
-                            <i className="fa-solid fa-check-circle"/>
+                            <p>Cadastrar</p>
                         </div>
                     </button>}
                 </div>

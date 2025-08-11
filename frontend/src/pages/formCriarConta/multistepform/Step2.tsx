@@ -10,6 +10,7 @@ export default function Step2({wrapperClassName}:props){
     const { register, formState: { errors } } = useFormContext<FormData>();
     return(
         <div className={wrapperClassName}>
+            <p>Coloque mais informações</p>
             <div>
                 <Input
                     label="Número de Telefone"
