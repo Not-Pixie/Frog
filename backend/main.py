@@ -5,14 +5,14 @@ print("Conectado com sucesso ao banco!") if engine else print("Erro")
 
 from flask import Flask
 from flask_cors import CORS
-from backend.app.routes.cadastro_route import usuario_bp
+from backend.app.routes.cadastro_route import cadastro_bp
 from backend.app.database import Base
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 CORS(app)
 
-app.register_blueprint(usuario_bp)
+app.register_blueprint(cadastro_bp)
 
 Base.metadata.create_all(bind=engine)
 

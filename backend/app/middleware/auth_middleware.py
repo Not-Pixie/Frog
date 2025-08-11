@@ -8,18 +8,14 @@ SECRET_KEY = os.getenv("SECRET_KEY", "secreto")
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        token = None
-
-        if 'Authorization' in request.headers:
-            auth_header = request.headers['Authorization']
-            if auth_header.startswith('Bearer '):
-                token = auth_header.split(' ')[1]
+        token = request.cookies.get("token")
 
         if not token:
             return jsonify({'mensagem': 'Token ausente!'}), 401
 
         try:
             dados = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+            request.user = dados 
         except jwt.ExpiredSignatureError:
             return jsonify({'mensagem': 'Token expirado!'}), 401
         except jwt.InvalidTokenError:

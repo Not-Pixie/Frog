@@ -28,6 +28,10 @@ export default function CadastroUser() {
     try {
       const response = await api.post(USUARIOS, data);
       console.log("Conta acessada com sucesso:", response.data);
+      // armazena jwt token como cookie
+      if (response.data.token) {
+        document.cookie = `token=${response.data.token}; path=/; secure; samesite=strict`;
+      }
     } catch (error) {
       console.error("Erro ao acessar a conta:", error);
     }
