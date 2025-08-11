@@ -1,3 +1,5 @@
+usuario_atual := COALESCE(usuario_atual, 0);
+
 CREATE OR REPLACE FUNCTION fn_set_timestamp() RETURNS TRIGGER AS $$
 BEGIN
     NEW.atualizado_em = NOW();
