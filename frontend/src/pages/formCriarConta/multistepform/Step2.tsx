@@ -10,27 +10,26 @@ export default function Step2({wrapperClassName}:props){
     const { register, formState: { errors } } = useFormContext<FormData>();
     return(
         <div className={wrapperClassName}>
-            <p>Coloque mais informações</p>
+            <p>Agora crie sua senha</p>
             <div>
                 <Input
-                    label="Número de Telefone"
-                    type="text"
-                    placeholder="Digite seu número"
-                    id="tel"
-                    {...register("telefone")}/>
-                {errors.telefone && <span className="erro">{errors.telefone.message}</span>}
-            </div>
-
+                    label="Senha"
+                    type="password"
+                    placeholder="Digite sua senha"
+                    id="senha1"
+                    {...register("senha")}/>
+                {errors.senha && <span className="erro">{errors.senha.message}</span>}
+                </div>
             
             <div>
                 <Input
-                    label="Email"
-                    type="email"
-                    placeholder="Nome do Proprietário"
-                    id="email"
-                    {...register("email")}/>
-                {errors.email && <span className="erro">{errors.email.message}</span>}
-            </div>
+                    label="Validar senha"
+                    type="password"
+                    id="senha2"
+                    placeholder="Digite a Mesma Senha"
+                    {...register("confirmarSenha")}/>
+                {errors.confirmarSenha && <span className="erro">{errors.confirmarSenha.message}</span>}
+                </div>
         </div>
     )
 

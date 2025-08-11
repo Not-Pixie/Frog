@@ -2,7 +2,6 @@ import { useState } from "react";
 import "./formCriarConta.css";
 import Step1 from "./multistepform/Step1";
 import Step2 from "./multistepform/Step2";
-import Step3 from "./multistepform/Step3";
 import { FormProvider, useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { FormData } from "./schemas.ts"
@@ -16,9 +15,7 @@ export default function FormCadastrarUsuario() {
         resolver: zodResolver(formSchema),
         reValidateMode: "onChange",
         defaultValues: {
-            nomeComercio: "",
             nome: "",
-            telefone: "",
             email: "",
             senha: "",
             confirmarSenha: ""
@@ -26,14 +23,13 @@ export default function FormCadastrarUsuario() {
     })
 
     const stepFields: Record<number, (keyof FormData)[]> ={
-        0: ["nomeComercio", "nome"],
-        1: ["telefone", "email"],
+        0: ["email", "nome"],
+        1: ["senha", "confirmarSenha"],
         2: ["senha", "confirmarSenha"]
     };
 
     const onSubmit: SubmitHandler<FormData> = async (data) => {
-        const {nome, email, senha} = data
-        api.post(USUARIOS, {nome, email, senha})
+        api.post(USUARIOS, data)
             .then((res) => {
                 alert("Cadastro com sucesso!");
                 console.log("Usuário cadastrado:", res.data);
@@ -66,7 +62,6 @@ export default function FormCadastrarUsuario() {
                 >
                   <fieldset className="slide" disabled={step !== 0}><Step1 wrapperClassName="stepWrapper" /></fieldset>
                   <fieldset className="slide" disabled={step !== 1}><Step2 wrapperClassName="stepWrapper" /></fieldset>
-                  <fieldset className="slide" disabled={step !== 2}><Step3 wrapperClassName="stepWrapper" /></fieldset>
                 </div>
             <div className="controls">
                 <div>
@@ -75,10 +70,10 @@ export default function FormCadastrarUsuario() {
                     </button>}
                 </div>
                 <div>
-                    {step < 2 && <button type="button" onClick={nextStep}>
+                    {step < 1 && <button type="button" onClick={nextStep}>
                         <i className="fa-solid fa-arrow-right"></i>
                     </button>}
-                    {step === 2 && <button type="submit">
+                    {step === 1 && <button type="submit">
                         <div className="finalizeButton">
                             <p>Cadastrar</p>
                         </div>

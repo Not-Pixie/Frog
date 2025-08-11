@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from app.models import Email, Usuario, Negocio, NegocioEmailVerificado
 from passlib.hash import bcrypt
 
-def cadastrar_completo(db: Session, nome_completo: str, email: str, senha: str, nome_negocio: str):
+def cadastrar_completo(db: Session, nome_completo: str, email: str, senha: str, nome_negocio: str, telefone: str):
     # 1. Verifica ou cria o email
     email_obj = db.query(Email).filter_by(endereco=email).first()
     if not email_obj:

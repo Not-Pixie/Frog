@@ -14,14 +14,13 @@ export default function Step1({wrapperClassName}:props){
             <p>Vamos começar pelos nomes</p>
             <div>
                 <Input
-                    label="Nome do Comércio"
-                    type="text"
-                    placeholder="Nome do Comércio"
-                    id="comerce"
-                    {...register("nomeComercio")}/>
-                {errors.nomeComercio && (
-                    <span className="erro">{errors.nomeComercio.message}</span>)}
-            </div>
+                    label="Email"
+                    type="email"
+                    placeholder="Nome do Proprietário"
+                    id="email"
+                    {...register("email")}/>
+                {errors.email && <span className="erro">{errors.email.message}</span>}
+                </div>
 
             <div>
                 <Input
@@ -32,7 +31,7 @@ export default function Step1({wrapperClassName}:props){
                     {...register("nome")}/>
                 {errors.nome && (
                     <span className="erro">{errors.nome.message}</span>)}
-            </div>
+                </div>
         </div>
     )
 

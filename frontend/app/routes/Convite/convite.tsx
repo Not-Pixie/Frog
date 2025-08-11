@@ -9,7 +9,7 @@ export default function Convite() {
 
     const handleClick = async () => {
         const data = {inviteCode: inviteCode,
-            userID: 0,
+            token: 0,
         };
 
         api.post(CONVITES, data)

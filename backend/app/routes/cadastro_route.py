@@ -11,15 +11,16 @@ def cadastrar_usuario():
     db: Session = SessionLocal()
     try:
         data = request.json
-        nome = data["nome_completo"]
+        nome = data["nome"]
         email = data["email"]
         senha = data["senha"]
-        nome_negocio = data["nome_negocio"]
+        nome_negocio = data["nomeComercio"]
+        telefone = data["telefone"]
 
         # Gera hash seguro
         senha_hash = bcrypt.hashpw(senha.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
-        usuario, negocio = cadastrar_completo(db, nome, email, senha_hash, nome_negocio)
+        usuario, negocio = cadastrar_completo(db, nome, email, senha_hash, nome_negocio, telefone)
 
         return jsonify({
             "mensagem": "Cadastro realizado com sucesso.",
