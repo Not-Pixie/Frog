@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS unidade_medida (
+CREATE TABLE IF NOT EXISTS unidade_medidas (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(50) NOT NULL,
     sigla VARCHAR(10) NOT NULL UNIQUE
