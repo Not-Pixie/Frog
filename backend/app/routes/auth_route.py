@@ -1,6 +1,6 @@
 from flask import Blueprint, make_response, request, jsonify
 from config import get_db
-from app.services.cadastro_service import get_usuario_por_email
+from backend.app.services.cadastro_user__service import get_usuario_por_email
 import bcrypt
 import jwt
 import datetime
