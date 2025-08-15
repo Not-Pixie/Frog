@@ -10,7 +10,10 @@ from app.database import Base
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
-CORS(app)
+CORS(app, 
+     origins=["http://localhost:5173"],
+     supports_credentials=True,
+     resources={r"/*": {"origins": "http://localhost:5173"}})
 
 app.register_blueprint(cadastro_bp)
 

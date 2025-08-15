@@ -29,7 +29,7 @@ export default function FormCadastrarUsuario() {
     };
 
     const onSubmit: SubmitHandler<FormData> = async (data) => {
-        api.post(USUARIOS, data)
+        api.post("/cadastro", data)
             .then((res) => {
                 alert("Cadastro com sucesso!");
                 console.log("Usuário cadastrado:", res.data);
