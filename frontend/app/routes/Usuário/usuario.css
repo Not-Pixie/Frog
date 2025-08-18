@@ -11,56 +11,61 @@ body {
   justify-content: center;
 }
 
-.WrapAll {
-    margin: 5%;
+.user-page {
+  margin: 5%;
+  height: 100%;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
 }
 
-.TitleUserScreen {
+.user-page_title {
   font-family: "CocogooseRegular";
   color: rgba(53, 172, 151, 1);
   font-size: 2.5rem;
   text-align: center;
 }
-.PUserScreen {
-    margin-top: 5%;
-    font-size: 1rem;
-    text-align: center;
+
+.user-page_subtitle {
+  margin-top: 5%;
+  font-size: 1rem;
+  text-align: center;
 }
 
-.WrapComercios {
-    margin-top: 10%;
-    display: grid;
-    grid-template-columns: repeat(3, 200px);
-    grid-template-rows: 200px 200px;
-    grid-template-areas: "1 2 3" "4 5";
+header {
+  margin-bottom: 5vh;
 }
 
-.item {
-    background-color: rgba(53, 172, 151, 1);
-    margin: 5%;
-    border-radius: 10px;
-    padding: 8%;
+.commerce-grid {
+  height: 50vh;
+  width: 50vw;
+  margin-top: 10vh;
+  justify-content: center;
+  flex-direction: column;
 }
 
-#1 {
-   grid-area: 1; 
+.commerce-row-1
+{
+  height: 50%;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 7vh;
 }
 
-#2 {
-   grid-area: 2; 
+.commerce-row-2
+{
+  height: 50%;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
 }
 
-#3 {
-   grid-area: 3; 
+.commerce-card {
+  background-color: rgba(53, 172, 151, 1);
+  border-radius: 10px;
+  padding: 8%;
 }
-
-#4 {
-   grid-area: 4; 
-}
-
-#5 {
-   grid-area: 5; 
-}
-
-
-

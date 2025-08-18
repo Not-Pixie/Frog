@@ -1,37 +1,33 @@
-import ProtectedRoute from "src/api/auth/ProtectedRoute";
+import PublicRoute from "src/api/auth/PublicRoute"; 
 import "./usuario.css";
 import { useAuth } from "src/api/auth/AuthProvider";
 
 function Usuario() {
   const { user } = useAuth();
   return (
-    <ProtectedRoute>
-      <div className="WrapAll">
+    <PublicRoute>
+      <div className="user-page">
         <header>
-          <h1 className="TitleUserScreen">Seja bem-vindo, {user?.name}</h1>
-          <p className="PUserScreen">
+          <h1 className="user-page_title">Seja bem-vindo, {user?.name}</h1>
+          <p className="user-page_subtitle">
             Escolha um comércio para acessar, ou crie um novo
           </p>
         </header>
-        <div className="WrapComercios">
-          <div className="item" id="1">
-              <div className="info">a</div>
-          </div>
-          <div className="item" id="2">
-              <div className="info">a</div>
-          </div>
-          <div className="item" id="3">
-              <div className="info">a</div>
-          </div>
-          <div className="item" id="4">
-              <div className="info">a</div>
-          </div>
-          <div className="item" id="5">
-              <div className="info">a</div>
+        <div className="commerce-grid-wrapper">
+          <div className="commerce-grid">
+            <div className="commerce-row-1">
+              <div className="commerce-card">a</div>
+              <div className="commerce-card">a</div>
+              <div className="commerce-card">a</div>
+            </div>
+            <div className="commerce-row-2">
+              <div className="commerce-card">a</div>
+              <div className="commerce-card">a</div>
+            </div>
           </div>
         </div>
       </div>
-    </ProtectedRoute>
+    </PublicRoute>
   );
 }
 
