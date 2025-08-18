@@ -1,24 +1,16 @@
-# app/services/usuario_service.py
 from sqlalchemy.orm import Session
 from passlib.hash import bcrypt
 from app.models.usuario_model import Usuario
 
 
-def cadastrar_usuario(
-    db: Session,
-    nome_completo: str,
-    email: str,
-    senha: str,
-) -> Usuario:
-    # 1. Verifica se o e-mail já está cadastrado
+def cadastrar_usuario(db: Session, nome_completo: str, email: str, senha: str) -> Usuario:
+    """Cria um novo usuário, com hash seguro de senha"""
     usuario_existente = db.query(Usuario).filter_by(email=email).first()
     if usuario_existente:
-        raise ValueError("E-mail já cadastrado.")
+        raise ValueError("Credenciais inválidas.")
 
-    # 2. Gera hash da senha
     senha_hash = bcrypt.hash(senha)
 
-    # 3. Cria o usuário
     novo_usuario = Usuario(
         nome_completo=nome_completo,
         email=email,
@@ -30,3 +22,8 @@ def cadastrar_usuario(
     db.refresh(novo_usuario)
 
     return novo_usuario
+
+
+def get_usuario_por_email(db: Session, email: str) -> Usuario | None:
+    """Busca usuário pelo e-mail"""
+    return db.query(Usuario).filter(Usuario.email == email).first()
