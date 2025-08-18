@@ -45,12 +45,12 @@ def login():
         if not bcrypt.verify(senha, usuario.senha_hash):
             return jsonify({"mensagem": "Credenciais inválidas"}), 401
 
-        access = _make_jwt({"user_id": usuario.id_usuario, "email": usuario.email}, expire_minutes=60)
-        refresh = _make_jwt({"user_id": usuario.id_usuario, "type": "refresh"}, expire_minutes=60*24*7)
+        access = _make_jwt({"user_id": usuario.id, "email": usuario.email}, expire_minutes=60)
+        refresh = _make_jwt({"user_id": usuario.id, "type": "refresh"}, expire_minutes=60*24*7)
 
         resp = make_response(jsonify({
             "usuario": {
-                "id": usuario.id_usuario,
+                "id": usuario.id,
                 "email": usuario.email,
                 "nome": usuario.nome_completo
             }
@@ -97,3 +97,37 @@ def logout():
     resp.delete_cookie('access_token')
     resp.delete_cookie('refresh_token')
     return resp
+
+# === Rota de verificação de autenticação ===
+@auth.route('/api/me', methods=['GET'])
+def me():
+    access_token = request.cookies.get('access_token')
+    if not access_token:
+        return jsonify({'mensagem': 'Token de acesso ausente'}), 401
+
+    try:
+        dados = jwt.decode(access_token, SECRET_KEY, algorithms=["HS256"])
+        user_id = dados.get('user_id')
+        if not user_id:
+            return jsonify({'mensagem': 'Token inválido'}), 401
+
+        db_gen = get_db()
+        db = next(db_gen)
+        usuario = get_usuario_por_email(db, dados['email'])
+        
+        if not usuario:
+            return jsonify({'mensagem': 'Usuário não encontrado'}), 404
+
+        return jsonify({
+            'user': {
+                'id': usuario.id,
+                'email': usuario.email,
+                'nome': usuario.nome_completo
+            }
+        }), 200
+    except jwt.ExpiredSignatureError:
+        return jsonify({'mensagem': 'Token expirado'}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({'mensagem': 'Token inválido'}), 401
+    finally:
+        db_gen.close()

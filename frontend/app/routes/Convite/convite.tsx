@@ -1,4 +1,5 @@
 import { useParams } from "react-router"
+import ProtectedRoute from "src/api/auth/ProtectedRoute";
 import api from "src/api/axios";
 import { CONVITES } from "src/api/enpoints";
 
@@ -27,9 +28,11 @@ export default function Convite() {
     if (!inviteCode)
         return (<div>Convite inválido</div>)
 
-    return (<div>
-        <h1>Convite</h1>
-        <p>Você foi convidado a participar de um negócio com o código: {inviteCode}</p>
-        <button onClick={handleClick}>Teste</button>
-    </div>)
+    return (<ProtectedRoute>
+        <div>
+            <h1>Convite</h1>
+            <p>Você foi convidado a participar de um negócio com o código: {inviteCode}</p>
+            <button onClick={handleClick}>Teste</button>
+        </div>
+    </ProtectedRoute>)
 }

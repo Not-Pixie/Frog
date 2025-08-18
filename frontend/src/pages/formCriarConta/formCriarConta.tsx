@@ -7,9 +7,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { FormData } from "./schemas.ts"
 import { formSchema } from "./schemas";
 import api from "src/api/axios.ts";
-import { CADASTRO } from "src/api/enpoints.ts";
+import { CADASTRO, LOGIN } from "src/api/enpoints.ts";
+import { useNavigate } from "react-router";
+import { useAuth } from "src/api/auth/AuthProvider.ts";
 
 export default function FormCadastrarUsuario() {
+    const navigate = useNavigate();
+    const { checkAuth } = useAuth();
     
     const methods = useForm<FormData>({
         resolver: zodResolver(formSchema),
@@ -28,12 +32,26 @@ export default function FormCadastrarUsuario() {
         2: ["senha", "confirmarSenha"]
     };
 
+    const login = async (data: any) => {
+        try{
+            const response = await api.post(LOGIN, data);
+            console.log("Conta acessada com sucesso:", response.data);
+            await checkAuth(); // Atualiza o estado de autenticação
+            navigate("/home", { replace: true });
+        }
+        catch (error) {
+            console.error("Erro ao acessar a conta:", error);
+            alert("Erro ao acessar a conta. Tente novamente.");
+        }
+    }
+
     const onSubmit: SubmitHandler<FormData> = async (data) => {
         api.post(CADASTRO, data)
             .then((res) => {
                 alert("Cadastro com sucesso!");
                 console.log("Usuário cadastrado:", res.data);
                 methods.reset();
+                login({ email: data.email, senha: data.senha });
             })
             .catch((error) => {
                 console.error("Erro ao cadastrar usuário:", error);

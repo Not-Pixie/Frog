@@ -2,7 +2,9 @@ import "./formLogin.css";
 import type { Route } from "../../../app/+types/root";
 import { useForm } from "react-hook-form";
 import api from "src/api/axios";
-import { USUARIOS } from "src/api/enpoints";
+import { LOGIN } from "src/api/enpoints";
+import { useNavigate } from "react-router";
+import { useAuth } from "src/api/auth/AuthProvider";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -17,6 +19,9 @@ interface FormData {
 }
 
 export default function CadastroUser() {
+  const navigate = useNavigate();
+  const {checkAuth} = useAuth();
+
   const {
     register,
     handleSubmit,
@@ -25,12 +30,11 @@ export default function CadastroUser() {
 
   const onSubmit = async (data: any) => {
     try {
-      const response = await api.post(USUARIOS, data);
+      const response = await api.post(LOGIN, data);
       console.log("Conta acessada com sucesso:", response.data);
-      // armazena jwt token como cookie
-      if (response.data.token) {
-        document.cookie = `token=${response.data.token}; path=/; secure; samesite=strict`;
-      }
+      checkAuth(); // Atualiza o estado de autenticação
+      navigate("/usuario", { replace: true });
+      
     } catch (error) {
       console.error("Erro ao acessar a conta:", error);
     }
