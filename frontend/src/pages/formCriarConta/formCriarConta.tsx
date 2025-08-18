@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { FormData } from "./schemas.ts"
 import { formSchema } from "./schemas";
 import api from "src/api/axios.ts";
-import { USUARIOS } from "src/api/enpoints.ts";
+import { CADASTRO } from "src/api/enpoints.ts";
 
 export default function FormCadastrarUsuario() {
     
@@ -29,7 +29,7 @@ export default function FormCadastrarUsuario() {
     };
 
     const onSubmit: SubmitHandler<FormData> = async (data) => {
-        api.post("/cadastro", data)
+        api.post(CADASTRO, data)
             .then((res) => {
                 alert("Cadastro com sucesso!");
                 console.log("Usuário cadastrado:", res.data);
@@ -48,7 +48,7 @@ export default function FormCadastrarUsuario() {
         if (step<2)
         {valid = await methods.trigger(stepFields[step]);}
         console.log("Validando campos:", stepFields[step], "Resultado:", valid);
-        if (valid && step < 2)
+        if (valid && step < 1)
             setStep(step + 1);
     };
     

@@ -17,6 +17,9 @@ function UserPage() {
         <Link onClick={toggleLogin} to={isLogin? "/acessar/cadastrar" : "/acessar"} className="toggleButton">
           {isLogin ? "Não tem uma conta? Clique aqui para criar uma" : "Já tem uma conta? Clique aqui para entrar"}
         </Link>
+        <Link to="/usuario" className="text-blue-500 hover:underline">
+        Ir para a página de usuario
+      </Link>
       </div>
 
       <div className="rightContainer">

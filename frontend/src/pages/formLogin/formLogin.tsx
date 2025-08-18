@@ -12,7 +12,6 @@ export function meta({}: Route.MetaArgs) {
 }
 
 interface FormData {
-  nome: string;
   email: string;
   senha: string;
 }
