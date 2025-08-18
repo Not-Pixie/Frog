@@ -9,7 +9,6 @@ def cadastrar_usuario(
     nome_completo: str,
     email: str,
     senha: str,
-    telefone: str = None
 ) -> Usuario:
     # 1. Verifica se o e-mail já está cadastrado
     usuario_existente = db.query(Usuario).filter_by(email=email).first()
