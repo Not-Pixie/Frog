@@ -9,6 +9,9 @@ export default [
         ]),
   route("convite/:inviteCode",
     "./routes/Convite/convite.tsx",
+  ),
+   route("usuario",
+    "./routes/Usuário/usuario.tsx",
   )
 ] satisfies RouteConfig;
 
