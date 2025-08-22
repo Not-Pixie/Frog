@@ -4,9 +4,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select
 
-from app.models.comercio_model import Comercio
+from backend.app.models.comercios_model import Comercio
 from app.models.comercios_usuarios import ComercioUsuario
-from app.models.usuario_model import Usuario
+from backend.app.models.usuarios_model import Usuario
 
 
 class ComercioServiceError(Exception):

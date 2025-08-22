@@ -12,13 +12,13 @@ CREATE TABLE IF NOT EXISTS produtos (
 	criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-    FOREIGN KEY (unidade_medida_id) REFERENCES unidade_medida(id)
+    FOREIGN KEY (unidade_medida_id) REFERENCES unidade_medidas(id)
         ON DELETE RESTRICT ON UPDATE CASCADE,
 
     FOREIGN KEY (categoria_id) REFERENCES categoria(id)
         ON DELETE RESTRICT ON UPDATE CASCADE,
 
-    FOREIGN KEY (fornecedor_id) REFERENCES fornecedor(id)
+    FOREIGN KEY (fornecedor_id) REFERENCES fornecedores(id)
         ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
