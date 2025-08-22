@@ -3,19 +3,20 @@ from config import get_db
 from app.services.cadastro_user__service import get_usuario_por_email
 from passlib.hash import bcrypt
 import jwt
-import datetime
+from datetime import datetime, timezone, timedelta
 import os
 import uuid
 
 auth = Blueprint("auth", __name__)
 SECRET_KEY = os.getenv("SECRET_KEY", "muda_esse_segredo")
 
-# === utilitário para criar tokens ===
+# === utilitário para criar tokens (timezone-aware) ===
 def _make_jwt(payload: dict, expire_minutes: int = 60) -> str:
+    now = datetime.now(timezone.utc)
     claims = payload.copy()
     claims.update({
-        "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=expire_minutes),
-        "iat": datetime.datetime.utcnow(),
+        "exp": now + timedelta(minutes=expire_minutes),
+        "iat": now,
         "jti": str(uuid.uuid4())
     })
     token = jwt.encode(claims, SECRET_KEY, algorithm="HS256")
@@ -45,12 +46,12 @@ def login():
         if not bcrypt.verify(senha, usuario.senha_hash):
             return jsonify({"mensagem": "Credenciais inválidas"}), 401
 
-        access = _make_jwt({"user_id": usuario.id, "email": usuario.email}, expire_minutes=60)
-        refresh = _make_jwt({"user_id": usuario.id, "type": "refresh"}, expire_minutes=60*24*7)
+        access = _make_jwt({"user_id": usuario.usuario_id, "email": usuario.email}, expire_minutes=60)
+        refresh = _make_jwt({"user_id": usuario.usuario_id, "type": "refresh"}, expire_minutes=60*24*7)
 
         resp = make_response(jsonify({
             "usuario": {
-                "id": usuario.id,
+                "id": usuario.usuario_id,
                 "email": usuario.email,
                 "nome": usuario.nome_completo
             }
@@ -98,6 +99,7 @@ def logout():
     resp.delete_cookie('refresh_token')
     return resp
 
+
 # === Rota de verificação de autenticação ===
 @auth.route('/api/me', methods=['GET'])
 def me():
@@ -105,6 +107,7 @@ def me():
     if not access_token:
         return jsonify({'mensagem': 'Token de acesso ausente'}), 401
 
+    db_gen = None
     try:
         dados = jwt.decode(access_token, SECRET_KEY, algorithms=["HS256"])
         user_id = dados.get('user_id')
@@ -120,7 +123,7 @@ def me():
 
         return jsonify({
             'user': {
-                'id': usuario.id,
+                'id': usuario.usuario_id,
                 'email': usuario.email,
                 'nome': usuario.nome_completo
             }
@@ -130,4 +133,5 @@ def me():
     except jwt.InvalidTokenError:
         return jsonify({'mensagem': 'Token inválido'}), 401
     finally:
-        db_gen.close()
+        if db_gen:
+            db_gen.close()
