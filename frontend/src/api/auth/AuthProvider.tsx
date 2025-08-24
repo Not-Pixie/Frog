@@ -1,14 +1,16 @@
 // src/api/auth/AuthProvider.tsx
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import api from '../axios';
+import * as authServices from "./authServices"
+import { LOGIN, LOGOUT } from '../enpoints';
 
 type User = { id: number; email: string; name?: string } | null;
 
 interface AuthContextType {
   user: User;
   loading: boolean;
-  checkAuth: () => void;
+  checkAuth: () => Promise<boolean>;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   setUser: (u: User) => void;
@@ -26,24 +28,28 @@ export function useAuth() {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User>(null);
   const [loading, setLoading] = useState(true);
+  const mountedRef = useRef(true);
 
-  async function checkAuth() {
+  async function checkAuth(): Promise<boolean> {
     setLoading(true);
     try {
-      const res = await api.get('/api/me'); 
-      const u = res.data?.user ?? null;
+      const data = await authServices.fetchCurrentUser(); 
+      if (!mountedRef) return false;
+      const u = data?.user ?? null;
       setUser(u);
+      return !!u;
     } catch (err) {
-      setUser(null);
+      if(mountedRef.current) setUser(null);
       return false;
     } finally {
-      setLoading(false);
+      if (mountedRef.current) setLoading(false);
     }
   }
 
   async function login(email: string, password: string): Promise<boolean> {
     try {
-      const res = await api.post('/api/login', { email, password });
+      const res = await api.post(LOGIN, { email, password });
+      if (res.data?.acessToken) authServices.setAccessToken(res.data?.acessToken);
       await checkAuth();
       return true;
     } catch (err) {
@@ -53,20 +59,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function logout() {
     try {
-      await api.post('/api/logout');
+      await authServices.logoutServer();
     } finally {
       setUser(null);
+      authServices.setAccessToken(null)
     }
   }
 
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      const ok = await checkAuth();
-      if (!mounted) return;
-    })();
-    return () => { mounted = false; };
+    useEffect(() => {
+      mountedRef.current = true;
+      (async () => {
+        await checkAuth();
+      })();
+      return () => { mountedRef.current = false; };
   }, []);
+
 
   return (
     <AuthContext.Provider value={{ user, setUser, loading, checkAuth, login, logout }}>

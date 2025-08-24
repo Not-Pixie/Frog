@@ -1,6 +1,6 @@
 from flask import Blueprint, make_response, request, jsonify, g
 from config import get_db
-from app.services.cadastro_user__service import get_usuario_por_email
+from app.services.cadastro_user__service import get_usuario_por_email, get_usuario_por_id
 from passlib.hash import bcrypt
 import jwt
 from datetime import datetime, timezone, timedelta
@@ -27,6 +27,7 @@ def _make_jwt(payload: dict, expire_minutes: int = 60) -> str:
 
 # === rota de login ===
 @auth.route('/login', methods=['POST'])
+@auth.route('/login', methods=['POST'])
 def login():
     data = request.get_json() or {}
     email = data.get('email')
@@ -46,22 +47,34 @@ def login():
         if not bcrypt.verify(senha, usuario.senha_hash):
             return jsonify({"mensagem": "Credenciais inválidas"}), 401
 
-        access = _make_jwt({"user_id": usuario.usuario_id, "email": usuario.email}, expire_minutes=60)
-        refresh = _make_jwt({"user_id": usuario.usuario_id, "type": "refresh"}, expire_minutes=60*24*7)
+        # access token de curta duração (recomendado: 15 minutos)
+        access = _make_jwt(
+            {"user_id": usuario.usuario_id, "email": usuario.email},
+            expire_minutes=15
+        )
+        # refresh token mais longo, guardado apenas como cookie HttpOnly
+        refresh = _make_jwt({"user_id": usuario.usuario_id, "type": "refresh"},
+                             expire_minutes=60 * 24 * 7)
 
         resp = make_response(jsonify({
             "usuario": {
                 "id": usuario.usuario_id,
                 "email": usuario.email,
                 "nome": usuario.nome_completo
-            }
+            },
+            "access_token": access,
+            "token_type": "Bearer",
+            "expires_in": 15 * 60 
         }))
 
-        # em dev pode deixar secure=False
         secure_flag = os.getenv("FLASK_ENV") == "production"
-
-        resp.set_cookie("access_token", access, httponly=True, samesite='Strict', secure=secure_flag)
-        resp.set_cookie("refresh_token", refresh, httponly=True, samesite='Strict', secure=secure_flag)
+        resp.set_cookie(
+            "refresh_token",
+            refresh,
+            httponly=True,
+            samesite='Lax',
+            secure=secure_flag,
+        )
 
         return resp, 200
     finally:
@@ -80,11 +93,9 @@ def refresh():
         if dados.get('type') != 'refresh':
             return jsonify({'mensagem': 'Token inválido'}), 401
 
-        new_access = _make_jwt({"user_id": dados['user_id']}, expire_minutes=60)
-        resp = make_response(jsonify({'mensagem': 'ok'}))
-        secure_flag = os.getenv("FLASK_ENV") == "production"
-        resp.set_cookie("access_token", new_access, httponly=True, samesite='Strict', secure=secure_flag)
-        return resp
+        new_access = _make_jwt({"user_id": dados['user_id']}, expire_minutes=15)
+        resp = make_response(jsonify({'mensagem': 'ok', 'access_token': new_access}))
+        return resp, 200
     except jwt.ExpiredSignatureError:
         return jsonify({'mensagem': 'Refresh token expirado'}), 401
     except jwt.InvalidTokenError:
@@ -95,7 +106,6 @@ def refresh():
 @auth.route('/logout', methods=['POST'])
 def logout():
     resp = make_response(jsonify({'mensagem': 'Deslogado'}))
-    resp.delete_cookie('access_token')
     resp.delete_cookie('refresh_token')
     return resp
 
@@ -103,21 +113,27 @@ def logout():
 # === Rota de verificação de autenticação ===
 @auth.route('/api/me', methods=['GET'])
 def me():
-    access_token = request.cookies.get('access_token')
-    if not access_token:
+    auth_header = request.headers.get('Authorization', None)
+    token = None
+    if auth_header and auth_header.startswith('Bearer '):
+        token = auth_header.split(' ', 1)[1].strip()
+    else:
+        token = request.cookies.get('access_token')
+
+    if not token:
         return jsonify({'mensagem': 'Token de acesso ausente'}), 401
 
     db_gen = None
     try:
-        dados = jwt.decode(access_token, SECRET_KEY, algorithms=["HS256"])
+        dados = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
         user_id = dados.get('user_id')
         if not user_id:
             return jsonify({'mensagem': 'Token inválido'}), 401
 
         db_gen = get_db()
         db = next(db_gen)
-        usuario = get_usuario_por_email(db, dados['email'])
-        
+        usuario = get_usuario_por_id(db, user_id)
+
         if not usuario:
             return jsonify({'mensagem': 'Usuário não encontrado'}), 404
 
@@ -128,6 +144,7 @@ def me():
                 'nome': usuario.nome_completo
             }
         }), 200
+
     except jwt.ExpiredSignatureError:
         return jsonify({'mensagem': 'Token expirado'}), 401
     except jwt.InvalidTokenError:

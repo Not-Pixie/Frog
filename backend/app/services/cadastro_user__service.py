@@ -27,3 +27,7 @@ def cadastrar_usuario(db: Session, nome_completo: str, email: str, senha: str) -
 def get_usuario_por_email(db: Session, email: str) -> Usuario | None:
     """Busca usuário pelo e-mail"""
     return db.query(Usuario).filter(Usuario.email == email).first()
+
+def get_usuario_por_id(db: Session, usuario_id: int) -> Usuario | None:
+    """Busca usuário pelo ID"""
+    return db.query(Usuario).filter(Usuario.usuario_id == usuario_id).first()
