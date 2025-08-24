@@ -1,6 +1,6 @@
 from flask import Blueprint, make_response, request, jsonify, g
 from config import get_db
-from app.services.cadastro_user__service import get_usuario_por_email, get_usuario_por_id
+from ..services.cadastro_user__service import get_usuario_por_email, get_usuario_por_id
 from passlib.hash import bcrypt
 import jwt
 from datetime import datetime, timezone, timedelta

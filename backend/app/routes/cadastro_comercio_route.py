@@ -1,8 +1,8 @@
 # app/routes/comercio_route.py
 from flask import Blueprint, request, jsonify, g
 from config import get_db
-from app.middleware.login_middleware import token_required
-from app.services.cadastro_comercio_service import (
+from ..middleware.login_middleware import token_required
+from ..services.cadastro_comercio_service import (
     criar_comercio,
     get_comercio_por_id,
     listar_comercios_do_proprietario,
