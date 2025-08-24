@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from passlib.hash import bcrypt
-from app.models.usuario_model import Usuario
+from backend.app.models.usuarios_model import Usuario
 
 
 def cadastrar_usuario(db: Session, nome_completo: str, email: str, senha: str) -> Usuario:

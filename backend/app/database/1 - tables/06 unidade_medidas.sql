@@ -18,4 +18,5 @@ INSERT INTO unidade_medida (nome, sigla) VALUES
 ('Galão', 'gal'),
 ('Par', 'par'),
 ('Dúzia', 'dz'),
-('Saco', 'sc');
+('Saco', 'sc'),
+('Outro', 'ot');
