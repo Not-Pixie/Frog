@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS produtos (
     FOREIGN KEY (unidade_medida_id) REFERENCES unidade_medidas(id)
         ON DELETE RESTRICT ON UPDATE CASCADE,
 
-    FOREIGN KEY (categoria_id) REFERENCES categoria(id)
+    FOREIGN KEY (categoria_id) REFERENCES categorias(id)
         ON DELETE RESTRICT ON UPDATE CASCADE,
 
     FOREIGN KEY (fornecedor_id) REFERENCES fornecedores(id)

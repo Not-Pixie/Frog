@@ -1,19 +1,24 @@
-usuario_atual := COALESCE(usuario_atual, 0);
-
-CREATE OR REPLACE FUNCTION fn_set_timestamp() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION fn_set_timestamp() RETURNS trigger AS $$
 BEGIN
-    NEW.atualizado_em = NOW();
+    NEW.atualizado_em := NOW();
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION fn_log_updates() RETURNS TRIGGER AS $$
+
+CREATE OR REPLACE FUNCTION fn_log_alteracoes() RETURNS trigger AS $$
 DECLARE
-    usuario_atual INTEGER := current_setting('app.usuario_id', true)::INTEGER;
+    usuario_atual INTEGER := COALESCE(current_setting('app.usuario_id', true)::INTEGER, 0);
 BEGIN
     IF TG_OP = 'UPDATE' THEN
-        INSERT INTO logs(tabela_nome, record_id, operacao, alterado_por, antigo_dado, novo_dado)
-        VALUES (
+        INSERT INTO logs(
+            tabela_nome,
+            record_id,
+            operacao,
+            alterado_por,
+            antigo_dado,
+            novo_dado
+        ) VALUES (
             TG_TABLE_NAME,
             COALESCE(OLD.id, NEW.id),
             TG_OP,
@@ -24,8 +29,14 @@ BEGIN
         RETURN NEW;
 
     ELSIF TG_OP = 'DELETE' THEN
-        INSERT INTO logs(tabela_nome, record_id, operacao, alterado_por, antigo_dado, novo_dado)
-        VALUES (
+        INSERT INTO logs(
+            tabela_nome,
+            record_id,
+            operacao,
+            alterado_por,
+            antigo_dado,
+            novo_dado
+        ) VALUES (
             TG_TABLE_NAME,
             OLD.id,
             TG_OP,
