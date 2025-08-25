@@ -3,7 +3,7 @@ import React, { createContext, useContext, useEffect, useRef, useState } from 'r
 import type { ReactNode } from 'react';
 import api from '../axios';
 import * as authServices from "./authServices"
-import { LOGIN, LOGOUT } from '../enpoints';
+import { LOGIN } from '../enpoints';
 
 type User = { id: number; email: string; name?: string } | null;
 
@@ -21,7 +21,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');
-  console.log('Teste useAuth:', ctx);
   return ctx;
 }
 
@@ -49,9 +48,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function login(email: string, password: string): Promise<boolean> {
     try {
       const res = await api.post(LOGIN, { email, password });
-      if (res.data?.acessToken) authServices.setAccessToken(res.data?.acessToken);
-      await checkAuth();
-      return true;
+      if (res.data?.access_token) {
+        authServices.setAccessToken(res.data.access_token);
+        await checkAuth();
+        return true;
+      }
+      return false;
     } catch (err) {
       return false;
     }
@@ -69,6 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
       mountedRef.current = true;
       (async () => {
+        await authServices.refresh();
         await checkAuth();
       })();
       return () => { mountedRef.current = false; };

@@ -9,11 +9,11 @@ import { formSchema } from "./schemas";
 import api from "src/api/axios.ts";
 import { CADASTRO, LOGIN } from "src/api/enpoints.ts";
 import { useNavigate } from "react-router";
-import { useAuth } from "src/api/auth/AuthProvider.ts";
+import { useAuth } from "src/api/auth/AuthProvider.tsx";
 
 export default function FormCadastrarUsuario() {
     const navigate = useNavigate();
-    const { checkAuth } = useAuth();
+    const { checkAuth, login } = useAuth();
     
     const methods = useForm<FormData>({
         resolver: zodResolver(formSchema),
@@ -32,12 +32,10 @@ export default function FormCadastrarUsuario() {
         2: ["senha", "confirmarSenha"]
     };
 
-    const login = async (data: any) => {
+    const handleLogin = async (data: any) => {
         try{
-            const response = await api.post(LOGIN, data);
-            console.log("Conta acessada com sucesso:", response.data);
-            await checkAuth(); // Atualiza o estado de autenticação
-            navigate("/home", { replace: true });
+            if(await login(data?.email, data?.senha))
+                navigate("/acessar", { replace: true });
         }
         catch (error) {
             console.error("Erro ao acessar a conta:", error);
@@ -51,7 +49,7 @@ export default function FormCadastrarUsuario() {
                 alert("Cadastro com sucesso!");
                 console.log("Usuário cadastrado:", res.data);
                 methods.reset();
-                login({ email: data.email, senha: data.senha });
+                handleLogin({ email: data.email, senha: data.senha });
             })
             .catch((error) => {
                 console.error("Erro ao cadastrar usuário:", error);

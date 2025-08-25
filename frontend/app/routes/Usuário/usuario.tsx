@@ -4,6 +4,7 @@ import { useAuth } from "src/api/auth/AuthProvider";
 
 function Usuario() {
   const { user } = useAuth();
+
   return (
     <PublicRoute>
       <div className="user-page">

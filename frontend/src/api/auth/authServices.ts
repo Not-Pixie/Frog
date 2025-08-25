@@ -19,7 +19,15 @@ type QueueItem = {resolve: (token: string) => void, reject: (err: any) => void};
 let queue: QueueItem[] = [];
 
 export function getAccessToken() { return accessToken; }
-export function setAccessToken(token: string | null) { accessToken = token; }
+export function setAccessToken(token: string | null) {
+    accessToken = token;
+    console.log("token ->", token);
+    if (token) {
+        raw.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    } else {
+        delete raw.defaults.headers.common['Authorization'];
+    }
+}
 
 export async function refresh(): Promise<string>{
     if(isRefreshing)
@@ -29,7 +37,7 @@ export async function refresh(): Promise<string>{
 
     try{
         const res = await raw.post(REFRESH);
-        const newToken: string = res.data?.accessToken;
+        const newToken: string = res.data?.access_token;
         setAccessToken(newToken);
 
         queue.forEach(q => q.resolve(newToken));
@@ -49,7 +57,7 @@ export async function refresh(): Promise<string>{
 
 export async function fetchCurrentUser(): Promise<{user: any} | null> {
     try {
-        const res = await raw.post(ME);
+        const res = await raw.get(ME);
         return res.data ?? null
     }
     catch (err: any)

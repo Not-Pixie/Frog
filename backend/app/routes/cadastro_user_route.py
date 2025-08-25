@@ -9,6 +9,7 @@ cadastro_bp = Blueprint("cadastro", __name__, url_prefix="/cadastro")
 @cadastro_bp.route("/", methods=["POST"])
 def cadastrar_usuario_route():
     db: Session = SessionLocal()
+    print("Recebendo requisição de cadastro de usuário")
     try:
         data = request.json
 
@@ -23,7 +24,7 @@ def cadastrar_usuario_route():
 
         return jsonify({
             "mensagem": "Cadastro realizado com sucesso.",
-            "usuario_id": usuario.id
+            "usuario_id": usuario.usuario_id
         }), 201
 
     except ValueError as ve:

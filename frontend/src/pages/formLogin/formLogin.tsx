@@ -5,6 +5,7 @@ import api from "src/api/axios";
 import { LOGIN } from "src/api/enpoints";
 import { useNavigate } from "react-router";
 import { useAuth } from "src/api/auth/AuthProvider";
+import PublicRoute from "src/api/auth/PublicRoute";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -20,7 +21,7 @@ interface FormData {
 
 export default function CadastroUser() {
   const navigate = useNavigate();
-  const {checkAuth} = useAuth();
+  const {checkAuth, login} = useAuth();
 
   const {
     register,
@@ -30,10 +31,8 @@ export default function CadastroUser() {
 
   const onSubmit = async (data: any) => {
     try {
-      const response = await api.post(LOGIN, data);
-      console.log("Conta acessada com sucesso:", response.data);
-      checkAuth(); // Atualiza o estado de autenticação
-      navigate("/usuario", { replace: true });
+      if(await login(data?.email, data?.senha)) 
+        navigate("/usuario", { replace: true });
       
     } catch (error) {
       console.error("Erro ao acessar a conta:", error);
@@ -58,7 +57,6 @@ export default function CadastroUser() {
             {errors.email && <p className="error">{errors.email.message}</p>}
           </div>
         </div>
-
         <div className="formWrapEntrar">
           <label className="lblEntrarConta" htmlFor="senha">
             Senha
@@ -73,7 +71,6 @@ export default function CadastroUser() {
             {errors.senha && <p className="error">{errors.senha.message}</p>}
           </div>
         </div>
-
         <button type="submit" role="button" className="btnEntrarConta">
           Entrar
         </button>

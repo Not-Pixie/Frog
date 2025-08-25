@@ -27,7 +27,6 @@ def _make_jwt(payload: dict, expire_minutes: int = 60) -> str:
 
 # === rota de login ===
 @auth.route('/login', methods=['POST'])
-@auth.route('/login', methods=['POST'])
 def login():
     data = request.get_json() or {}
     email = data.get('email')
