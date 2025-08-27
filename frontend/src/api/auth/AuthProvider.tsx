@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function login(email: string, password: string): Promise<boolean> {
     try {
-      const res = await api.post(LOGIN, { email, password });
+      const res = await api.post(LOGIN, { email, senha: password });
       if (res.data?.access_token) {
         authServices.setAccessToken(res.data.access_token);
         await checkAuth();
