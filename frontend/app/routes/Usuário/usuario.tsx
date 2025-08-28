@@ -9,7 +9,7 @@ function Usuario() {
     <PublicRoute>
       <div className="user-page">
         <header>
-          <h1 className="user-page_title">Seja bem-vindo, {user?.name}</h1>
+          <h1 className="user-page_title">Seja bem-vindo, {user?.nome}</h1>
           <p className="user-page_subtitle">
             Escolha um comércio para acessar, ou crie um novo
           </p>

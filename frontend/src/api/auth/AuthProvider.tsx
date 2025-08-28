@@ -5,7 +5,7 @@ import api from '../axios';
 import * as authServices from "./authServices"
 import { LOGIN } from '../enpoints';
 
-type User = { id: number; email: string; name?: string } | null;
+type User = { id: number; email: string; nome?: string } | null;
 
 interface AuthContextType {
   user: User;
@@ -30,7 +30,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const mountedRef = useRef(true);
 
   async function checkAuth(): Promise<boolean> {
-    setLoading(true);
+    if(!mountedRef.current) return false;
+    if(mountedRef.current) setLoading(true);
     try {
       const data = await authServices.fetchCurrentUser(); 
       if (!mountedRef) return false;
@@ -67,11 +68,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       authServices.setAccessToken(null)
     }
   }
+  
 
     useEffect(() => {
       mountedRef.current = true;
       (async () => {
-        await authServices.refresh();
+        if (user)
+          await authServices.refresh();
         await checkAuth();
       })();
       return () => { mountedRef.current = false; };
