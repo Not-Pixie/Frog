@@ -11,12 +11,12 @@ export default function Step1({wrapperClassName}:props){
     
     return(
         <div className={wrapperClassName}>
-            <p>Coloque suas informações</p>
+            <p>Insira suas informações!</p>
             <div>
                 <Input
                     label="Email"
                     type="email"
-                    placeholder="Nome do Proprietário"
+                    placeholder="Email do Proprietário"
                     id="email"
                     {...register("email")}/>
                 {errors.email && <span className="erro">{errors.email.message}</span>}
