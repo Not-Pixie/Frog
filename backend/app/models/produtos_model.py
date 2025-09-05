@@ -9,7 +9,7 @@ Base = declarative_base()
 class Produto(Base):
     __tablename__ = "produtos"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    produto_id = Column(Integer, primary_key=True, autoincrement=True)
     codigo = Column(String(50), unique=True, nullable=False)
     nome = Column(String(150), nullable=False)
     preco = Column(Numeric(10, 2), nullable=False)

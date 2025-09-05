@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS produtos (
-    id SERIAL PRIMARY KEY,
+    produto_id SERIAL PRIMARY KEY,
     codigo VARCHAR(50) NOT NULL UNIQUE,
     nome VARCHAR(150) NOT NULL,
     preco NUMERIC(10, 2) NOT NULL,
