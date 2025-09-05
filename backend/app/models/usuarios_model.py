@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, func
+from sqlalchemy.orm import relationship
 from app.database import Base
 
 class Usuario(Base):
@@ -11,3 +12,4 @@ class Usuario(Base):
     criado_em = Column(DateTime(timezone=True), server_default=func.now())
     atualizado_em = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
+    comercios = relationship("Comercio", back_populates="proprietario")
