@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from sqlalchemy.orm import Session
 from ..services.cadastro_user__service import cadastrar_usuario
-from config import SessionLocal
+from app.database.database import SessionLocal
 
 cadastro_bp = Blueprint("cadastro", __name__, url_prefix="/cadastro")
 

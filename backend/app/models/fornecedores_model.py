@@ -1,15 +1,11 @@
-from sqlalchemy import (
-    Column, String, Integer, Numeric, DateTime,
-    ForeignKey, UniqueConstraint, func
-)
-from sqlalchemy.orm import relationship, declarative_base
-
-Base = declarative_base()
+from sqlalchemy import Column, Integer, String, DateTime, func
+from sqlalchemy.orm import relationship
+from app.database.database import Base
 
 class Fornecedor(Base):
     __tablename__ = "fornecedores"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    fornecedor_id = Column(Integer, primary_key=True, autoincrement=True)
     nome = Column(String(150), nullable=False)
     cnpj = Column(String(18), unique=True)
     telefone = Column(String(20))
