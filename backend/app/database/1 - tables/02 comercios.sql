@@ -3,5 +3,7 @@ CREATE TABLE comercios (
     proprietario_id INTEGER NOT NULL REFERENCES usuarios(usuario_id),
     nome VARCHAR(255) NOT NULL UNIQUE,
     criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW();
+
+    ENABLE ROW LEVEL SECURITY;
 )

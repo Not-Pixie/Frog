@@ -1,5 +1,5 @@
 CREATE TABLE logs (
-    id              SERIAL PRIMARY KEY,
+    log_id              SERIAL PRIMARY KEY,
     tabela_nome      VARCHAR(100)    NOT NULL,
     record_id       INTEGER         NOT NULL,
     operacao       VARCHAR(10)     NOT NULL,

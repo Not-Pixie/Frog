@@ -1,3 +1,7 @@
+CREATE OR REPLACE FUNCTION app_usuario_id() RETURNS integer AS $$
+  SELECT (current_setting('app.usuario_id', true))::int;
+$$ LANGUAGE sql STABLE;
+
 CREATE OR REPLACE FUNCTION fn_set_timestamp() RETURNS trigger AS $$
 BEGIN
     NEW.atualizado_em := NOW();
@@ -8,7 +12,7 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION fn_log_alteracoes() RETURNS trigger AS $$
 DECLARE
-    usuario_atual INTEGER := COALESCE(current_setting('app.usuario_id', true)::INTEGER, 0);
+    usuario_atual INTEGER := COALESCE(app_usuario_id(), 0);
 BEGIN
     IF TG_OP = 'UPDATE' THEN
         INSERT INTO logs(
