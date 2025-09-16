@@ -1,11 +1,12 @@
 from sqlalchemy.orm import Session
 from passlib.hash import bcrypt
 from ..models.usuarios_model import Usuario
+from .usuarios_service import get_usuario_por_email
 
 
 def cadastrar_usuario(db: Session, nome_completo: str, email: str, senha: str) -> Usuario:
     """Cria um novo usuário, com hash seguro de senha"""
-    usuario_existente = db.query(Usuario).filter_by(email=email).first()
+    usuario_existente = get_usuario_por_email(db, email)
     if usuario_existente:
         raise ValueError("Credenciais inválidas.")
 
@@ -23,11 +24,3 @@ def cadastrar_usuario(db: Session, nome_completo: str, email: str, senha: str) -
 
     return novo_usuario
 
-
-def get_usuario_por_email(db: Session, email: str) -> Usuario | None:
-    """Busca usuário pelo e-mail"""
-    return db.query(Usuario).filter(Usuario.email == email).first()
-
-def get_usuario_por_id(db: Session, usuario_id: int) -> Usuario | None:
-    """Busca usuário pelo ID"""
-    return db.query(Usuario).filter(Usuario.usuario_id == usuario_id).first()

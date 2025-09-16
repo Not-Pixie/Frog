@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from sqlalchemy.orm import Session
-from ..services.cadastro_user__service import cadastrar_usuario
+from ..services.cadastro_user_service import cadastrar_usuario
 from app.database.database import SessionLocal
 
 cadastro_bp = Blueprint("cadastro", __name__, url_prefix="/cadastro")
@@ -9,13 +9,15 @@ cadastro_bp = Blueprint("cadastro", __name__, url_prefix="/cadastro")
 @cadastro_bp.route("/", methods=["POST"])
 def cadastrar_usuario_route():
     db: Session = SessionLocal()
-    print("Recebendo requisição de cadastro de usuário")
+    print("-- Recebendo requisição de cadastro de usuário --")
     try:
         data = request.json
 
         nome = data.get("nome")
         email = data.get("email")
         senha = data.get("senha")
+        
+        print("meu deus")
 
         if not nome or not email or not senha:
             return jsonify({"erro": "Nome, e-mail e senha são obrigatórios."}), 400
