@@ -1,15 +1,10 @@
-:root {
-  --slideWidth: 80%;
-  --primaryColor: rgba(53, 172, 151, 1);
-
-  --bodyFont: "CocogooseRegular", sans-serif;
-}
-
 .slider {
   display: flex;
   transition: transform 0.5s ease-in-out;
   justify-content: flex-start;
   width: 100%;
+  
+  --slideWidth: 80%;
 }
 
 p {

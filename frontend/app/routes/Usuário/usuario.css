@@ -64,8 +64,3 @@ header {
   justify-content: space-evenly;
 }
 
-.commerce-card {
-  background-color: rgba(53, 172, 151, 1);
-  border-radius: 10px;
-  padding: 8%;
-}

@@ -1,4 +1,5 @@
 import type React from "react";
+import "./Input.css"
 
 type Customprops = {
     label: string;
@@ -13,6 +14,11 @@ type Customprops = {
 type props = Customprops & Omit<React.InputHTMLAttributes<HTMLInputElement>, keyof Customprops>;
 
 export default function Input({ label, id, type, placeholder, labelClassName, inputClassName, inputWrapperClassName, wrapperClassName, ...rest}: props) {
+  if(!wrapperClassName)
+    wrapperClassName = "form-field";
+  if(!inputWrapperClassName)
+    inputWrapperClassName = "input-wrapper";
+  
   return (
     <div className={wrapperClassName}>
       <label className={labelClassName} htmlFor={`${id}-input`} id={id}>

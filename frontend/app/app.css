@@ -19,3 +19,11 @@ html,
 body {
   color-scheme: light only;
 }
+
+:root {
+  --primaryColor: rgba(53, 172, 151, 1);
+  --accentColor: white;
+
+  --bodyFont: "CocogooseRegular", sans-serif;
+}
+

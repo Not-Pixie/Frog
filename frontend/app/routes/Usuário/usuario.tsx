@@ -1,6 +1,7 @@
 import PublicRoute from "src/api/auth/PublicRoute"; 
 import "./usuario.css";
 import { useAuth } from "src/api/auth/AuthProvider";
+import CommerceCard from "src/components/CommerceCard";
 
 function Usuario() {
   const { user } = useAuth();
@@ -17,13 +18,13 @@ function Usuario() {
         <div className="commerce-grid-wrapper">
           <div className="commerce-grid">
             <div className="commerce-row-1">
-              <div className="commerce-card">a</div>
-              <div className="commerce-card">a</div>
-              <div className="commerce-card">a</div>
+              <CommerceCard></CommerceCard>
+              <CommerceCard></CommerceCard>
+              <CommerceCard></CommerceCard>
             </div>
             <div className="commerce-row-2">
-              <div className="commerce-card">a</div>
-              <div className="commerce-card">a</div>
+              <CommerceCard></CommerceCard>
+              <CommerceCard></CommerceCard>
             </div>
           </div>
         </div>
