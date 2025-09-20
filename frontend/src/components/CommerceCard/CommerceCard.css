@@ -1,0 +1,41 @@
+.commerce-card {
+  background-color: rgba(53, 172, 151, 1);
+  border-radius: 15px;
+  width: 25%;
+  height: 100%;
+  padding: 2%;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  transition: ease-in-out 0.2s;
+  position: relative;
+}
+
+.plus-sign
+{
+    position: absolute;
+    bottom: 30%;
+    color: var(--accentColor);
+    font-size: 3vw;
+    cursor: pointer;
+    transition: ease-in-out 0.2s;
+}
+
+.moved {
+    bottom: 5%;
+}
+
+.disabled
+{
+    background-color: var(--accentColor);
+    border: 05px solid;
+    .plus-sign {color: var(--primaryColor);}
+    border-color: var(--primaryColor);
+}
+
+.enabled
+{
+    --primaryColor: rgba(53, 172, 151, 1);
+    --accentColor: white;
+}
+

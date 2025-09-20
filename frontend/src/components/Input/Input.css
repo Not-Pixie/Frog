@@ -1,0 +1,38 @@
+.form-field {
+  position: relative;
+  width: 100%;
+}
+
+.form-field > label {
+  position: relative;
+  top: 2vh;
+  left: 3%;
+  background: white;
+  padding: 0 6px;
+  font-size: 1rem;
+  z-index: 2;
+  font: var(--bodyFont);
+  transition: color .18s ease;
+}
+
+.form-field:focus-within > label {
+  color: var(--primaryColor);
+}
+
+.form-field .input-wrapper > input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px;
+  height: 8vh;
+  font-size: 1.1rem;
+  font: var(--bodyFont);
+  border-radius: 10px;
+  border: 1.5px solid #000;
+  transition: border-color .18s ease, color .18s ease;
+}
+
+.form-field .input-wrapper > input:focus {
+  outline: none;
+  border: 1.5px solid var(--primaryColor);
+  color: var(--primaryColor);
+}

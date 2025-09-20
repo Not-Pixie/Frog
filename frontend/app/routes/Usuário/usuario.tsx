@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import PublicRoute from "src/api/auth/PublicRoute"; 
 import "./usuario.css";
 import { useAuth } from "src/api/auth/AuthProvider";
+import CommerceCard from "src/components/CommerceCard";
 import PopupCreateCompany from "src/components/Input/PopUpComercio";
 import type { Company } from "src/components/Input/PopUpComercio";
 
@@ -27,10 +28,15 @@ function Usuario() {
               <div className="commerce-card" onClick={() => setModalOpen(true)}>a</div>
               <div className="commerce-card" onClick={() => setModalOpen(true)}>a</div>
               <div className="commerce-card" onClick={() => setModalOpen(true)}>a</div>
+              <CommerceCard></CommerceCard>
+              <CommerceCard></CommerceCard>
+              <CommerceCard></CommerceCard>
             </div>
             <div className="commerce-row-2">
               <div className="commerce-card" onClick={() => setModalOpen(true)}>a</div>
               <div className="commerce-card" onClick={() => setModalOpen(true)}>a</div>
+              <CommerceCard></CommerceCard>
+              <CommerceCard></CommerceCard>
             </div>
           </div>
         </div>
