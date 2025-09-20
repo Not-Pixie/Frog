@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS fornecedores (
     criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-    comercio_id INTEGER NOT NULL REFERENCES comercios(comercio_id) ON DELETE CASCADE;
-    
-    ENABLE ROW LEVEL SECURITY
+    comercio_id INTEGER NOT NULL REFERENCES comercios(comercio_id) ON DELETE CASCADE
 );
+
+ALTER TABLE IF EXISTS fornecedores ENABLE ROW LEVEL SECURITY;

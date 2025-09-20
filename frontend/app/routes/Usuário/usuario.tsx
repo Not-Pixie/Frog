@@ -1,4 +1,4 @@
-import PublicRoute from "src/api/auth/PublicRoute"; 
+import ProtectedRoute from "src/api/auth/ProtectedRoute"; 
 import "./usuario.css";
 import { useAuth } from "src/api/auth/AuthProvider";
 import CommerceCard from "src/components/CommerceCard";
@@ -7,7 +7,7 @@ function Usuario() {
   const { user } = useAuth();
 
   return (
-    <PublicRoute>
+    <ProtectedRoute>
       <div className="user-page">
         <header>
           <h1 className="user-page_title">Seja bem-vindo, {user?.nome}</h1>
@@ -29,7 +29,7 @@ function Usuario() {
           </div>
         </div>
       </div>
-    </PublicRoute>
+    </ProtectedRoute>
   );
 }
 

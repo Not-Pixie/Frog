@@ -3,8 +3,8 @@ CREATE TABLE IF NOT EXISTS unidade_medidas (
     nome VARCHAR(50) NOT NULL,
     sigla VARCHAR(10) NOT NULL UNIQUE,
 
-    comercio_id INTEGER NOT NULL REFERENCES comercios(comercio_id) ON DELETE CASCADE;
-    
-    ENABLE ROW LEVEL SECURITY
+    comercio_id INTEGER NOT NULL REFERENCES comercios(comercio_id) ON DELETE CASCADE
 );
+
+ALTER TABLE IF EXISTS unidade_medidas ENABLE ROW LEVEL SECURITY;
 
