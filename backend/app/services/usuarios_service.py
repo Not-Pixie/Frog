@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.models.comercios_model import Comercio
 from app.models.comercios_usuarios import ComercioUsuario
 from app.models.usuarios_model import Usuario
-from app.services.cadastro_comercio_service import ComercioServiceError
+from app.services.errors import ComercioServiceError
 
 def get_comercios_que_usuario_tem_acesso(db: Session, usuario_id: int) -> List[Comercio]:
     comercio_pk = getattr(Comercio, "comercio_id", None) or getattr(Comercio, "id", None)

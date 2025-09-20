@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify
 from app.utils.model_utils import model_to_dict
 
 from ..services.usuarios_service import get_comercios_que_usuario_tem_acesso
-from ..middleware.login_middleware import token_required
+from ..middleware.auth import token_required
 from ..models.comercios_model import Comercio
 
 user = Blueprint("user", __name__)

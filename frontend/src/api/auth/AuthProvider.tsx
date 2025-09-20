@@ -9,11 +9,13 @@ type User = { id: number; email: string; nome?: string } | null;
 
 interface AuthContextType {
   user: User;
+  token?: string | null;
   loading: boolean;
   checkAuth: () => Promise<boolean>;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   setUser: (u: User) => void;
+  setToken?: (t: string | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,20 +28,21 @@ export function useAuth() {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const mountedRef = useRef(true);
 
   async function checkAuth(): Promise<boolean> {
-    if(!mountedRef.current) return false;
-    if(mountedRef.current) setLoading(true);
+    if (!mountedRef.current) return false;
+    if (mountedRef.current) setLoading(true);
     try {
-      const data = await authServices.fetchCurrentUser(); 
-      if (!mountedRef) return false;
+      const data = await authServices.fetchCurrentUser();
+      if (!mountedRef.current) return false;
       const u = data?.user ?? null;
       setUser(u);
       return !!u;
     } catch (err) {
-      if(mountedRef.current) setUser(null);
+      if (mountedRef.current) setUser(null);
       return false;
     } finally {
       if (mountedRef.current) setLoading(false);
@@ -50,7 +53,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const res = await api.post(LOGIN, { email, senha: password });
       if (res.data?.access_token) {
-        authServices.setAccessToken(res.data.access_token);
+        const newToken = res.data.access_token as string;
+        authServices.setAccessToken(newToken);
+        setToken(newToken);
         await checkAuth();
         return true;
       }
@@ -65,24 +70,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await authServices.logoutServer();
     } finally {
       setUser(null);
-      authServices.setAccessToken(null)
+      authServices.setAccessToken(null);
+      setToken(null);
     }
   }
-  
 
-    useEffect(() => {
-      mountedRef.current = true;
-      (async () => {
-        if (user)
-          await authServices.refresh();
-        await checkAuth();
-      })();
-      return () => { mountedRef.current = false; };
+  useEffect(() => {
+    mountedRef.current = true;
+    (async () => {
+      // tenta obter token do authServices (se existir) ou do localStorage como fallback
+      const existingToken = (authServices as any).getAccessToken?.() ?? localStorage.getItem("access_token");
+      if (existingToken) setToken(existingToken as string);
+      if (user) await (authServices as any).refresh?.();
+      await checkAuth();
+    })();
+    return () => { mountedRef.current = false; };
   }, []);
 
-
   return (
-    <AuthContext.Provider value={{ user, setUser, loading, checkAuth, login, logout }}>
+    <AuthContext.Provider value={{ user, token, setUser, loading, checkAuth, login, logout, setToken }}>
       {children}
     </AuthContext.Provider>
   );
