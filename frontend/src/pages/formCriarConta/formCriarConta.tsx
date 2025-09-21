@@ -63,9 +63,8 @@ export default function FormCadastrarUsuario() {
         let valid = false;
         if (step<2)
         {valid = await methods.trigger(stepFields[step]);}
-        console.log("Validando campos:", stepFields[step], "Resultado:", valid);
         if (valid && step < 1)
-            setStep(step + 1);
+            {setStep(step + 1); (document.getElementById("senha1") as HTMLInputElement).focus();}
     };
     
     return (<>
