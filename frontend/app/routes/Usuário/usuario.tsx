@@ -9,8 +9,6 @@ import type { Company } from "src/components/Input/PopUpComercio";
 
 function Usuario() {
   const { user, token } = useAuth();
-
-  // estado mínimo para abrir/fechar o modal
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
@@ -22,27 +20,24 @@ function Usuario() {
             Escolha um comércio para acessar, ou crie um novo
           </p>
         </header>
+
         <div className="commerce-grid-wrapper">
           <div className="commerce-grid">
-            <div className="commerce-row-1">
-              {/* Tornei os cards clicáveis: ao clicar abre o modal */}
-              <div className="commerce-card" onClick={() => setModalOpen(true)}>a</div>
-              <div className="commerce-card" onClick={() => setModalOpen(true)}>a</div>
-              <div className="commerce-card" onClick={() => setModalOpen(true)}>a</div>
-              <CommerceCard></CommerceCard>
-              <CommerceCard></CommerceCard>
-              <CommerceCard></CommerceCard>
+            {/* linha superior: 3 cards */}
+            <div className="commerce-row commerce-row-top">
+              <CommerceCard onClick={() => setModalOpen(true)} />
+              <CommerceCard onClick={() => setModalOpen(true)} />
+              <CommerceCard onClick={() => setModalOpen(true)} />
             </div>
-            <div className="commerce-row-2">
-              <div className="commerce-card" onClick={() => setModalOpen(true)}>a</div>
-              <div className="commerce-card" onClick={() => setModalOpen(true)}>a</div>
-              <CommerceCard></CommerceCard>
-              <CommerceCard></CommerceCard>
+
+            {/* linha inferior: 2 cards */}
+            <div className="commerce-row commerce-row-bottom">
+              <CommerceCard onClick={() => setModalOpen(true)} />
+              <CommerceCard onClick={() => setModalOpen(true)} />
             </div>
           </div>
         </div>
 
-        {/* Modal com comportamento mínimo: recebe o estado e fecha ao onClose */}
         <PopupCreateCompany
           isOpen={modalOpen}
           onClose={() => setModalOpen(false)}

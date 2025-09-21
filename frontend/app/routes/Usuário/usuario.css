@@ -13,7 +13,7 @@ body {
 
 .user-page {
   margin: 5%;
-  height: 100%;
+  min-height: 100%;
   width: 100%;
   justify-content: center;
   align-items: center;
@@ -26,48 +26,54 @@ body {
   color: rgba(53, 172, 151, 1);
   font-size: 2.5rem;
   text-align: center;
+  margin-top: 8px;
 }
 
 .user-page_subtitle {
-  margin-top: 5%;
+  margin-top: 1.5rem;
   font-size: 1rem;
   text-align: center;
+  color: #222;
 }
 
 header {
-  margin-bottom: 5vh;
+  margin-bottom: 4vh;
 }
 
-.commerce-grid {
-  height: 50vh;
-  width: 50vw;
-  margin-top: 10vh;
+/* wrapper que centraliza a grid */
+.commerce-grid-wrapper {
+  width: 100%;
+  display: flex;
   justify-content: center;
+}
+
+/* grid principal (controle de largura para manter espaçamento parecido com exemplo) */
+.commerce-grid {
+  width: min(900px, 80vw); /* centraliza e limita a largura para formar as colunas corretamente */
+  display: flex;
   flex-direction: column;
+  gap: 6.5vh; /* entre as linhas (distância vertical parecida com a imagem) */
+  align-items: center;
+  margin-top: 6vh;
 }
 
-.commerce-row-1
-{
-  height: 50%;
-  width: 100%;
+/* linha genérica */
+.commerce-row {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 7vh;
-}
-
-.commerce-row-2
-{
-  height: 50%;
+  align-items: center;
+  justify-content: center;
+  gap: 48px; /* espaçamento horizontal entre cards */
   width: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-evenly;
 }
 
-.commerce-card {
-  background-color: rgba(53, 172, 151, 1);
-  border-radius: 10px;
-  padding: 8%;
+/* top: 3 itens — já centralizados pelo justify-content */
+.commerce-row-top {
+  justify-content: center;
+}
+
+/* bottom: 2 itens — centralizados e com mesma distância lateral */
+.commerce-row-bottom {
+  justify-content: center;
 }
 
 /* ---------------- POPUP (apenas CSS para o modal) ---------------- */
@@ -182,3 +188,14 @@ header {
   [role="dialog"] h3 { font-size: 1rem !important; }
 }
 
+/* responsividade geral da grade */
+@media (max-width: 900px) {
+  .commerce-grid { width: min(680px, 92vw); gap: 5vh; }
+  .commerce-row { gap: 28px; }
+}
+
+@media (max-width: 480px) {
+  .commerce-grid { width: 100%; gap: 3.5vh; padding: 0 12px; }
+  .commerce-row { gap: 18px; flex-wrap: wrap; }
+  .commerce-row-top, .commerce-row-bottom { justify-content: center; }
+}

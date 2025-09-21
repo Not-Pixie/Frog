@@ -1,31 +1,22 @@
-import { useState } from "react";
+import React from "react";
 import "./CommerceCard.css";
-import Input from "../Input";
 
-export default function CommerceCard({}:{})
-{
-    const [isActive, setIsActive] = useState(false)
-    const [isCreating, setIsCreating] = useState(false);
-    const toggleIsActive = () => setIsActive(prev => !prev);
-    const toggleIsCreating = () => setIsCreating(prev => !prev);
+type CommerceCardProps = {
+  onClick?: () => void;
+  variant?: "add" | "filled"; // mantive a prop caso precise depois
+};
 
-    let pClassName = "commerce-card";
-    pClassName = isActive ? pClassName + " enabled" : pClassName + " disabled"
+export default function CommerceCard({ onClick, variant = "add" }: CommerceCardProps) {
+  const className = `commerce-card ${variant === "add" ? "card-add" : "card-filled"}`;
 
-    let plusSignClassName = "plus-sign";
-    plusSignClassName = isCreating ? "plus-sign" : plusSignClassName + " moved"
-
-    let elements:React.ReactNode;
-
-    if (isCreating)
-        elements = (<>
-            <div className="backArrow" onClick={toggleIsCreating}></div>
-            <Input type="text" label="" placeholder="Nome do Negócio"></Input>
-        </>);
-    else elements = null;
-
-    return (<div className={pClassName}>
-        {elements}
-        <p className={plusSignClassName} onClick={toggleIsActive}>+</p>
-    </div>);
+  return (
+    <button
+      type="button"
+      className={className}
+      onClick={onClick}
+      aria-label={variant === "add" ? "Criar novo comércio" : "Abrir comércio"}
+    >
+      {variant === "add" ? <span className="plus-sign" aria-hidden>+</span> : <div className="card-content">Comércio</div>}
+    </button>
+  );
 }

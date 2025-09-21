@@ -1,41 +1,105 @@
+/* Base do componente */
 .commerce-card {
-  background-color: rgba(53, 172, 151, 1);
-  border-radius: 15px;
-  width: 25%;
-  height: 100%;
-  padding: 2%;
-  justify-content: center;
-  align-items: center;
   display: flex;
-  transition: ease-in-out 0.2s;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+/* dimensões "gordinhas" -> aspecto mais quadrado e arredondado */
+.commerce-card {
+  width: 14.5vw;
+  max-width: 220px;
+  min-width: 140px;
+  height: 22vh;
+  max-height: 220px;
+  min-height: 140px;
+}
+
+.commerce-card.clicked {
+  background: rgba(53,172,151,1);
+  color: #fff;
+  border-color: rgba(53,172,151,1);
+  transition: all 0.35s ease;
+}
+
+/* foco / acessibilidade */
+.commerce-card:focus {
+  outline: 3px solid rgba(53,172,151,0.14);
+  outline-offset: 6px;
+}
+
+/* CARD "ADD" (aparência da direita) */
+.card-add {
+  background: white;
+  border: 5px solid rgba(53,172,151,1);
+  color: rgba(53,172,151,1);
+  border-radius: 20px; /* mais gordinho */
   position: relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
-.plus-sign
-{
-    position: absolute;
-    bottom: 30%;
-    color: var(--accentColor);
-    font-size: 3vw;
-    cursor: pointer;
-    transition: ease-in-out 0.2s;
+/* Hover leve */
+.card-add:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.08);
 }
 
-.moved {
-    bottom: 5%;
+/* símbolo + central (maior para parecer "gordinho") */
+.card-add .plus-sign {
+  font-size: clamp(28px, 4.5vw, 48px);
+  line-height: 1;
+  user-select: none;
+  transition: transform 200ms ease;
+  display: inline-block;
 }
 
-.disabled
-{
-    background-color: var(--accentColor);
-    border: 05px solid;
-    .plus-sign {color: var(--primaryColor);}
-    border-color: var(--primaryColor);
+.card-add:hover .plus-sign {
+  transform: scale(1.06) rotate(0.3deg);
 }
 
-.enabled
-{
-    --primaryColor: rgba(53, 172, 151, 1);
-    --accentColor: white;
+/* CARD preenchido (caso seja usado no futuro) */
+.card-filled {
+  background-color: rgba(53,172,151,1);
+  color: white;
+  border-radius: 20px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 12px;
+  box-shadow: none;
+  border: none;
 }
 
+.card-filled:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.10);
+}
+
+.card-content {
+  font-size: 1rem;
+  text-align: center;
+  padding: 8px;
+  user-select: none;
+}
+
+/* responsividade */
+@media (max-width: 1200px) {
+  .commerce-card { width: 20vw; height: 20vh; }
+}
+
+@media (max-width: 900px) {
+  .commerce-card { width: 22vw; height: 18vh; }
+}
+
+@media (max-width: 480px) {
+  .commerce-card { width: 28vw; height: 16vh; max-width: 160px; max-height: 150px; }
+  .card-add .plus-sign { font-size: 30px; }
+}

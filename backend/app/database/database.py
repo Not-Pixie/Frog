@@ -15,7 +15,16 @@ if not DATABASE_URL:
     DB_NAME = os.getenv("DB_NAME", "frog")
     DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-engine = create_engine(DATABASE_URL, future=True)  # future=True é opcional, mas recomendado
+engine = create_engine(
+    DATABASE_URL,
+    pool_size=10,
+    max_overflow=20,
+    pool_pre_ping=True,       # <--- importante
+    pool_timeout=30,
+    pool_recycle=1800,        # opcional: reciclar conexões após 30min
+    echo=False,
+    future=True
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
