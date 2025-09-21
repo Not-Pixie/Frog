@@ -5,13 +5,14 @@ CREATE TABLE IF NOT EXISTS produtos (
     preco NUMERIC(10, 2) NOT NULL,
     quantidade_estoque INT NOT NULL DEFAULT 0,
 
-    unimed_id INT NOT NULL REFRENCES unidade_medidas(unimed_id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    categoria_id INT NOT NULL REFRENCES categorias(categoria_id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    fornecedor_id INT NOT NULL REFRENCES fornecedores(fornecedor_id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    unimed_id INT NOT NULL REFERENCES unidade_medidas(unimed_id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    categoria_id INT NOT NULL REFERENCES categorias(categoria_id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    fornecedor_id INT NOT NULL REFERENCES fornecedores(fornecedor_id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    comercio_id INTEGER NOT NULL REFERENCES comercios(comercio_id) ON DELETE CASCADE,
 
 	criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-    ENABLE ROW LEVEL SECURITY
+    atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE IF EXISTS produtos ENABLE ROW LEVEL SECURITY;
 

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import PublicRoute from "src/api/auth/PublicRoute"; 
+import ProtectedRoute from "src/api/auth/ProtectedRoute"; 
 import "./usuario.css";
 import { useAuth } from "src/api/auth/AuthProvider";
 import CommerceCard from "src/components/CommerceCard";
@@ -13,7 +14,7 @@ function Usuario() {
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
-    <PublicRoute>
+    <ProtectedRoute>
       <div className="user-page">
         <header>
           <h1 className="user-page_title">Seja bem-vindo, {user?.nome}</h1>
@@ -49,7 +50,7 @@ function Usuario() {
           authToken={token ?? undefined}
         />
       </div>
-    </PublicRoute>
+    </ProtectedRoute>
   );
 }
 

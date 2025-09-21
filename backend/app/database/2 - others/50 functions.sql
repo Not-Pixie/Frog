@@ -13,8 +13,20 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION fn_log_alteracoes() RETURNS trigger AS $$
 DECLARE
     usuario_atual INTEGER := COALESCE(app_usuario_id(), 0);
+    pk_col TEXT;
+    rec_id TEXT;
 BEGIN
+    -- tenta obter a primeira coluna PK da tabela
+    SELECT a.attname INTO pk_col
+    FROM pg_index i
+    JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey)
+    WHERE i.indrelid = TG_RELID AND i.indisprimary
+    LIMIT 1;
+
     IF TG_OP = 'UPDATE' THEN
+        IF pk_col IS NOT NULL THEN
+            EXECUTE format('SELECT ($1).%I::text', pk_col) INTO rec_id USING OLD;
+        END IF;
         INSERT INTO logs(
             tabela_nome,
             record_id,
@@ -24,15 +36,17 @@ BEGIN
             novo_dado
         ) VALUES (
             TG_TABLE_NAME,
-            COALESCE(OLD.id, NEW.id),
+            rec_id,
             TG_OP,
             usuario_atual,
             to_jsonb(OLD),
             to_jsonb(NEW)
         );
         RETURN NEW;
-
     ELSIF TG_OP = 'DELETE' THEN
+        IF pk_col IS NOT NULL THEN
+            EXECUTE format('SELECT ($1).%I::text', pk_col) INTO rec_id USING OLD;
+        END IF;
         INSERT INTO logs(
             tabela_nome,
             record_id,
@@ -42,7 +56,7 @@ BEGIN
             novo_dado
         ) VALUES (
             TG_TABLE_NAME,
-            OLD.id,
+            rec_id,
             TG_OP,
             usuario_atual,
             to_jsonb(OLD),

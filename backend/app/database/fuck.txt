@@ -1,0 +1,415 @@
+
+-- FILE: ./1 - tables/01 usuarios.sql
+
+CREATE TABLE usuarios (
+    usuario_id SERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    nome_completo VARCHAR(255) NOT NULL,
+    senha_hash TEXT NOT NULL,
+    criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- END FILE: ./1 - tables/01 usuarios.sql
+
+-- FILE: ./1 - tables/02 comercios.sql
+
+CREATE TABLE comercios (
+    comercio_id SERIAL PRIMARY KEY,
+    proprietario_id INTEGER NOT NULL REFERENCES usuarios(usuario_id),
+    nome VARCHAR(255) NOT NULL UNIQUE,
+    criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW();
+
+    ENABLE ROW LEVEL SECURITY;
+)
+
+-- END FILE: ./1 - tables/02 comercios.sql
+
+-- FILE: ./1 - tables/03 comercios_usuarios.sql
+
+CREATE TABLE comercios_usuarios (
+    id SERIAL PRIMARY KEY,
+    comercio_id INTEGER NOT NULL REFERENCES comercios(comercio_id) ON DELETE CASCADE,
+    usuario_id INTEGER NOT NULL REFERENCES usuarios(usuario_id) ON DELETE CASCADE,
+    permissao VARCHAR(50) IN ('operador', 'membro') NOT NULL,
+    entrou_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT uq_comercio_usuario UNIQUE (comercio_id, usuario_id);
+
+    ENABLE ROW LEVEL SECURITY;
+);
+
+-- END FILE: ./1 - tables/03 comercios_usuarios.sql
+
+-- FILE: ./1 - tables/04 logs.sql
+
+CREATE TABLE logs (
+    log_id              SERIAL PRIMARY KEY,
+    tabela_nome      VARCHAR(100)    NOT NULL,
+    record_id       INTEGER         NOT NULL,
+    operacao       VARCHAR(10)     NOT NULL,
+    alterado_por      INTEGER         REFERENCES usuarios(usuario_id),
+    alterado_em      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    antigo_dado       JSONB,
+    novo_dado        JSONB
+);
+
+-- END FILE: ./1 - tables/04 logs.sql
+
+-- FILE: ./1 - tables/05 categorias.sql
+
+CREATE TABLE IF NOT EXISTS categorias (
+    categoria_id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL UNIQUE,
+
+    comercio_id INTEGER NOT NULL REFERENCES comercios(comercio_id) ON DELETE CASCADE;
+    
+    ENABLE ROW LEVEL SECURITY
+);
+
+
+-- END FILE: ./1 - tables/05 categorias.sql
+
+-- FILE: ./1 - tables/06 unidade_medidas.sql
+
+CREATE TABLE IF NOT EXISTS unidade_medidas (
+    unimed_id SERIAL PRIMARY KEY,
+    nome VARCHAR(50) NOT NULL,
+    sigla VARCHAR(10) NOT NULL UNIQUE,
+
+    comercio_id INTEGER NOT NULL REFERENCES comercios(comercio_id) ON DELETE CASCADE;
+    
+    ENABLE ROW LEVEL SECURITY
+);
+
+
+
+-- END FILE: ./1 - tables/06 unidade_medidas.sql
+
+-- FILE: ./1 - tables/07 fornecedores.sql
+
+CREATE TABLE IF NOT EXISTS fornecedores (
+    fornecedor_id SERIAL PRIMARY KEY,
+    nome VARCHAR(150) NOT NULL,
+    cnpj VARCHAR(18) UNIQUE,
+    telefone VARCHAR(20),
+    email VARCHAR(100),
+    criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    comercio_id INTEGER NOT NULL REFERENCES comercios(comercio_id) ON DELETE CASCADE;
+    
+    ENABLE ROW LEVEL SECURITY
+);
+
+-- END FILE: ./1 - tables/07 fornecedores.sql
+
+-- FILE: ./1 - tables/08 produtos.sql
+
+CREATE TABLE IF NOT EXISTS produtos (
+    produto_id SERIAL PRIMARY KEY,
+    codigo VARCHAR(50) NOT NULL UNIQUE,
+    nome VARCHAR(150) NOT NULL,
+    preco NUMERIC(10, 2) NOT NULL,
+    quantidade_estoque INT NOT NULL DEFAULT 0,
+
+    unimed_id INT NOT NULL REFRENCES unidade_medidas(unimed_id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    categoria_id INT NOT NULL REFRENCES categorias(categoria_id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    fornecedor_id INT NOT NULL REFRENCES fornecedores(fornecedor_id) ON DELETE RESTRICT ON UPDATE CASCADE,
+
+	criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    ENABLE ROW LEVEL SECURITY
+);
+
+
+
+-- END FILE: ./1 - tables/08 produtos.sql
+
+-- FILE: ./1 - tables/09 convites.sql
+
+CREATE TABLE convites (
+    id SERIAL PRIMARY KEY,
+    id_comercio INTEGER NOT NULL REFERENCES comercios(comercio_id),
+    link VARCHAR(16) NOT NULL UNIQUE,
+    criado_em TIMESTAMPTZ DEFAULT NOW(),
+    atualizado_em TIMESTAMPTZ DEFAULT NOW()
+);
+
+
+-- END FILE: ./1 - tables/09 convites.sql
+
+-- FILE: ./2 - others/50 functions.sql
+
+CREATE OR REPLACE FUNCTION app_usuario_id() RETURNS integer AS $$
+  SELECT (current_setting('app.usuario_id', true))::int;
+$$ LANGUAGE sql STABLE;
+
+CREATE OR REPLACE FUNCTION fn_set_timestamp() RETURNS trigger AS $$
+BEGIN
+    NEW.atualizado_em := NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION fn_log_alteracoes() RETURNS trigger AS $$
+DECLARE
+    usuario_atual INTEGER := COALESCE(app_usuario_id(), 0);
+BEGIN
+    IF TG_OP = 'UPDATE' THEN
+        INSERT INTO logs(
+            tabela_nome,
+            record_id,
+            operacao,
+            alterado_por,
+            antigo_dado,
+            novo_dado
+        ) VALUES (
+            TG_TABLE_NAME,
+            COALESCE(OLD.id, NEW.id),
+            TG_OP,
+            usuario_atual,
+            to_jsonb(OLD),
+            to_jsonb(NEW)
+        );
+        RETURN NEW;
+
+    ELSIF TG_OP = 'DELETE' THEN
+        INSERT INTO logs(
+            tabela_nome,
+            record_id,
+            operacao,
+            alterado_por,
+            antigo_dado,
+            novo_dado
+        ) VALUES (
+            TG_TABLE_NAME,
+            OLD.id,
+            TG_OP,
+            usuario_atual,
+            to_jsonb(OLD),
+            NULL
+        );
+        RETURN OLD;
+    ELSE
+        RETURN NEW;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- END FILE: ./2 - others/50 functions.sql
+
+-- FILE: ./2 - others/51 triggers.sql
+
+-- Triggers de timestamp automático
+CREATE TRIGGER trg_set_timestamp_usuarios
+BEFORE UPDATE ON usuarios
+FOR EACH ROW EXECUTE FUNCTION fn_set_timestamp();
+
+CREATE TRIGGER trg_set_timestamp_comercios
+BEFORE UPDATE ON comercios
+FOR EACH ROW EXECUTE FUNCTION fn_set_timestamp();
+
+CREATE TRIGGER trg_set_timestamp_convites
+BEFORE UPDATE ON convites
+FOR EACH ROW EXECUTE FUNCTION fn_set_timestamp();
+
+-- Triggers de log de alterações
+CREATE TRIGGER trg_log_usuarios
+AFTER UPDATE OR DELETE ON usuarios
+FOR EACH ROW EXECUTE FUNCTION fn_log_alteracoes();
+
+CREATE TRIGGER trg_log_comercios
+AFTER UPDATE OR DELETE ON comercios
+FOR EACH ROW EXECUTE FUNCTION fn_log_alteracoes();
+
+CREATE TRIGGER trg_log_convites
+AFTER UPDATE OR DELETE ON convites
+FOR EACH ROW EXECUTE FUNCTION fn_log_alteracoes();
+
+-- crud
+CREATE TRIGGER trg_fornecedor_changes
+AFTER UPDATE OR DELETE ON fornecedores
+FOR EACH ROW EXECUTE FUNCTION fn_log_alteracoes();
+
+CREATE TRIGGER trg_produto_changes
+AFTER UPDATE OR DELETE ON produtos
+FOR EACH ROW EXECUTE FUNCTION fn_log_alteracoes();
+
+-- END FILE: ./2 - others/51 triggers.sql
+
+-- FILE: ./2 - others/52 policy_comercio.sql
+
+-- Comercios
+  -- SELECT (read)
+  CREATE POLICY comercios_select ON comercios
+    FOR SELECT
+    USING (
+      proprietario_id = app_usuario_id()
+      OR EXISTS (
+        SELECT 1 FROM comercios_usuarios cu 
+        WHERE cu.comercio_id = comercios.comercio_id 
+          AND cu.usuario_id = app_usuario_id()
+      )
+    );
+
+  -- UPDATE (read + check)
+  CREATE POLICY comercios_update ON comercios
+    FOR UPDATE
+    USING (
+      proprietario_id = app_usuario_id()
+      OR EXISTS (
+        SELECT 1 FROM comercios_usuarios cu 
+        WHERE cu.comercio_id = comercios.comercio_id 
+          AND cu.usuario_id = app_usuario_id()
+          AND cu.permissao IN ('operador')
+      )
+    )
+    WITH CHECK (
+      proprietario_id = app_usuario_id()
+      OR EXISTS (
+        SELECT 1 FROM comercios_usuarios cu 
+        WHERE cu.comercio_id = comercios.comercio_id 
+          AND cu.usuario_id = app_usuario_id()
+          AND cu.permissao IN ('operador')
+      )
+    );
+
+  -- INSERT
+  CREATE POLICY comercios_insert ON comercios
+    FOR INSERT
+    WITH CHECK (proprietario_id = app_usuario_id());
+
+
+-- END FILE: ./2 - others/52 policy_comercio.sql
+
+-- FILE: ./2 - others/53 policy_comercios_usuarios copy.sql
+
+-- SELECT: usuário vê só suas linhas, e admins do comércio veem as linhas daquele comércio
+CREATE POLICY comercios_usuarios_select ON comercios_usuarios
+  FOR SELECT
+  USING (
+    usuario_id = app_usuario_id()
+    OR EXISTS (
+      SELECT 1 FROM comercios_usuarios cu2
+      WHERE cu2.comercio_id = comercios_usuarios.comercio_id
+        AND cu2.usuario_id = app_usuario_id()
+        AND cu2.permissao IN ('operador')
+    )
+  );
+
+-- INSERT/UPDATE/DELETE: só admins/owner do comercio
+CREATE POLICY comercios_usuarios_manage ON comercios_usuarios
+  FOR ALL
+  USING (
+    EXISTS (
+      SELECT 1 FROM comercios_usuarios cu2
+      WHERE cu2.comercio_id = comercios_usuarios.comercio_id
+        AND cu2.usuario_id = app_usuario_id()
+        AND cu2.permissao = 'operador'
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM comercios_usuarios cu2
+      WHERE cu2.comercio_id = comercios_usuarios.comercio_id
+        AND cu2.usuario_id = app_usuario_id()
+        AND cu2.permissao = 'operador'
+    )
+  );
+
+
+-- END FILE: ./2 - others/53 policy_comercios_usuarios copy.sql
+
+-- FILE: ./2 - others/54 policy_produtos.sql
+
+-- Update: colocar em configurações níveis de permissões de membros
+CREATE POLICY produtos_select ON produtos
+  FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM comercios_usuarios cu
+      WHERE cu.comercio_id = produtos.comercio_id
+        AND cu.usuario_id = app_current_user_id()
+    )
+  );
+
+CREATE POLICY produtos_update ON produtos
+  FOR UPDATE
+  USING (
+    EXISTS (
+      SELECT 1 FROM comercios_usuarios cu
+      WHERE cu.comercio_id = produtos.comercio_id
+        AND cu.usuario_id = app_current_user_id()
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM comercios_usuarios cu
+      WHERE cu.comercio_id = products.comercio_id
+        AND cu.usuario_id = app_current_user_id()
+    )
+  );
+
+CREATE POLICY produtos_insert ON produtos
+  FOR INSERT
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM comercios_usuarios cu
+      WHERE cu.comercio_id = produtos.comercio_id
+        AND cu.usuario_id = app_current_user_id()
+    )
+  );
+
+
+-- END FILE: ./2 - others/54 policy_produtos.sql
+
+-- FILE: ./2 - others/55 policy_convites.sql
+
+CREATE POLICY convites_select ON convites
+  FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM comercios_usuarios cu
+      WHERE cu.comercio_id = convites.id_negocio
+        AND cu.usuario_id = app_usuario_id()
+    )
+  );
+
+CREATE POLICY convites_insert ON convites
+  FOR INSERT
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM comercios_usuarios cu
+      WHERE cu.comercio_id = convites.id_negocio
+        AND cu.usuario_id = app_usuario_id()
+        AND cu.permissao IN ('operador')
+    )
+  );
+
+
+-- END FILE: ./2 - others/55 policy_convites.sql
+
+-- FILE: ./2 - others/56 policy_logs.sql
+
+-- Permitimos inserir logs (triggers do app normalmente escrevem com alterado_por = app_usuario_id())
+CREATE POLICY logs_insert ON logs FOR INSERT
+  WITH CHECK (alterado_por = app_usuario_id());
+
+-- SELECT: só admins globais (por exemplo, usuários listados em uma role ou condição)
+CREATE POLICY logs_select ON logs FOR SELECT
+  USING (
+    -- exemplo: só proprietarios de comercios ou se o usuário é super admin (você define a condição)
+    EXISTS (
+      SELECT 1 FROM comercios c
+      WHERE c.proprietario_id = app_usuario_id()
+      AND c.comercio_id = logs.tabela_nome::int -- somente se tabela for comercio: exemplo apenas ilustrativo
+    )
+    -- adapte essa expressão à sua realidade; você pode ter uma tabela de admins globais
+  );
+
+
+-- END FILE: ./2 - others/56 policy_logs.sql

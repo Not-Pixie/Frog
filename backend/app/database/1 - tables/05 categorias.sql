@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS categorias (
     categoria_id SERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL UNIQUE,
 
-    comercio_id INTEGER NOT NULL REFERENCES comercios(comercio_id) ON DELETE CASCADE;
-    
-    ENABLE ROW LEVEL SECURITY
+    comercio_id INTEGER NOT NULL REFERENCES comercios(comercio_id) ON DELETE CASCADE
 );
+
+ALTER TABLE IF EXISTS categorias ENABLE ROW LEVEL SECURITY;
