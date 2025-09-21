@@ -1,7 +1,7 @@
 import axios from "axios";
 import * as authServices from "./auth/authServices"
 
-const baseUrl = import.meta.env.ViTE_API_URL || "http://localhost:3001";
+const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
 const timeout = Number(import.meta.env.VITE_API_TIMEOUT || 5000);
 
 const api = axios.create(

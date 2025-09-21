@@ -21,12 +21,21 @@ app.url_map.strict_slashes = False
 app.register_blueprint(comercio_bp)
 
 
-CORS(app,
+CORS(
+    app,
      origins=["http://localhost:5173"],
      supports_credentials=True,
+     methods=["GET","POST","PUT","DELETE","OPTIONS"],
      resources={r"/*": {"origins": "http://localhost:5173"}},
      allow_headers=["Content-Type", "Authorization", "Access-Control-Allow-Origin"],
-     Secure=True)
+     Secure=True
+     )
+
+print("=== Rotas registradas (app.url_map) ===")
+for rule in app.url_map.iter_rules():
+    print(rule, "methods=", sorted(rule.methods), "->", rule.endpoint)
+print("=== fim rotas ===")
+
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 3001))
