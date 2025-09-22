@@ -1,57 +1,83 @@
 // src/components/PopUp/PopUpComercio.tsx
 import React, { useState } from "react";
-import api from "../../api/axios";
+import api from "../../api/axios"; // ajuste se necessário
 import axios from "axios";
 import Input from "../Input"; // ajuste o path se necessário
+
+import { z } from "zod";
+import { useForm, type Resolver, type SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export type Company = {
   id?: string | number;
   nome: string;
-  email?: string;
   configs?: {
     campo1?: string;
-    campo2?: string;
-    campo3?: string;
     campo4?: string;
   };
   [k: string]: any;
 };
 
-// Props atualizados: removido authToken (autenticação via api/interceptors)
+// schema zod
+const companySchema = z.object({
+  nome: z
+    .string()
+    .min(1, "Nome é obrigatório.")
+    .transform((s) => s.trim()),
+  configs: z
+    .object({
+      campo1: z.preprocess(
+        (v) => (typeof v === "string" ? v.trim() || undefined : v),
+        z.string().optional()
+      ),
+      campo4: z.preprocess(
+        (v) => (typeof v === "string" ? v.trim() || undefined : v),
+        z.string().optional()
+      ),
+    })
+    .optional(),
+});
+
+type FormValues = z.infer<typeof companySchema>;
+
 interface Props {
   isOpen: boolean;
   onClose?: () => void;
   onCreated?: (c: Company) => void;
 }
 
-/**
- * Pop-up com 2 telas (step flow).
- * - Step 1: Nome (obrigatório) + email (opcional) + botão Next
- * - Step 2: 4 textboxes opcionais (configs) + Back + Create
- */
 export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props) {
   const [step, setStep] = useState<1 | 2>(1);
-  const [nome, setNome] = useState("");
-  const [email, setEmail] = useState("");
-  const [campo1, setCampo1] = useState("");
-  const [campo2, setCampo2] = useState("");
-  const [campo3, setCampo3] = useState("");
-  const [campo4, setCampo4] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // ====== fix de tipagem: cast do resolver para o tipo esperado ======
+  const resolver = zodResolver(companySchema) as unknown as Resolver<FormValues>;
+
+  const {
+    register,
+    handleSubmit,
+    trigger,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({
+    resolver,
+    defaultValues: {
+      nome: "",
+      configs: {
+        campo1: undefined,
+        campo4: undefined,
+      },
+    },
+  });
 
   if (!isOpen) return null;
 
   function resetAll() {
     setStep(1);
-    setNome("");
-    setEmail("");
-    setCampo1("");
-    setCampo2("");
-    setCampo3("");
-    setCampo4("");
     setError(null);
     setLoading(false);
+    reset();
   }
 
   function handleCancel() {
@@ -67,13 +93,13 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
     e.stopPropagation();
   }
 
-  function handleNext(e?: React.FormEvent) {
+  // valida apenas o campo 'nome' antes de avançar
+  async function handleNext(e?: React.FormEvent) {
     e?.preventDefault();
     setError(null);
-    if (!nome.trim()) {
-      setError("Nome é obrigatório para continuar.");
-      return;
-    }
+
+    const ok = await trigger("nome");
+    if (!ok) return;
     setStep(2);
   }
 
@@ -82,11 +108,11 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
     setStep(1);
   }
 
-  async function handleCreate(e: React.FormEvent) {
-    e.preventDefault();
+  // ====== onSubmit tipado corretamente para evitar incompatibilidade ======
+  const onSubmit: SubmitHandler<FormValues> = async (values) => {
     setError(null);
 
-    if (!nome.trim()) {
+    if (!values.nome || !values.nome.trim()) {
       setError("Nome é obrigatório.");
       setStep(1);
       return;
@@ -95,42 +121,35 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
     setLoading(true);
 
     const payload = {
-      nome: nome.trim(),
-      email: email.trim() || undefined,
+      nome: values.nome,
       configs: {
-        campo1: campo1.trim() || undefined,
-        campo2: campo2.trim() || undefined,
-        campo3: campo3.trim() || undefined,
-        campo4: campo4.trim() || undefined,
+        campo1: values.configs?.campo1,
+        campo4: values.configs?.campo4,
       },
     };
 
     try {
-      // usa a instância axios (api) com interceptors do seu segundo arquivo
       const res = await api.post("/api/comercios", payload);
       const data = res.data;
 
       onCreated?.({
         id: data.comercio_id ?? data.id ?? `temp-${Date.now()}`,
-        nome: data.nome ?? nome.trim(),
+        nome: data.nome ?? values.nome,
         ...data,
       });
 
       resetAll();
       onClose?.();
     } catch (err: any) {
-      // axios-specific handling
       if (axios.isAxiosError(err)) {
         const status = err.response?.status;
         const body = err.response?.data;
 
         if (status === 409) {
-          // backend pode retornar { msg: '...' } ou outra forma
           setError(body?.msg ?? body?.message ?? "Nome de comércio já existe.");
         } else if (err.code === "ECONNABORTED") {
           setError("Tempo de conexão esgotado. Verifique o backend.");
         } else if (status) {
-          // tenta extrair texto/erro
           setError(body?.msg ?? body?.message ?? `Erro ${status}`);
         } else {
           setError(err.message ?? "Erro ao criar comércio.");
@@ -143,9 +162,9 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  // container da area scrollável (para os 4 textboxes)
+  // estilos (inline para manter compatibilidade)
   const scrollAreaStyle: React.CSSProperties = {
     maxHeight: 220,
     overflowY: "auto",
@@ -155,7 +174,6 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
     gap: 10,
   };
 
-  // botões estilo mínimo (visual será controlado pelo CSS que você já tem)
   const btnStyle: React.CSSProperties = {
     padding: "8px 12px",
     borderRadius: 8,
@@ -167,38 +185,32 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
   return (
     <div role="dialog" aria-modal="true" onClick={handleOverlayClick} className="popup-overlay">
       <div onClick={handleInnerClick} className="popup-container">
-        <h3 style={{ margin: 0, marginBottom: 8 }}>{step === 1 ? "Dê um nome para seu comércio!" : "Configure seu comércio"}</h3>
+        <h3 style={{ margin: 0, marginBottom: 8 }}>
+          {step === 1 ? "Dê um nome para seu comércio!" : "Configure seu comércio"}
+        </h3>
 
         {step === 1 && (
           <form onSubmit={handleNext}>
             <Input
-              label={`Nome ${"*"}`}
+              label={`Nome`}
               id="company-nome"
               type="text"
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              autoFocus
               placeholder="Nome do comércio"
-              // você pode customizar classes: labelClassName / inputClassName / wrapperClassName
+              {...register("nome")}
             />
+            {errors.nome?.message && (
+              <p className="text-red-600 mt-2 text-sm">{String(errors.nome.message)}</p>
+            )}
 
-            <Input
-              label="Email (opcional)"
-              id="company-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="email@exemplo.com"
-            />
 
-            {error && <div className="modal-error" style={{ marginTop: 8 }}>{error}</div>}
+            {error && <div className="text-red-600 mt-2 text-sm">{error}</div>}
 
             <div className="modal-actions" style={{ marginTop: 12 }}>
               <button
                 type="button"
                 onClick={handleCancel}
                 style={{ ...btnStyle, background: "#f0f0f0", color: "#222" }}
-                disabled={loading}
+                disabled={loading || isSubmitting}
               >
                 Cancelar
               </button>
@@ -206,7 +218,7 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
               <button
                 type="submit"
                 style={{ ...btnStyle, background: "rgba(53,172,151,1)", color: "#fff" }}
-                disabled={loading}
+                disabled={loading || isSubmitting}
               >
                 Próximo
               </button>
@@ -215,54 +227,40 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
         )}
 
         {step === 2 && (
-          <form onSubmit={handleCreate}>
-            {/* Scroll area para manter o modal do mesmo tamanho */}
-            <div style={scrollAreaStyle}>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <div>
+              {/* Para campos aninhados, use string literal como 'configs.campo1' */}
               <Input
-                label="Campo opcional 1"
+                label="Unidade de medida padrão"
                 id="company-campo1"
                 type="text"
-                value={campo1}
-                onChange={(e) => setCampo1(e.target.value)}
-                placeholder="Campo 1"
+                placeholder="Uni"
+                {...register("configs.campo1" as const)}
               />
+              {errors.configs?.campo1?.message && (
+                <p className="text-red-600 mt-2 text-sm">{String(errors.configs?.campo1?.message)}</p>
+              )}
 
               <Input
-                label="Campo opcional 2"
-                id="company-campo2"
-                type="text"
-                value={campo2}
-                onChange={(e) => setCampo2(e.target.value)}
-                placeholder="Campo 2"
-              />
-
-              <Input
-                label="Campo opcional 3"
-                id="company-campo3"
-                type="text"
-                value={campo3}
-                onChange={(e) => setCampo3(e.target.value)}
-                placeholder="Campo 3"
-              />
-
-              <Input
-                label="Campo opcional 4"
+                label="Limite mínimo de estoque padrão"
                 id="company-campo4"
                 type="text"
-                value={campo4}
-                onChange={(e) => setCampo4(e.target.value)}
-                placeholder="Campo 4"
+                placeholder="50"
+                {...register("configs.campo4" as const)}
               />
+              {errors.configs?.campo4?.message && (
+                <p className="text-red-600 mt-2 text-sm">{String(errors.configs?.campo4?.message)}</p>
+              )}
             </div>
 
-            {error && <div className="modal-error" style={{ marginTop: 8 }}>{error}</div>}
+            {error && <div className="text-red-600 mt-2 text-sm">{error}</div>}
 
             <div className="modal-actions" style={{ marginTop: 12 }}>
               <button
                 type="button"
                 onClick={handleBack}
                 style={{ ...btnStyle, background: "#f0f0f0", color: "#222" }}
-                disabled={loading}
+                disabled={loading || isSubmitting}
               >
                 Voltar
               </button>
@@ -270,9 +268,9 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
               <button
                 type="submit"
                 style={{ ...btnStyle, background: "rgba(53,172,151,1)", color: "#fff" }}
-                disabled={loading}
+                disabled={loading || isSubmitting}
               >
-                {loading ? "Criando..." : "Criar"}
+                {loading || isSubmitting ? "Criando..." : "Criar"}
               </button>
             </div>
           </form>
