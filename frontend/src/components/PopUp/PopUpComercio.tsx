@@ -1,5 +1,6 @@
-// src/components/Input/PopUpComercio.tsx
 import React, { useState } from "react";
+import api from "../../api/axios"
+import axios from "axios";
 
 export type Company = {
   id?: string | number;
@@ -14,24 +15,19 @@ export type Company = {
   [k: string]: any;
 };
 
-// adicione no topo do arquivo Props:
+// Props atualizados: removido authToken (autenticação via api/interceptors)
 interface Props {
   isOpen: boolean;
   onClose?: () => void;
   onCreated?: (c: Company) => void;
-  authToken?: string; // novo prop opcional
 }
-
 
 /**
  * Pop-up com 2 telas (step flow).
  * - Step 1: Nome (obrigatório) + email (opcional) + botão Next
  * - Step 2: 4 textboxes opcionais (configs) + Back + Create
- *
- * Mantém tamanho fixo controlado pelo CSS externo (role="dialog" > div).
- * A área dos textboxes tem scroll se necessário.
  */
-export default function PopupCreateCompany({ isOpen, onClose, onCreated, authToken }: Props) {
+export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props) {
   const [step, setStep] = useState<1 | 2>(1);
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
@@ -84,84 +80,68 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated, authTok
     setStep(1);
   }
 
-async function handleCreate(e: React.FormEvent) {
-  e.preventDefault();
-  setError(null);
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
 
-  if (!nome.trim()) {
-    setError("Nome é obrigatório.");
-    setStep(1);
-    return;
-  }
+    if (!nome.trim()) {
+      setError("Nome é obrigatório.");
+      setStep(1);
+      return;
+    }
 
-  setLoading(true);
+    setLoading(true);
 
-  const API_URL = (import.meta.env.VITE_API_URL ?? "http://localhost:3001") as string;
-  const TIMEOUT = Number(import.meta.env.VITE_API_TIMEOUT ?? 6000);
+    const payload = {
+      nome: nome.trim(),
+      email: email.trim() || undefined,
+      configs: {
+        campo1: campo1.trim() || undefined,
+        campo2: campo2.trim() || undefined,
+        campo3: campo3.trim() || undefined,
+        campo4: campo4.trim() || undefined,
+      },
+    };
 
-  const payload = {
-    nome: nome.trim(),
-    email: email.trim() || undefined,
-    configs: {
-      campo1: campo1.trim() || undefined,
-      campo2: campo2.trim() || undefined,
-      campo3: campo3.trim() || undefined,
-      campo4: campo4.trim() || undefined,
-    },
-  };
+    try {
+      // usa a instância axios (api) com interceptors do seu segundo arquivo
+      const res = await api.post("/api/comercios", payload);
+      const data = res.data;
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT);
+      onCreated?.({
+        id: data.comercio_id ?? data.id ?? `temp-${Date.now()}`,
+        nome: data.nome ?? nome.trim(),
+        ...data,
+      });
 
-  try {
-      const headers: Record<string,string> = { "Content-Type": "application/json" };
-      if (authToken) {
-        headers["Authorization"] = `Bearer ${authToken}`;
+      resetAll();
+      onClose?.();
+    } catch (err: any) {
+      // axios-specific handling
+      if (axios.isAxiosError(err)) {
+        const status = err.response?.status;
+        const body = err.response?.data;
+
+        if (status === 409) {
+          // backend pode retornar { msg: '...' } ou outra forma
+          setError(body?.msg ?? body?.message ?? "Nome de comércio já existe.");
+        } else if (err.code === "ECONNABORTED") {
+          setError("Tempo de conexão esgotado. Verifique o backend.");
+        } else if (status) {
+          // tenta extrair texto/erro
+          setError(body?.msg ?? body?.message ?? `Erro ${status}`);
+        } else {
+          setError(err.message ?? "Erro ao criar comércio.");
+        }
+      } else {
+        setError(err?.message ?? "Erro ao criar comércio.");
       }
 
-
-    const res = await fetch(`${API_URL}/api/comercios`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(payload),
-      signal: controller.signal,
-    });
-
-    clearTimeout(timer);
-
-    if (res.status === 409) {
-      const body = await res.json().catch(() => ({}));
-      throw new Error(body.msg ?? "Nome de comércio já existe.");
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-
-    if (!res.ok) {
-      const txt = await res.text().catch(()=>null);
-      throw new Error(txt || `Erro ${res.status}`);
-    }
-
-    const data = await res.json();
-    // data deve conter comercio_id e nome pelo backend (veja o route)
-    onCreated?.({
-      id: data.comercio_id ?? data.id ?? "temp-"+Date.now(),
-      nome: data.nome ?? nome.trim(),
-      ...data,
-    });
-    // reset & fechar
-    resetAll();
-    onClose?.();
-  } catch (err: any) {
-    if (err.name === "AbortError") {
-      setError("Tempo de conexão esgotado. Verifique o backend.");
-    } else {
-      setError(err.message ?? "Erro ao criar comércio.");
-    }
-    console.error(err);
-  } finally {
-    clearTimeout(timer);
-    setLoading(false);
   }
-}
-
 
   // container da area scrollável (para os 4 textboxes)
   const scrollAreaStyle: React.CSSProperties = {
@@ -195,14 +175,6 @@ async function handleCreate(e: React.FormEvent) {
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
                 autoFocus
-              />
-            </label>
-
-            <label style={{ display: "block", marginTop: 8 }}>
-              Email do dono (opcional)
-              <input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
               />
             </label>
 

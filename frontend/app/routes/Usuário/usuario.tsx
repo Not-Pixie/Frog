@@ -3,9 +3,9 @@ import PublicRoute from "src/api/auth/PublicRoute";
 import ProtectedRoute from "src/api/auth/ProtectedRoute"; 
 import "./usuario.css";
 import { useAuth } from "src/api/auth/AuthProvider";
-import CommerceCard from "src/components/CommerceCard";
-import PopupCreateCompany from "src/components/Input/PopUpComercio";
-import type { Company } from "src/components/Input/PopUpComercio";
+import CommerceCard from "src/components/PopUp";
+import PopupCreateCompany from "src/components/PopUp/PopUpComercio";
+import type { Company } from "src/components/PopUp/PopUpComercio";
 
 function Usuario() {
   const { user, token } = useAuth();
