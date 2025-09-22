@@ -1,8 +1,9 @@
 // src/components/PopUp/PopUpComercio.tsx
 import React, { useState } from "react";
-import api from "../../api/axios"; // ajuste se necessário
+import api from "../../../../src/api/axios"; // ajuste se necessário
 import axios from "axios";
-import Input from "../Input"; // ajuste o path se necessário
+import Input from "../../../../src/components/Input"; // ajuste o path se necessário
+import PopUp from "../../../../src/components/PopUp";
 
 import { z } from "zod";
 import { useForm, type Resolver, type SubmitHandler } from "react-hook-form";
@@ -83,14 +84,6 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
   function handleCancel() {
     resetAll();
     onClose?.();
-  }
-
-  function handleOverlayClick() {
-    handleCancel();
-  }
-
-  function handleInnerClick(e: React.MouseEvent) {
-    e.stopPropagation();
   }
 
   // valida apenas o campo 'nome' antes de avançar
@@ -183,99 +176,103 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
   };
 
   return (
-    <div role="dialog" aria-modal="true" onClick={handleOverlayClick} className="popup-overlay">
-      <div onClick={handleInnerClick} className="popup-container">
-        <h3 style={{ margin: 0, marginBottom: 8 }}>
-          {step === 1 ? "Dê um nome para seu comércio!" : "Configure seu comércio"}
-        </h3>
+    <PopUp
+      isOpen={isOpen}
+      onClose={handleCancel}
+      ariaLabel="Criar comércio"
+      containerClassName="popup-container"
+      className="popup-content"
+      showCloseButton={false}
+    >
+      <h3 style={{ margin: 0, marginBottom: 8 }}>
+        {step === 1 ? "Dê um nome para seu comércio!" : "Configure seu comércio"}
+      </h3>
 
-        {step === 1 && (
-          <form onSubmit={handleNext}>
+      {step === 1 && (
+        <form onSubmit={handleNext}>
+          <Input
+            label={`Nome`}
+            id="company-nome"
+            type="text"
+            placeholder="Nome do comércio"
+            {...register("nome")}
+          />
+          {errors.nome?.message && (
+            <p className="text-red-600 mt-2 text-sm">{String(errors.nome.message)}</p>
+          )}
+
+          {error && <div className="text-red-600 mt-2 text-sm">{error}</div>}
+
+          <div className="modal-actions" style={{ marginTop: 12 }}>
+            <button
+              type="button"
+              onClick={handleCancel}
+              style={{ ...btnStyle, background: "#f0f0f0", color: "#222" }}
+              disabled={loading || isSubmitting}
+            >
+              Cancelar
+            </button>
+
+            <button
+              type="submit"
+              style={{ ...btnStyle, background: "rgba(53,172,151,1)", color: "#fff" }}
+              disabled={loading || isSubmitting}
+            >
+              Próximo
+            </button>
+          </div>
+        </form>
+      )}
+
+      {step === 2 && (
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div style={scrollAreaStyle}>
+            {/* Para campos aninhados, use string literal como 'configs.campo1' */}
             <Input
-              label={`Nome`}
-              id="company-nome"
+              label="Unidade de medida padrão"
+              id="company-campo1"
               type="text"
-              placeholder="Nome do comércio"
-              {...register("nome")}
+              placeholder="Uni"
+              {...register("configs.campo1" as const)}
             />
-            {errors.nome?.message && (
-              <p className="text-red-600 mt-2 text-sm">{String(errors.nome.message)}</p>
+            {errors.configs?.campo1?.message && (
+              <p className="text-red-600 mt-2 text-sm">{String(errors.configs?.campo1?.message)}</p>
             )}
 
+            <Input
+              label="Limite mínimo de estoque padrão"
+              id="company-campo4"
+              type="text"
+              placeholder="50"
+              {...register("configs.campo4" as const)}
+            />
+            {errors.configs?.campo4?.message && (
+              <p className="text-red-600 mt-2 text-sm">{String(errors.configs?.campo4?.message)}</p>
+            )}
+          </div>
 
-            {error && <div className="text-red-600 mt-2 text-sm">{error}</div>}
+          {error && <div className="text-red-600 mt-2 text-sm">{error}</div>}
 
-            <div className="modal-actions" style={{ marginTop: 12 }}>
-              <button
-                type="button"
-                onClick={handleCancel}
-                style={{ ...btnStyle, background: "#f0f0f0", color: "#222" }}
-                disabled={loading || isSubmitting}
-              >
-                Cancelar
-              </button>
+          <div className="modal-actions" style={{ marginTop: 12 }}>
+            <button
+              type="button"
+              onClick={handleBack}
+              style={{ ...btnStyle, background: "#f0f0f0", color: "#222" }}
+              disabled={loading || isSubmitting}
+            >
+              Voltar
+            </button>
 
-              <button
-                type="submit"
-                style={{ ...btnStyle, background: "rgba(53,172,151,1)", color: "#fff" }}
-                disabled={loading || isSubmitting}
-              >
-                Próximo
-              </button>
-            </div>
-          </form>
-        )}
-
-        {step === 2 && (
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <div>
-              {/* Para campos aninhados, use string literal como 'configs.campo1' */}
-              <Input
-                label="Unidade de medida padrão"
-                id="company-campo1"
-                type="text"
-                placeholder="Uni"
-                {...register("configs.campo1" as const)}
-              />
-              {errors.configs?.campo1?.message && (
-                <p className="text-red-600 mt-2 text-sm">{String(errors.configs?.campo1?.message)}</p>
-              )}
-
-              <Input
-                label="Limite mínimo de estoque padrão"
-                id="company-campo4"
-                type="text"
-                placeholder="50"
-                {...register("configs.campo4" as const)}
-              />
-              {errors.configs?.campo4?.message && (
-                <p className="text-red-600 mt-2 text-sm">{String(errors.configs?.campo4?.message)}</p>
-              )}
-            </div>
-
-            {error && <div className="text-red-600 mt-2 text-sm">{error}</div>}
-
-            <div className="modal-actions" style={{ marginTop: 12 }}>
-              <button
-                type="button"
-                onClick={handleBack}
-                style={{ ...btnStyle, background: "#f0f0f0", color: "#222" }}
-                disabled={loading || isSubmitting}
-              >
-                Voltar
-              </button>
-
-              <button
-                type="submit"
-                style={{ ...btnStyle, background: "rgba(53,172,151,1)", color: "#fff" }}
-                disabled={loading || isSubmitting}
-              >
-                {loading || isSubmitting ? "Criando..." : "Criar"}
-              </button>
-            </div>
-          </form>
-        )}
-      </div>
-    </div>
+            <button
+              type="submit"
+              style={{ ...btnStyle, background: "rgba(53,172,151,1)", color: "#fff" }}
+              disabled={loading || isSubmitting}
+            >
+              {loading || isSubmitting ? "Criando..." : "Criar"}
+            </button>
+          </div>
+        </form>
+      )}
+    </PopUp>
   );
 }

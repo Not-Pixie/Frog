@@ -7,7 +7,7 @@
   --card-min-width: 140px;
   --card-radius: 12px; /* menos "gordinho" -> mais quadrado */
   --card-accent: rgba(53,172,151,1);
-  --card-accent-weak: rgba(53,172,151,0.14);
+  --card-accent-weak: rgb(2, 119, 98);
   --card-transition: 180ms ease;
   --card-padding: 0.5rem;
 }
@@ -42,8 +42,9 @@
 
 /* foco / acessibilidade */
 .commerce-card:focus {
-  outline: 3px solid var(--card-accent-weak);
-  outline-offset: 6px;
+  outline: none;
+  color: var(--card-accent-weak);
+  border-color: var(--card-accent-weak);
 }
 
 /* CARD "ADD" (aparência da direita) */

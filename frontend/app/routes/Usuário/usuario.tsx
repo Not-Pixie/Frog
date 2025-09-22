@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import PublicRoute from "src/api/auth/PublicRoute"; 
 import "./usuario.css";
 import { useAuth } from "src/api/auth/AuthProvider";
-import CommerceCard from "src/components/PopUp";
-import PopupCreateCompany from "src/components/PopUp/PopUpComercio";
-import type { Company } from "src/components/PopUp/PopUpComercio";
+import CommerceCard from "src/components/CommerceCard";
+import PopupCreateCompany from "./variations/PopUpCreateCompany";
+import type { Company } from "./variations/PopUpCreateCompany";
 
 function Usuario() {
-  const { user, token } = useAuth();
+  const { user } = useAuth();
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
@@ -39,7 +39,7 @@ function Usuario() {
 
         <PopupCreateCompany
           isOpen={modalOpen}
-          onClose={() => setModalOpen(false)}
+          onClose={() => {setModalOpen(false);}}
           onCreated={(c: Company) => { console.log(c); setModalOpen(false); }}
         />
       </div>

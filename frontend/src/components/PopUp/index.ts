@@ -1,3 +1,2 @@
-import CommerceCard from "./CommerceCard";
-
-export default CommerceCard;
+import PopUp from "./PopUp";
+export default PopUp;
