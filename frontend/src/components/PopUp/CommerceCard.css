@@ -1,58 +1,72 @@
+:root{
+  /* variável principal que controla a largura (e, por aspect-ratio, a altura) */
+  --card-width: clamp(120px, 12vw, 180px);
+
+  /* customizáveis */
+  --card-max-width: 220px;
+  --card-min-width: 140px;
+  --card-radius: 12px; /* menos "gordinho" -> mais quadrado */
+  --card-accent: rgba(53,172,151,1);
+  --card-accent-weak: rgba(53,172,151,0.14);
+  --card-transition: 180ms ease;
+  --card-padding: 0.5rem;
+}
+
 /* Base do componente */
 .commerce-card {
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-sizing: border-box;
   cursor: pointer;
-  transition: transform 180ms ease, box-shadow 180ms ease;
+  transition: transform var(--card-transition), box-shadow var(--card-transition);
   background: transparent;
   border: none;
   padding: 0;
+  /* largura controlada por variável + mantém proporção quadrada */
+  width: var(--card-width);
+  max-width: var(--card-max-width);
+  min-width: var(--card-min-width);
+  aspect-ratio: 1 / 0.9
+  ; /* força formato quadrado */
+  /* altura automática a partir do aspect-ratio */
 }
 
-/* dimensões "gordinhas" -> aspecto mais quadrado e arredondado */
-.commerce-card {
-  width: 14.5vw;
-  max-width: 220px;
-  min-width: 140px;
-  height: 22vh;
-  max-height: 220px;
-  min-height: 140px;
-}
-
+/* estado clicado */
 .commerce-card.clicked {
-  background: rgba(53,172,151,1);
+  background: var(--card-accent);
   color: #fff;
-  border-color: rgba(53,172,151,1);
-  transition: all 0.35s ease;
+  border-color: var(--card-accent);
+  transition: all 350ms ease;
 }
 
 /* foco / acessibilidade */
 .commerce-card:focus {
-  outline: 3px solid rgba(53,172,151,0.14);
+  outline: 3px solid var(--card-accent-weak);
   outline-offset: 6px;
 }
 
 /* CARD "ADD" (aparência da direita) */
 .card-add {
   background: white;
-  border: 5px solid rgba(53,172,151,1);
-  color: rgba(53,172,151,1);
-  border-radius: 20px; /* mais gordinho */
+  border: 3px solid var(--card-accent);
+  color: var(--card-accent);
+  border-radius: var(--card-radius);
   position: relative;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--card-padding);
 }
 
 /* Hover leve */
-.card-add:hover {
+.card-add:hover,
+.card-filled:hover {
   transform: translateY(-6px);
   box-shadow: 0 12px 28px rgba(0,0,0,0.08);
 }
 
-/* símbolo + central (maior para parecer "gordinho") */
+/* símbolo + central */
 .card-add .plus-sign {
   font-size: clamp(28px, 4.5vw, 48px);
   line-height: 1;
@@ -67,9 +81,9 @@
 
 /* CARD preenchido (caso seja usado no futuro) */
 .card-filled {
-  background-color: rgba(53,172,151,1);
+  background-color: var(--card-accent);
   color: white;
-  border-radius: 20px;
+  border-radius: var(--card-radius);
   display:flex;
   align-items:center;
   justify-content:center;
@@ -78,11 +92,7 @@
   border: none;
 }
 
-.card-filled:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 28px rgba(0,0,0,0.10);
-}
-
+/* Conteúdo interno */
 .card-content {
   font-size: 1rem;
   text-align: center;
@@ -90,16 +100,19 @@
   user-select: none;
 }
 
-/* responsividade */
+/* Responsividade: sobrescreve a variável --card-width por breakpoint */
 @media (max-width: 1200px) {
-  .commerce-card { width: 20vw; height: 20vh; }
+  :root { --card-width: clamp(120px, 20vw, 200px); }
 }
 
 @media (max-width: 900px) {
-  .commerce-card { width: 22vw; height: 18vh; }
+  :root { --card-width: clamp(110px, 22vw, 180px); }
 }
 
 @media (max-width: 480px) {
-  .commerce-card { width: 28vw; height: 16vh; max-width: 160px; max-height: 150px; }
+  :root {
+    --card-width: clamp(100px, 28vw, 160px);
+    --card-radius: 10px;
+  }
   .card-add .plus-sign { font-size: 30px; }
 }

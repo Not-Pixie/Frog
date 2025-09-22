@@ -1,39 +1,94 @@
-* {
+:root{
+  /* layout geral */
+  --page-margin: 5%; /* margem da .user-page */
+  --viewport-width: 100vw;
+  --viewport-height: 100vh;
+  --font-stack: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  /* container / grid */
+  --commerce-grid-max-width: 900px;
+  --commerce-grid-width: min(var(--commerce-grid-max-width), 80vw);
+  --commerce-grid-gap-vertical: 9vh; /* gap entre linhas */
+  --commerce-grid-gap-vertical-sm: 7vh;
+  --commerce-grid-gap-vertical-xs: 5vh;
+  --commerce-row-gap: 6.5vw;  /* gap horizontal padrão entre cards */
+  --commerce-row-gap-top: var(--commerce-row-gap);
+  --commerce-row-gap-bottom: var(--commerce-row-gap);
+  --commerce-row-gap-mobile: 2vw; /* gap para telas pequenas (wrap) */
+
+  /* top/bottom row specific widths (se quiser controlar colunas) */
+  --commerce-row-max-width: 100%;
+
+  /* tipografia */
+  --title-font-family: "CocogooseRegular", var(--font-stack);
+  --title-color: rgba(53, 172, 151, 1);
+  --title-size: 2.5rem;
+  --subtitle-size: 1rem;
+  --text-color: #222;
+
+  /* modal/dialog */
+  --dialog-overlay-color: rgba(0,0,0,0.45);
+  --dialog-width: 420px;
+  --dialog-max-width-offset: 32px; /* used as calc(100% - var(--dialog-max-width-offset)) */
+  --dialog-padding: 20px;
+  --dialog-radius: 10px;
+  --dialog-shadow: 0 8px 28px rgba(0,0,0,0.25);
+
+  /* inputs / buttons */
+  --input-padding: 8px 10px;
+  --input-radius: 6px;
+  --button-padding: 8px 12px;
+  --button-radius: 8px;
+
+  /* cores / accents */
+  --accent-color: rgba(53,172,151,1);
+  --accent-weak: rgba(53,172,151,0.14);
+  --error-color: #b00020;
+
+  /* misc */
+  --global-gap-small: 12px;
+  --shadow-soft: 0 12px 28px rgba(0,0,0,0.08);
+}
+
+/* reset */
+*{
   margin: 0;
   box-sizing: border-box;
 }
 
 body {
-  width: 100vw;
-  height: 100vh;
+  width: var(--viewport-width);
+  height: var(--viewport-height);
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: var(--font-stack);
 }
 
+/* page wrapper */
 .user-page {
-  margin: 5%;
+  margin: var(--page-margin);
   min-height: 100%;
   width: 100%;
-  justify-content: center;
-  align-items: center;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .user-page_title {
-  font-family: "CocogooseRegular";
-  color: rgba(53, 172, 151, 1);
-  font-size: 2.5rem;
+  font-family: var(--title-font-family);
+  color: var(--title-color);
+  font-size: var(--title-size);
   text-align: center;
   margin-top: 8px;
 }
 
 .user-page_subtitle {
   margin-top: 1.5rem;
-  font-size: 1rem;
+  font-size: var(--subtitle-size);
   text-align: center;
-  color: #222;
+  color: var(--text-color);
 }
 
 header {
@@ -49,40 +104,46 @@ header {
 
 /* grid principal (controle de largura para manter espaçamento parecido com exemplo) */
 .commerce-grid {
-  width: min(900px, 80vw); /* centraliza e limita a largura para formar as colunas corretamente */
+  width: var(--commerce-grid-width);
   display: flex;
   flex-direction: column;
-  gap: 6.5vh; /* entre as linhas (distância vertical parecida com a imagem) */
+  gap: var(--commerce-grid-gap-vertical); /* entre as linhas (distância vertical) */
   align-items: center;
   margin-top: 6vh;
 }
 
-/* linha genérica */
+/* linha genérica - usa variáveis para gap horizontal (fácil de ajustar por linha) */
 .commerce-row {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 48px; /* espaçamento horizontal entre cards */
-  width: 100%;
+  gap: var(--commerce-row-gap);
+  width: var(--commerce-row-max-width);
 }
 
-/* top: 3 itens — já centralizados pelo justify-content */
+/* top / bottom rows: permitem sobrescrever a gap localmente */
 .commerce-row-top {
+  /* por padrão herda --commerce-row-gap, mas você pode definir: */
+  gap: var(--commerce-row-gap-top);
   justify-content: center;
 }
 
-/* bottom: 2 itens — centralizados e com mesma distância lateral */
 .commerce-row-bottom {
+  gap: var(--commerce-row-gap-bottom);
   justify-content: center;
 }
+
+/* Exemplo: se quiser alterar só a linha top, no CSS do container:
+   .some-section { --commerce-row-gap-top: 64px; }
+   ou inline em elemento <div class="commerce-row-top" style="--commerce-row-gap-top:24px">
+*/
 
 /* ---------------- POPUP (apenas CSS para o modal) ---------------- */
 /* Alvo: elemento com role="dialog" que o pop-up usa */
-
 [role="dialog"] {
   position: fixed !important;
   inset: 0 !important;
-  background: rgba(0,0,0,0.45) !important;
+  background: var(--dialog-overlay-color) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -91,13 +152,13 @@ header {
 
 /* card interno */
 [role="dialog"] > div {
-  width: 420px !important;
-  max-width: calc(100% - 32px) !important;
+  width: var(--dialog-width) !important;
+  max-width: calc(100% - var(--dialog-max-width-offset)) !important;
   background: #fff !important;
-  padding: 20px !important;
-  border-radius: 10px !important;
-  box-shadow: 0 8px 28px rgba(0,0,0,0.25) !important;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial !important;
+  padding: var(--dialog-padding) !important;
+  border-radius: var(--dialog-radius) !important;
+  box-shadow: var(--dialog-shadow) !important;
+  font-family: var(--font-stack) !important;
   color: #111 !important;
   box-sizing: border-box !important;
 }
@@ -112,7 +173,7 @@ header {
 [role="dialog"] form {
   display: flex !important;
   flex-direction: column !important;
-  gap: 12px !important;
+  gap: var(--global-gap-small) !important;
 }
 
 /* labels / inputs */
@@ -123,79 +184,12 @@ header {
 
 [role="dialog"] input {
   width: 100% !important;
-  padding: 8px 10px !important;
-  border-radius: 6px !important;
+  padding: var(--input-padding) !important;
+  border-radius: var(--input-radius) !important;
   border: 1px solid #ddd !important;
   margin-top: 6px !important;
   box-sizing: border-box !important;
   font-size: 0.95rem !important;
 }
 
-/* foco no input */
-[role="dialog"] input:focus {
-  outline: 2px solid rgba(53,172,151,0.18) !important;
-  outline-offset: 0 !important;
-}
-
-/* mensagem de erro (se existir) */
-[role="dialog"] .modal-error,
-[role="dialog"] .error {
-  color: #b00020 !important;
-  font-size: 0.95rem !important;
-  margin-top: 6px !important;
-}
-
-/* ações / botões */
-[role="dialog"] .modal-actions,
-[role="dialog"] .actions {
-  display: flex !important;
-  justify-content: flex-end !important;
-  gap: 10px !important;
-  margin-top: 12px !important;
-}
-
-/* botão genérico */
-[role="dialog"] button {
-  padding: 8px 12px !important;
-  border-radius: 8px !important;
-  border: none !important;
-  cursor: pointer !important;
-  font-weight: 600 !important;
-  font-size: 0.95rem !important;
-}
-
-/* botão cancelar (tipo button) */
-[role="dialog"] button[type="button"] {
-  background: #f0f0f0 !important;
-  color: #222 !important;
-}
-
-/* botão enviar/confirmar */
-[role="dialog"] button[type="submit"] {
-  background: rgba(53,172,151,1) !important;
-  color: #fff !important;
-}
-
-/* estado disabled */
-[role="dialog"] button:disabled {
-  opacity: 0.6 !important;
-  cursor: not-allowed !important;
-}
-
-/* responsividade: certificar que o modal cabe em telas pequenas */
-@media (max-width: 480px) {
-  [role="dialog"] > div { width: calc(100% - 24px) !important; padding: 14px !important; }
-  [role="dialog"] h3 { font-size: 1rem !important; }
-}
-
-/* responsividade geral da grade */
-@media (max-width: 900px) {
-  .commerce-grid { width: min(680px, 92vw); gap: 5vh; }
-  .commerce-row { gap: 28px; }
-}
-
-@media (max-width: 480px) {
-  .commerce-grid { width: 100%; gap: 3.5vh; padding: 0 12px; }
-  .commerce-row { gap: 18px; flex-wrap: wrap; }
-  .commerce-row-top, .commerce-row-bottom { justify-content: center; }
-}
+/* foco*
