@@ -1,6 +1,8 @@
+// src/components/PopUp/PopUpComercio.tsx
 import React, { useState } from "react";
-import api from "../../api/axios"
+import api from "../../api/axios";
 import axios from "axios";
+import Input from "../Input"; // ajuste o path se necessário
 
 export type Company = {
   id?: string | number;
@@ -163,20 +165,31 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
   };
 
   return (
-    <div role="dialog" aria-modal="true" onClick={handleOverlayClick}>
-      <div onClick={handleInnerClick}>
+    <div role="dialog" aria-modal="true" onClick={handleOverlayClick} className="popup-overlay">
+      <div onClick={handleInnerClick} className="popup-container">
         <h3 style={{ margin: 0, marginBottom: 8 }}>{step === 1 ? "Dê um nome para seu comércio!" : "Configure seu comércio"}</h3>
 
         {step === 1 && (
           <form onSubmit={handleNext}>
-            <label style={{ display: "block" }}>
-              Nome <span style={{ color: "red" }}>*</span>
-              <input
-                value={nome}
-                onChange={(e) => setNome(e.target.value)}
-                autoFocus
-              />
-            </label>
+            <Input
+              label={`Nome ${"*"}`}
+              id="company-nome"
+              type="text"
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              autoFocus
+              placeholder="Nome do comércio"
+              // você pode customizar classes: labelClassName / inputClassName / wrapperClassName
+            />
+
+            <Input
+              label="Email (opcional)"
+              id="company-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="email@exemplo.com"
+            />
 
             {error && <div className="modal-error" style={{ marginTop: 8 }}>{error}</div>}
 
@@ -205,25 +218,41 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
           <form onSubmit={handleCreate}>
             {/* Scroll area para manter o modal do mesmo tamanho */}
             <div style={scrollAreaStyle}>
-              <label style={{ display: "block" }}>
-                Campo opcional 1
-                <input value={campo1} onChange={(e) => setCampo1(e.target.value)} />
-              </label>
+              <Input
+                label="Campo opcional 1"
+                id="company-campo1"
+                type="text"
+                value={campo1}
+                onChange={(e) => setCampo1(e.target.value)}
+                placeholder="Campo 1"
+              />
 
-              <label style={{ display: "block" }}>
-                Campo opcional 2
-                <input value={campo2} onChange={(e) => setCampo2(e.target.value)} />
-              </label>
+              <Input
+                label="Campo opcional 2"
+                id="company-campo2"
+                type="text"
+                value={campo2}
+                onChange={(e) => setCampo2(e.target.value)}
+                placeholder="Campo 2"
+              />
 
-              <label style={{ display: "block" }}>
-                Campo opcional 3
-                <input value={campo3} onChange={(e) => setCampo3(e.target.value)} />
-              </label>
+              <Input
+                label="Campo opcional 3"
+                id="company-campo3"
+                type="text"
+                value={campo3}
+                onChange={(e) => setCampo3(e.target.value)}
+                placeholder="Campo 3"
+              />
 
-              <label style={{ display: "block" }}>
-                Campo opcional 4
-                <input value={campo4} onChange={(e) => setCampo4(e.target.value)} />
-              </label>
+              <Input
+                label="Campo opcional 4"
+                id="company-campo4"
+                type="text"
+                value={campo4}
+                onChange={(e) => setCampo4(e.target.value)}
+                placeholder="Campo 4"
+              />
             </div>
 
             {error && <div className="modal-error" style={{ marginTop: 8 }}>{error}</div>}

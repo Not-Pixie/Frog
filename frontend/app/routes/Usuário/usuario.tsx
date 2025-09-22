@@ -42,7 +42,6 @@ function Usuario() {
           isOpen={modalOpen}
           onClose={() => setModalOpen(false)}
           onCreated={(c: Company) => { console.log(c); setModalOpen(false); }}
-          authToken={token ?? undefined}
         />
       </div>
     </ProtectedRoute>
