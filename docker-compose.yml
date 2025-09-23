@@ -1,36 +1,43 @@
+version: "3.8"
+
 services:
   db:
-  
     image: postgres:16
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 123
+      POSTGRES_PASSWORD: "123"
       POSTGRES_DB: frog
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backend/app/database:/docker-entrypoint-initdb.d
+      # coloque aqui scripts SQL iniciais (opcional). Não monte código Python aqui.
+      - ./db/init:/docker-entrypoint-initdb.d
     ports:
-      - "5433:5432"
+      - "5433:5432" # mapeia 5432 interno para 5433 no host
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d frog"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   backend:
     build: ./backend
+    # melhor: não usar depends_on.condition; entrypoint espera o DB
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     ports:
       - "3001:3001"
     environment:
       DATABASE_URL: postgresql://postgres:123@db:5432/frog
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASS: "123"
       PORT: 3001
     volumes:
       - ./backend:/app
-    command: python main.py
+    entrypoint: ["/app/entrypoint.sh"]
+    command: ["python", "main.py"]
 
   frontend:
     build: ./frontend
@@ -43,7 +50,6 @@ services:
       - backend
     environment:
       - CHOKIDAR_USEPOLLING=true
-
 
 volumes:
   postgres_data:

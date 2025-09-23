@@ -14,4 +14,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 #Comando padrão ao rodar o container
-CMD ["python", "main.py"]
+CMD ["python", "main.py, gunicorn"]
+
+# garante permissão de execução na imagem
+RUN chmod +x /app/entrypoint.sh
+
+# define entrypoint (exec form recomendado)
+ENTRYPOINT ["/app/entrypoint.sh"]

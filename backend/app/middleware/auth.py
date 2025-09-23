@@ -5,6 +5,16 @@ import os
 
 SECRET_KEY = os.getenv("SECRET_KEY", "muda_esse_segredo")
 
+
+def extract_token_from_request():
+    auth = request.headers.get("Authorization")
+    if auth and auth.startswith("Bearer "):
+        return auth.split(" ",1)[1].strip()
+    token = request.cookies.get("access_token")
+    if token:
+        return token
+    return None
+
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
