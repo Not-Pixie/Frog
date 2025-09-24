@@ -8,3 +8,4 @@ pyjwt
 passlib[bcrypt]
 bcrypt===4.0.1
 alembic>=1.10
+gunicorn

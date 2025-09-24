@@ -1,23 +1,18 @@
-#Python
 FROM python:3.11-slim
-
-#Define o diretório de trabalho dentro do container
 WORKDIR /app
 
-#Copia o arquivo de dependências
-COPY requirements.txt .
+# copie requirements e instale (cache layer)
+COPY requirements.txt /app/
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
-#Instala as dependências do Python
-RUN pip install --no-cache-dir -r requirements.txt
+# Copia explicitamente o entrypoint para a raiz /app
+COPY app/entrypoint.sh /app/entrypoint.sh
 
-#Copia todo o código do backend para dentro do container
-COPY . .
+# copie o restante do código
+COPY . /app
 
-#Comando padrão ao rodar o container
-CMD ["python", "main.py, gunicorn"]
-
-# garante permissão de execução na imagem
+# (opcional para debug) RUN ls -la /app
 RUN chmod +x /app/entrypoint.sh
 
-# define entrypoint (exec form recomendado)
 ENTRYPOINT ["/app/entrypoint.sh"]
+CMD ["gunicorn", "main:create_app()", "--bind", "0.0.0.0:3001", "--workers", "4", "--timeout", "120"]
