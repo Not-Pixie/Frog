@@ -39,6 +39,8 @@ def create_app():
         resources={r"/*": {"origins": "http://localhost:5173"}},
         allow_headers=["Content-Type", "Authorization", "Access-Control-Allow-Origin"]
     )
+    
+    import app.database.session_listeners
 
     register_blueprints(app)
 
