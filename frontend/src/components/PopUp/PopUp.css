@@ -1,50 +1,65 @@
-/* src/components/PopUp/PopUp.css */
+:root {
+  /* valores default (podem ser sobrescritos via inline style ou :root global) */
+  --overlay-bg: rgba(0, 0, 0, 0.11);
+  --overlay-blur: 1px;
+  --popup-z-index: 9999;
 
-/* Overlay - agora transparente (se outro estilo global estiver forçando escuro, use !important) */
+  --popup-width: 40%; 
+  --popup-min-width: 320px;
+  --popup-max-height: calc(100vh - 40px);
+  --popup-bg: #fff;
+  --popup-radius: 12px;
+  --popup-shadow: 0 12px 40px rgba(0, 0, 0, 0.205);
+  --popup-padding: 20px;
+  --popup-transition-duration: 180ms;
+
+  --popup-title-size: 18px;
+  --popup-gap: var(--global-gap-small, 12px);
+}
+
+/* Overlay */
 .popup-overlay {
   position: fixed;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  z-index: var(--popup-z-index);
   padding: 16px;
-  backdrop-filter: blur(1px);
+  backdrop-filter: blur(var(--overlay-blur));
+  background: var(--overlay-bg) !important;
 }
 
-/* Container: usado só para centrar e limitar tamanho */
+/* Container */
 .popup-container {
-  min-width: 320px;
+  min-width: var(--popup-min-width);
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.2) !important; /* sem fundo aqui */
   transform: translateY(0);
-  transition: opacity 180ms ease, transform 180ms ease;
+  transition: opacity var(--popup-transition-duration) ease, transform var(--popup-transition-duration) ease;
   outline: none;
 }
 
-/* Card branco que contém title + children + close */
-/* NOTA: position: relative aqui faz com que o botão .popup-close absolute seja posicionado dentro do card */
+/* Card */
 .popup-content {
   position: relative;
-  width: 100%;
-  max-height: calc(100vh - 40px);
+  width: var(--popup-width);
+  max-height: var(--popup-max-height);
   overflow: auto;
-  background: #fff; /* cartão branco */
-  border-radius: 12px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
-  padding: 20px;
+  background: var(--popup-bg);
+  border-radius: var(--popup-radius);
+  box-shadow: var(--popup-shadow);
+  padding: var(--popup-padding);
   box-sizing: border-box;
 }
 
-/* opcional: wrapper interno para children */
 .popup-children {
-  /* se você quer que essa área tenha cor branca também, já está herdando do .popup-content */
+  /* wrapper interno — herda background do .popup-content */
 }
 
-/* Close button — agora posicionado relativamente ao .popup-content */
+/* Close button */
 .popup-close {
   position: absolute;
   top: 10px;
@@ -59,7 +74,22 @@
 }
 
 /* Title e conteúdo */
-.popup-title {
+.popup-title,
+[role="dialog"] h3 {
   margin: 0 0 12px 0;
-  font-size: 18px;
+  font-size: var(--popup-title-size);
+}
+
+[role="dialog"] form,
+.popup-content form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--popup-gap);
+}
+
+
+@media (max-width: 800px) {
+  :root {
+    --popup-width: 70%;
+  }
 }

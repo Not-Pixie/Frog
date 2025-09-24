@@ -138,58 +138,8 @@ header {
    ou inline em elemento <div class="commerce-row-top" style="--commerce-row-gap-top:24px">
 */
 
-/* ---------------- POPUP (apenas CSS para o modal) ---------------- */
-/* Alvo: elemento com role="dialog" que o pop-up usa */
-[role="dialog"] {
-  position: fixed !important;
-  inset: 0 !important;
-  background: var(--dialog-overlay-color) !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  z-index: 9999 !important;
+.modal-actions
+{
+  display: flex;
+  justify-content: space-between;
 }
-
-/* card interno */
-[role="dialog"] > div {
-  width: var(--dialog-width) !important;
-  max-width: calc(100% - var(--dialog-max-width-offset)) !important;
-  background: #fff !important;
-  padding: var(--dialog-padding) !important;
-  border-radius: var(--dialog-radius) !important;
-  box-shadow: var(--dialog-shadow) !important;
-  font-family: var(--font-stack) !important;
-  color: #111 !important;
-  box-sizing: border-box !important;
-}
-
-/* título */
-[role="dialog"] h3 {
-  margin: 0 0 8px 0 !important;
-  font-size: 1.1rem !important;
-}
-
-/* formulário e espaçamento */
-[role="dialog"] form {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: var(--global-gap-small) !important;
-}
-
-/* labels / inputs */
-[role="dialog"] label {
-  display: block !important;
-  font-size: 0.95rem !important;
-}
-
-[role="dialog"] input {
-  width: 100% !important;
-  padding: var(--input-padding) !important;
-  border-radius: var(--input-radius) !important;
-  border: 1px solid #ddd !important;
-  margin-top: 6px !important;
-  box-sizing: border-box !important;
-  font-size: 0.95rem !important;
-}
-
-/* foco*
