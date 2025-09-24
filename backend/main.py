@@ -1,4 +1,3 @@
-# app/app.py  (ou __init__.py)
 import importlib, pkgutil, os
 from flask import Flask, Blueprint
 from flask_cors import CORS
@@ -33,11 +32,10 @@ def create_app():
 
     CORS(
         app,
-        origins=["http://localhost:5173"],
+        resources={r"/*": {"origins": ["http://localhost:5173"]}},
         supports_credentials=True,
         methods=["GET","POST","PUT","DELETE","OPTIONS"],
-        resources={r"/*": {"origins": "http://localhost:5173"}},
-        allow_headers=["Content-Type", "Authorization", "Access-Control-Allow-Origin"]
+        allow_headers=["Content-Type", "Authorization", "X-Requested-With"]
     )
     
     import app.database.session_listeners

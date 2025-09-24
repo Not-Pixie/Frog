@@ -1,6 +1,7 @@
-CREATE TABLE comercios (
+CREATE TABLE IF NOT EXISTS comercios (
     comercio_id SERIAL PRIMARY KEY,
-    proprietario_id INTEGER NOT NULL REFERENCES usuarios(usuario_id),
+    proprietario_id INTEGER NOT NULL REFERENCES usuarios(usuario_id) ON DELETE RESTRICT,
+    configuracao_id INTEGER NULL REFERENCES configuracoes_comercio(id) ON DELETE SET NULL,
     nome VARCHAR(255) NOT NULL UNIQUE,
     criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()

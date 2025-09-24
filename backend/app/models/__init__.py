@@ -7,3 +7,4 @@ from .categoria_model import Categoria
 from .logs_model import Log
 from .produtos_model import Produto
 from .unimed_model import UnidadeMedida
+from .configs_comercio import ConfiguracaoComercio
