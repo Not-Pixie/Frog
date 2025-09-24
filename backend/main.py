@@ -4,11 +4,11 @@ from flask_cors import CORS
 
 from app.database.database import engine, Base
 import app.models
-from app.api.auth import comercio_bp
 
-def register_blueprints(app):
+def register_blueprints(flask_app):
+    from app.api.auth import comercio_bp
     try:
-        app.register_blueprint(comercio_bp)
+        flask_app.register_blueprint(comercio_bp)
     except Exception as e:
         print("Erro registrando comercio_bp:", e)
 
@@ -17,21 +17,21 @@ def register_blueprints(app):
     for finder, name, is_pkg in pkgutil.iter_modules(routes_pkg.__path__):
         if is_pkg:
             continue
-        module = importlib.import_module(f"app.routes." + name)
+        module = importlib.import_module(f"{routes_pkg.__name__}.{name}")
         for obj in vars(module).values():
             if isinstance(obj, Blueprint):
-                if obj.name in app.blueprints:
+                if obj.name in flask_app.blueprints:
                     print(f"Pulando {name} -> bp.name='{obj.name}' (já registrado)")
                     continue
-                app.register_blueprint(obj)
+                flask_app.register_blueprint(obj)
                 print(f"Registrado: módulo='{name}' bp.name='{obj.name}' url_prefix='{obj.url_prefix}'")
 
 def create_app():
-    app = Flask(__name__)
-    app.url_map.strict_slashes = False
+    flask_app = Flask(__name__)
+    flask_app.url_map.strict_slashes = False
 
     CORS(
-        app,
+        flask_app,
         resources={r"/*": {"origins": ["http://localhost:5173"]}},
         supports_credentials=True,
         methods=["GET","POST","PUT","DELETE","OPTIONS"],
@@ -40,14 +40,14 @@ def create_app():
     
     import app.database.session_listeners
 
-    register_blueprints(app)
+    register_blueprints(flask_app)
 
     print("=== Rotas registradas (app.url_map) ===")
-    for rule in app.url_map.iter_rules():
+    for rule in flask_app.url_map.iter_rules():
         print(rule, "methods=", sorted(rule.methods), "->", rule.endpoint)
     print("=== fim rotas ===")
 
-    return app
+    return flask_app
 
 if __name__ == "__main__":
     app = create_app()
