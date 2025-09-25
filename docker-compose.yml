@@ -31,7 +31,7 @@ services:
       PORT: 3001
     volumes:
       - ./backend:/app
-    entrypoint: ["/app/entrypoint.sh"]
+    entrypoint: ["sh", "/app/entrypoint.sh"]
     command: ["python", "main.py"]
 
   frontend:

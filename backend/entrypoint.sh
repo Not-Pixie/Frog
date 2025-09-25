@@ -23,3 +23,4 @@ alembic upgrade head
 # finalmente, executa o comando padrÃ£o do container (por ex. gunicorn/flask run)
 exec "$@"
 
+
