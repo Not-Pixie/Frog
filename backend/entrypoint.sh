@@ -1,4 +1,4 @@
-﻿#!/bin/sh
+#!/bin/sh
 set -e
 
 # espera o Postgres ficar pronto (usa pg_isready)
@@ -22,5 +22,6 @@ alembic upgrade head
 
 # finalmente, executa o comando padrÃ£o do container (por ex. gunicorn/flask run)
 exec "$@"
+
 
 
