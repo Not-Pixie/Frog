@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from app.database.database import Base
 
@@ -9,4 +9,7 @@ class UnidadeMedida(Base):
     nome = Column(String(50), nullable=False)
     sigla = Column(String(10), unique=True, nullable=False)
 
+    comercio_id = Column(Integer, ForeignKey("comercios.comercio_id", ondelete="CASCADE"), nullable=False)
+
     produtos = relationship("Produto", back_populates="unidade_medida")
+    comercio = relationship("Comercio", back_populates="unidade_medidas")
