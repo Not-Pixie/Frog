@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, func, relationship
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, func
+from sqlalchemy.orm import relationship
+
 from app.database.database import Base
 
 class ConfiguracaoUsuario(Base):
