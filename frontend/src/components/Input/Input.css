@@ -1,6 +1,8 @@
 .form-field {
   position: relative;
   width: 100%;
+
+  --svg: url(../../../public/vectors/down-arrow.svg);
 }
 
 .form-field > label {
@@ -14,6 +16,7 @@
   font: var(--bodyFont);
   transition: color .18s ease;
   max-width: 90% !important;
+  width: fit-content;
 }
 
 .form-field:focus-within > label {
@@ -35,5 +38,62 @@
 .form-field .input-wrapper > input:focus {
   outline: none;
   border: 1.5px solid var(--primaryColor) !important;
+  color: var(--primaryColor); 
+}
+
+.form-field .input-wrapper > select {
+  appearance: base-select;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px;
+  height: 8vh;
+  font-size: 1.1rem;
+  font: var(--bodyFont);
+  border-radius: 10px;
+  border: 1.5px solid #000;
+  transition: border-color .18s ease, color .18s ease;
+  padding-left: 1em;
+  padding-right: 1em;
+}
+
+
+.form-field .input-wrapper > select:focus{
+  outline: none;
+  border: 1.5px solid var(--primaryColor) !important;
   color: var(--primaryColor);
+  option {color: rgba(0, 0, 0, 1)}
+}
+
+
+.form-field .input-wrapper > select:open > option:checked, 
+.form-field .input-wrapper > select:open > option:hover{
+  background-color: var(--primaryColor);
+  color: rgb(255, 255, 255);
+}
+
+select::picker-icon
+{
+  content: "";
+  display: inline-block;
+  width: 2em;
+  height: 2em;
+  vertical-align: middle;
+  transition: 0.3s ease-in-out;
+
+  -webkit-mask: var(--svg) no-repeat center / contain;
+  mask: var(--svg) no-repeat center / contain;
+
+  background-color: currentColor;
+}
+
+select:focus::picker-icon
+{
+  background-color: var(--primaryColor);
+  rotate: 180deg;
+  transform: translateY(0.2em);
+}
+
+select::checkmark(select)
+{
+  color: transparent;
 }

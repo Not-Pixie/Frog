@@ -5,41 +5,12 @@ import axios from "axios";
 import Input from "../../../../src/components/Input"; // ajuste o path se necessário
 import PopUp from "../../../../src/components/PopUp";
 
-import { z } from "zod";
+
 import { useForm, type Resolver, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-export type Company = {
-  id?: string | number;
-  nome: string;
-  configs?: {
-    campo1?: string;
-    campo4?: string;
-  };
-  [k: string]: any;
-};
-
-// schema zod
-const companySchema = z.object({
-  nome: z
-    .string()
-    .min(1, "Nome é obrigatório.")
-    .transform((s) => s.trim()),
-  configs: z
-    .object({
-      campo1: z.preprocess(
-        (v) => (typeof v === "string" ? v.trim() || undefined : v),
-        z.string().optional()
-      ),
-      campo4: z.preprocess(
-        (v) => (typeof v === "string" ? v.trim() || undefined : v),
-        z.string().optional()
-      ),
-    })
-    .optional(),
-});
-
-type FormValues = z.infer<typeof companySchema>;
+import type { Company, FormValues } from "./schemas"
+import { companySchema } from "./schemas";
 
 interface Props {
   isOpen: boolean;
@@ -52,7 +23,6 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // ====== fix de tipagem: cast do resolver para o tipo esperado ======
   const resolver = zodResolver(companySchema) as unknown as Resolver<FormValues>;
 
   const {
@@ -231,10 +201,25 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
             <Input
               label="Unidade de medida padrão"
               id="company-campo1"
-              type="text"
-              placeholder="Uni"
+              type="select"
+              placeholder="Selecione a Unidade padrão, Mestre-sen-pa-ii"
               {...register("configs.campo1" as const)}
-            />
+            >
+              <option value="un">Unidade(un)</option>
+              <option value="kg">Quilograma(kg)</option>
+              <option value="g">Grama(g)</option>
+              <option value="L">Litro(L)</option>
+              <option value="ml">Mililitro(ml)</option>
+              <option value="m">Metro(m)</option>
+              <option value="cm">Centímetro(cm)</option>
+              <option value="mm">Milímetro(mm)</option>
+              <option value="cx">Caixa(cx)</option>
+              <option value="pct">Pacote(pct)</option>
+              <option value="gal">Galão(gal)</option>
+              <option value="par">Par(par)</option>
+              <option value="dz">Dúzia(dz)</option>
+              <option value="sc">Saco(sc)</option>
+            </Input>
             {errors.configs?.campo1?.message && (
               <p className="text-red-600 mt-2 text-sm">{String(errors.configs?.campo1?.message)}</p>
             )}
@@ -242,7 +227,7 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
             <Input
               label="Limite mínimo de estoque padrão"
               id="company-campo4"
-              type="text"
+              type="number"
               placeholder="50"
               {...register("configs.campo4" as const)}
             />
