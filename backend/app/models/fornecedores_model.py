@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, func
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, func
 from sqlalchemy.orm import relationship
 from app.database.database import Base
 
@@ -13,4 +13,7 @@ class Fornecedor(Base):
     criado_em = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     atualizado_em = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
+    comercio_id = Column(Integer, ForeignKey("comercios.comercio_id", ondelete="CASCADE"), nullable=False)
+
     produtos = relationship("Produto", back_populates="fornecedor")
+    comercio = relationship("Comercio", back_populates="fornecedores")

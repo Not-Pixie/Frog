@@ -17,3 +17,5 @@ class Usuario(Base):
 
     # Relacionamento muitos-para-muitos via tabela associativa
     comercios_assoc = relationship("ComercioUsuario", back_populates="usuario", cascade="all, delete-orphan")
+
+    configuracoes = relationship("ConfiguracaoUsuario", back_populates="usuario")

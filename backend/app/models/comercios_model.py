@@ -24,3 +24,9 @@ class Comercio(Base):
 
     # Relacionamento N:N através da tabela associativa
     membros = relationship("ComercioUsuario", back_populates="comercio", cascade="all, delete-orphan")
+
+    produtos = relationship("Produto", back_populates="comercio")
+    categorias = relationship("Categoria", back_populates="comercio")
+    unidade_medidas = relationship("UnidadeMedida", back_populates="comercio")
+    fornecedores = relationship("Fornecedor", back_populates="comercio")
+    convites = relationship("Convite", back_populates="comercio")

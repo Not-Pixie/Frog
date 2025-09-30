@@ -8,3 +8,6 @@ from .logs_model import Log
 from .produtos_model import Produto
 from .unimed_model import UnidadeMedida
 from .configs_comercio import ConfiguracaoComercio
+from .configs_usuario import ConfiguracaoUsuario
+from .convites_model import Convite
+
