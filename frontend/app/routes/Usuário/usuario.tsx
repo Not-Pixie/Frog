@@ -3,8 +3,8 @@ import PublicRoute from "src/api/auth/PublicRoute";
 import "./usuario.css";
 import { useAuth } from "src/api/auth/AuthProvider";
 import CommerceCard from "src/components/CommerceCard";
-import PopupCreateCompany from "./variations/PopUpCreateCompany";
-import type { Company } from "./variations/PopUpCreateCompany";
+import PopupCreateCompany from "./customComponents/PopUpCreateCompany";
+import type { Company } from "./customComponents/schemas";
 
 function Usuario() {
   const { user } = useAuth();
