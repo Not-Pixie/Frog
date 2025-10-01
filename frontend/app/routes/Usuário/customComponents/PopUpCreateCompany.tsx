@@ -202,7 +202,6 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
               label="Unidade de medida padrão"
               id="company-campo1"
               type="select"
-              placeholder="Selecione a Unidade padrão, Mestre-sen-pa-ii"
               {...register("configs.campo1" as const)}
             >
               <option value="un">Unidade(un)</option>
