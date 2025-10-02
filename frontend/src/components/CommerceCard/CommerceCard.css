@@ -51,7 +51,7 @@
 .card-add {
   background: white;
   border: 3px solid var(--card-accent);
-  color: var(--card-accent);
+  color: var(--card-accent) !important;
   border-radius: var(--card-radius);
   position: relative;
   display: flex;

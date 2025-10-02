@@ -55,7 +55,7 @@ export async function refresh(): Promise<string>{
     }
 }
 
-export async function fetchCurrentUser(): Promise<{user: any} | null> {
+export async function fetchCurrentUser(): Promise<{usuario: any} | null> {
     try {
         const res = await raw.get(ME);
         return res.data ?? null

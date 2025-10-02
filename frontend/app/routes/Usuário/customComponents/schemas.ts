@@ -30,3 +30,9 @@ export type Company = {
   };
   [k: string]: any;
 };
+
+export type Comercio = {
+  comercio_id: number,
+  nome: string,
+  is_proprietario: boolean
+};

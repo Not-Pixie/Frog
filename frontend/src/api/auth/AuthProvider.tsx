@@ -5,7 +5,7 @@ import api from '../axios';
 import * as authServices from "./authServices"
 import { LOGIN } from '../enpoints';
 
-type User = { id: number; email: string; nome?: string } | null;
+type User = { usuario_id: number; email: string; nome?: string } | null;
 
 interface AuthContextType {
   user: User;
@@ -38,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const data = await authServices.fetchCurrentUser();
       if (!mountedRef.current) return false;
-      const u = data?.user ?? null;
+      const u = data?.usuario ?? null;
       setUser(u);
       return !!u;
     } catch (err) {
