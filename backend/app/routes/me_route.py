@@ -20,8 +20,6 @@ def me():
     token = None
     if auth_header and auth_header.startswith('Bearer '):
         token = auth_header.split(' ', 1)[1].strip()
-    else:
-        token = request.cookies.get('access_token')
 
     if not token:
         return jsonify({'mensagem': 'Token de acesso ausente'}), 401
@@ -74,7 +72,8 @@ def query_comercios():
         comercios_serializados.append({
             'comercio_id': c.comercio_id,
             'nome': c.nome,
-            'is_proprietario': c.proprietario_id == usuario_id
+            'is_proprietario': c.proprietario_id == usuario_id,
+            'criado_em': c.criado_em
         })
 
     resp = {
