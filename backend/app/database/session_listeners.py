@@ -11,11 +11,13 @@ def _apply_app_user_id(session, transaction, connection):
     if not has_request_context():
         return
     
-    dados = getattr(g, "dados", None)
-    usuario_id = getattr(dados, "id", None) if dados is not None else None
+    usuario = g.get("usuario") or None
+    usuario_id = getattr(usuario, "usuario_id", None) if usuario is not None else None
     
     if usuario_id is None:
         current_app.logger.debug("g não tem id de usuário")
+        current_app.logger.debug("usuario = %s", usuario)
+        current_app.logger.debug("usuario_id = %s", usuario_id)
         return
     
     try:
