@@ -4,3 +4,4 @@ export const CADASTRO = '/cadastro';
 export const ME = '/api/me';
 export const LOGOUT = '/logout';
 export const REFRESH = '/refresh'
+export const COMERCIO = 'api/comercios'
