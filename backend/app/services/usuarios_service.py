@@ -6,8 +6,8 @@ from app.models.usuarios_model import Usuario
 from app.services.errors import ComercioServiceError
 
 def get_comercios_que_usuario_tem_acesso(db: Session, usuario_id: int) -> List[Comercio]:
-    comercio_pk = getattr(Comercio, "comercio_id", None) or getattr(Comercio, "id", None)
-    cu_comercio_col = getattr(ComercioUsuario, "comercio_id", None) or getattr(ComercioUsuario, "id", None)
+    comercio_pk = getattr(Comercio, "comercio_id", None) or getattr(Comercio, "comercio_id", None)
+    cu_comercio_col = getattr(ComercioUsuario, "comercio_id", None) or getattr(ComercioUsuario, "comercio_id", None)
     cu_usuario_col = getattr(ComercioUsuario, "usuario_id", None) or getattr(ComercioUsuario, "usuario", None)
 
     if comercio_pk is None or cu_comercio_col is None or cu_usuario_col is None:
