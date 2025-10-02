@@ -68,7 +68,7 @@ function Usuario() {
               })}
             </div>
             <div className="commerce-row commerce-row-bottom">
-              {[4, 5].map((idx) => {
+              {[3, 4].map((idx) => {
                 const comercio = comercios?.[idx];
                 return comercio ? (
                   <CommerceCard

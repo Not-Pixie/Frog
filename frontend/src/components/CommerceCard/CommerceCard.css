@@ -95,10 +95,22 @@
 
 /* Conteúdo interno */
 .card-content {
+  display: flex;
   font-size: 1rem;
   text-align: center;
   padding: 8px;
   user-select: none;
+  color: white;
+  min-height: 90%;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.commerce-name
+{
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-top: 5%;
 }
 
 /* Responsividade: sobrescreve a variável --card-width por breakpoint */

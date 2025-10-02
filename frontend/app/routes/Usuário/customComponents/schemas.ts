@@ -34,5 +34,6 @@ export type Company = {
 export type Comercio = {
   comercio_id: number,
   nome: string,
-  is_proprietario: boolean
+  is_proprietario: boolean,
+  criado_em: string
 };
