@@ -69,6 +69,13 @@ def upgrade() -> None:
     AFTER UPDATE OR DELETE ON produtos
     FOR EACH ROW EXECUTE FUNCTION fn_log_alteracoes();
     """))
+    
+    op.execute(sa.DDL("""
+    CREATE TRIGGER trg_check_max_comercios
+    BEFORE INSERT ON comercios
+    FOR EACH ROW
+    EXECUTE FUNCTION check_max_comercios_for_user();
+    """))
     pass
 
 
@@ -82,4 +89,5 @@ def downgrade() -> None:
     op.execute("DROP TRIGGER IF EXISTS trg_set_timestamp_convites ON convites;")
     op.execute("DROP TRIGGER IF EXISTS trg_set_timestamp_comercios ON comercios;")
     op.execute("DROP TRIGGER IF EXISTS trg_set_timestamp_usuarios ON usuarios;")
+    op.execute("DROP TRIGGER IF EXISTS trg_check_max_comercios ON comercios;")
     pass

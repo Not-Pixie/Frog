@@ -96,6 +96,30 @@ def upgrade() -> None:
     END;
     $$ LANGUAGE plpgsql;
     """))
+    
+    op.execute(sa.DDL("""
+    CREATE OR REPLACE FUNCTION check_max_comercios_for_user()
+    RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+    DECLARE
+      v_count int;
+    BEGIN
+      IF NEW.proprietario_id IS NULL THEN
+        RAISE EXCEPTION 'proprietario_id cannot be null';
+      END IF;
+
+      PERFORM 1 FROM usuarios WHERE usuario_id = NEW.proprietario_id FOR UPDATE;
+
+      SELECT COUNT(*) INTO v_count FROM comercios WHERE proprietario_id = NEW.proprietario_id;
+      IF v_count >= 5 THEN
+        RAISE EXCEPTION 'Limite de 5 comércios por usuário atingido';
+      END IF;
+
+      RETURN NEW;
+    END;
+    $$;
+    """))
     pass
 
 
@@ -103,4 +127,5 @@ def downgrade() -> None:
     op.execute("DROP FUNCTION IF EXISTS fn_log_alteracoes();")
     op.execute("DROP FUNCTION IF EXISTS fn_set_timestamp();")
     op.execute("DROP FUNCTION IF EXISTS app_usuario_id();")
+    op.execute("DROP FUNCTION IF EXISTS check_max_comercios_for_user();")
     pass
