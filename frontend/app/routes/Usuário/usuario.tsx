@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import ProtectedRoute from "src/api/auth/ProtectedRoute"; 
 import "./usuario.css";
 import { useAuth } from "src/api/auth/AuthProvider";
@@ -9,38 +9,55 @@ import api from "src/api/axios";
 import { ME } from "src/api/enpoints";
 import { AxiosError } from "axios";
 
+interface Response {
+  comercios: Comercio[];
+}
+
 function Usuario() {
   const { user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [comercios, setComercios] = useState<Comercio[]>();
+  const [comercios, setComercios] = useState<Comercio[]>([]);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
+  const isMountedRef = useRef(true);
 
-  const fetchComercios = async () => {
+  const fetchComercios =  useCallback(async () => {
+    setError("");
     setIsRefreshing(true);
+
     try {
-      const res = await api.get(`${ME}/comercios`);
+      const res = await api.get<Response>(`${ME}/comercios`);
       const data = res.data;
-      
-      setComercios(data?.comercios);
+
+      if (!isMountedRef.current) return;
+      setComercios(Array.isArray(data?.comercios) ? data.comercios : []);
+    } catch (err) {
+      const axiosErr = err as AxiosError<any>;
+      const serverMessage =
+        axiosErr?.response?.data?.message ??
+        axiosErr?.message ??
+        "Erro inesperado na requisição";
+      if (isMountedRef.current) setError(serverMessage);
+    } finally {
+      if (isMountedRef.current) setIsRefreshing(false);
     }
-    catch (err:any)
-    {
-      if (err instanceof AxiosError)
-      {
-        setError(err.message ?? "Erro em requisição")
-      }
-      else
-        setError("Erro inesperado aconteceu")
-    }
-    finally {
-      setIsRefreshing(false);
-    }
-  }
+  }, []);
+
+  useEffect(() => {
+    return () => {isMountedRef.current = false}
+  }, []);
+
+  useEffect(() => {
+    fetchComercios();
+  }, [fetchComercios]);
+
+  useEffect(() => {
+    if(!isModalOpen) fetchComercios();
+  }, [isModalOpen, fetchComercios]);
+
 
   const openModal = () => setIsModalOpen(true);
 
-  useEffect(() => {fetchComercios()}, [isModalOpen]);
 
   return (
     <ProtectedRoute>
@@ -86,7 +103,7 @@ function Usuario() {
         <PopupCreateCompany
           isOpen={isModalOpen}
           onClose={() => {setIsModalOpen(false);}}
-          onCreated={(c: Company) => { console.log(c); setIsModalOpen(false); }}
+          onCreated={(c: Company) => { setIsModalOpen(false); }}
         />
       </div>
     </ProtectedRoute>

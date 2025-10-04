@@ -2,6 +2,7 @@ import React from "react";
 import "./CommerceCard.css";
 import type { Comercio } from "~/routes/Usuário/customComponents/schemas";
 import { Link } from "react-router";
+import { dateFormatter } from "./formatter";
 
 type CommerceCardProps = {
   onClick?: () => void;
@@ -25,19 +26,18 @@ export default function CommerceCard({ onClick, variant = "add", comercio }: Com
     );
 
   className = comercio.is_proprietario ? `${className} owner-card` : className;
-  const fmt = new Intl.DateTimeFormat('pt-BR', {day: "2-digit", month: "2-digit", year: "numeric"})
-  comercio = {...comercio, criado_em: fmt.format(new Date(comercio.criado_em))}
+  const formattedComercio =  {...comercio, criado_em: dateFormatter.format(new Date(comercio.criado_em))}
 
   return (
     <Link
-      to={`/comercio/${comercio.comercio_id}`}
+      to={`/comercio/${formattedComercio.comercio_id}`}
       className={className}
       onClick={onClick}
-      aria-label={`Entrar em ${comercio.nome}`}
+      aria-label={`Entrar em ${formattedComercio.nome}`}
     >
       <div className="card-content">
-        <div className="commerce-name">{comercio.nome}</div>
-        <div className="commerce-date">{comercio.criado_em}</div>
+        <div className="commerce-name">{formattedComercio.nome}</div>
+        <div className="commerce-date">{formattedComercio.criado_em}</div>
       </div>
     </Link>
   )

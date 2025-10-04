@@ -21,7 +21,7 @@ let queue: QueueItem[] = [];
 export function getAccessToken() { return accessToken; }
 export function setAccessToken(token: string | null) {
     accessToken = token;
-    console.log("token ->", token);
+    // console.log("token ->", token);
     if (token) {
         raw.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     } else {
