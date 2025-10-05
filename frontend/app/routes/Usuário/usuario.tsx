@@ -19,7 +19,7 @@ function Usuario() {
   const [comercios, setComercios] = useState<Comercio[]>([]);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
-  const isMountedRef = useRef(true);
+  const isMountedRef = useRef(false);
 
   const fetchComercios =  useCallback(async () => {
     setError("");
@@ -29,8 +29,9 @@ function Usuario() {
       const res = await api.get<Response>(`${ME}/comercios`);
       const data = res.data;
 
-      if (!isMountedRef.current) return;
+      if (!isMountedRef.current) {return;};
       setComercios(Array.isArray(data?.comercios) ? data.comercios : []);
+      console.log("era pra tá indo")
     } catch (err) {
       const axiosErr = err as AxiosError<any>;
       const serverMessage =
@@ -44,6 +45,7 @@ function Usuario() {
   }, []);
 
   useEffect(() => {
+    isMountedRef.current = true; //Resetando pro safemode; aumenta robustez
     return () => {isMountedRef.current = false}
   }, []);
 
