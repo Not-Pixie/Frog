@@ -5,7 +5,7 @@ import api from '../axios';
 import * as authServices from "./authServices"
 import { LOGIN } from '../enpoints';
 
-type User = { id: number; email: string; nome?: string } | null;
+type User = { usuario_id: number; email: string; nome?: string } | null;
 
 interface AuthContextType {
   user: User;
@@ -38,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const data = await authServices.fetchCurrentUser();
       if (!mountedRef.current) return false;
-      const u = data?.user ?? null;
+      const u = data?.usuario ?? null;
       setUser(u);
       return !!u;
     } catch (err) {
@@ -78,11 +78,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     mountedRef.current = true;
     (async () => {
-      // tenta obter token do authServices (se existir) ou do localStorage como fallback
-      const existingToken = (authServices as any).getAccessToken?.() ?? localStorage.getItem("access_token");
-      if (existingToken) setToken(existingToken as string);
-      if (user) await (authServices as any).refresh?.();
-      await checkAuth();
+      try {
+        // tenta obter token do authServices (se existir) ou do localStorage como fallback
+        const existingToken = (authServices as any).getAccessToken?.() ?? localStorage.getItem("access_token");
+        
+        if (existingToken) {
+          setToken(existingToken as string); 
+          authServices.setAccessToken(existingToken as string);
+        }
+        else {
+          try {
+            const newToken = await (authServices as any).refresh?.()
+            if (newToken) setToken(newToken);
+          }
+          catch(_)
+          {/*sem token? ok, ficará deslogado*/}
+          await checkAuth();
+        }
+      }
+      finally {
+        if(mountedRef.current) setLoading(false)
+      }
     })();
     return () => { mountedRef.current = false; };
   }, []);

@@ -1,17 +1,66 @@
-import React, { useState } from "react";
-import PublicRoute from "src/api/auth/PublicRoute"; 
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import ProtectedRoute from "src/api/auth/ProtectedRoute"; 
 import "./usuario.css";
 import { useAuth } from "src/api/auth/AuthProvider";
 import CommerceCard from "src/components/CommerceCard";
 import PopupCreateCompany from "./customComponents/PopUpCreateCompany";
-import type { Company } from "./customComponents/schemas";
+import type { Company, Comercio } from "./customComponents/schemas";
+import api from "src/api/axios";
+import { ME } from "src/api/enpoints";
+import { AxiosError } from "axios";
+
+interface Response {
+  comercios: Comercio[];
+}
 
 function Usuario() {
   const { user } = useAuth();
-  const [modalOpen, setModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [comercios, setComercios] = useState<Comercio[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
+  const isMountedRef = useRef(true);
+
+  const fetchComercios =  useCallback(async () => {
+    setError("");
+    setIsRefreshing(true);
+
+    try {
+      const res = await api.get<Response>(`${ME}/comercios`);
+      const data = res.data;
+
+      if (!isMountedRef.current) return;
+      setComercios(Array.isArray(data?.comercios) ? data.comercios : []);
+    } catch (err) {
+      const axiosErr = err as AxiosError<any>;
+      const serverMessage =
+        axiosErr?.response?.data?.message ??
+        axiosErr?.message ??
+        "Erro inesperado na requisição";
+      if (isMountedRef.current) setError(serverMessage);
+    } finally {
+      if (isMountedRef.current) setIsRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {isMountedRef.current = false}
+  }, []);
+
+  useEffect(() => {
+    fetchComercios();
+  }, [fetchComercios]);
+
+  useEffect(() => {
+    if(!isModalOpen) fetchComercios();
+  }, [isModalOpen, fetchComercios]);
+
+
+  const openModal = () => setIsModalOpen(true);
+
 
   return (
-    <PublicRoute>
+    <ProtectedRoute>
       <div className="user-page">
         <header>
           <h1 className="user-page_title">Seja bem-vindo, {user?.nome}</h1>
@@ -22,28 +71,42 @@ function Usuario() {
 
         <div className="commerce-grid-wrapper">
           <div className="commerce-grid">
-            {/* linha superior: 3 cards */}
-            <div className="commerce-row commerce-row-top">
-              <CommerceCard onClick={() => setModalOpen(true)} />
-              <CommerceCard onClick={() => setModalOpen(true)} />
-              <CommerceCard onClick={() => setModalOpen(true)} />
+            <div className="commerce-row comerce-row-top">
+              {[0, 1, 2].map((idx) => {
+                const comercio = comercios?.[idx];
+                return comercio ? (
+                  <CommerceCard
+                    key={ `c-${idx}`}
+                    comercio={comercio}
+                  />
+                ) : (
+                  <CommerceCard key={`cn-${idx}`} onClick={openModal}/>
+                );
+              })}
             </div>
-
-            {/* linha inferior: 2 cards */}
             <div className="commerce-row commerce-row-bottom">
-              <CommerceCard onClick={() => setModalOpen(true)} />
-              <CommerceCard onClick={() => setModalOpen(true)} />
+              {[3, 4].map((idx) => {
+                const comercio = comercios?.[idx];
+                return comercio ? (
+                  <CommerceCard
+                    key={`c-${idx}`}
+                    comercio={comercio}
+                  />
+                ) : (
+                  <CommerceCard key={`cn-${idx}`} onClick={openModal}/>
+                );
+              })}
             </div>
           </div>
         </div>
 
         <PopupCreateCompany
-          isOpen={modalOpen}
-          onClose={() => {setModalOpen(false);}}
-          onCreated={(c: Company) => { console.log(c); setModalOpen(false); }}
+          isOpen={isModalOpen}
+          onClose={() => {setIsModalOpen(false);}}
+          onCreated={(c: Company) => { setIsModalOpen(false); }}
         />
       </div>
-    </PublicRoute>
+    </ProtectedRoute>
   );
 }
 

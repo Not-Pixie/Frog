@@ -43,7 +43,7 @@ def criar_comercio(proprietario_id: int, nome: str, configs: dict | None = None)
         session.flush()  # garante comercio.comercio_id
 
         # 3) cria associacao comercio-usuario
-        assoc = ComercioUsuario(comercio_id=comercio.comercio_id, usuario_id=proprietario_id, papel="owner")
+        assoc = ComercioUsuario(comercio_id=comercio.comercio_id, usuario_id=proprietario_id, permissao="operador")
         session.add(assoc)
 
         # 4) commit final

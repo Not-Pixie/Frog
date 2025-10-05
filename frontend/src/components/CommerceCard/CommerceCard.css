@@ -51,7 +51,7 @@
 .card-add {
   background: white;
   border: 3px solid var(--card-accent);
-  color: var(--card-accent);
+  color: var(--card-accent) !important;
   border-radius: var(--card-radius);
   position: relative;
   display: flex;
@@ -95,10 +95,22 @@
 
 /* Conteúdo interno */
 .card-content {
+  display: flex;
   font-size: 1rem;
   text-align: center;
   padding: 8px;
   user-select: none;
+  color: white;
+  min-height: 90%;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.commerce-name
+{
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-top: 5%;
 }
 
 /* Responsividade: sobrescreve a variável --card-width por breakpoint */

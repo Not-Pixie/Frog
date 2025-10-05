@@ -54,20 +54,20 @@ def login():
 @comercio_bp.route("/me", methods=["GET"])
 @token_required
 def me():
-    # token_required colocou o payload decodificado em g.user
-    payload = getattr(g, "user", None) or {}
+    # token_required colocou o payload decodificado em g.usuario
+    payload = g.get("usuario")
     usuario_id = payload.get("usuario_id")
     if not usuario_id:
-        return jsonify({"user": None}), 200
+        return jsonify({"usuario": None}), 200
 
     db = SessionLocal()
     try:
         user = db.query(Usuario).get(usuario_id)
         if not user:
-            return jsonify({"user": None}), 200
+            return jsonify({"usuario": None}), 200
 
         return jsonify({
-            "user": {
+            "usuario": {
                 "usuario_id": user.usuario_id,
                 "email": user.email,
                 "nome": getattr(user, "nome", None)
@@ -79,7 +79,8 @@ def me():
 
 # função utilitária para outras rotas obterem o user model
 def get_current_user():
-    payload = getattr(g, "user", None) or {}
+    payload = g.get("usuario") or None
+    current_app.logger.debug(payload)
     usuario_id = payload.get("usuario_id")
     if not usuario_id:
         return None

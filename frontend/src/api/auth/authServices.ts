@@ -21,7 +21,7 @@ let queue: QueueItem[] = [];
 export function getAccessToken() { return accessToken; }
 export function setAccessToken(token: string | null) {
     accessToken = token;
-    console.log("token ->", token);
+    // console.log("token ->", token);
     if (token) {
         raw.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     } else {
@@ -55,7 +55,7 @@ export async function refresh(): Promise<string>{
     }
 }
 
-export async function fetchCurrentUser(): Promise<{user: any} | null> {
+export async function fetchCurrentUser(): Promise<{usuario: any} | null> {
     try {
         const res = await raw.get(ME);
         return res.data ?? null

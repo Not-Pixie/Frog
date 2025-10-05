@@ -63,7 +63,12 @@ def upgrade() -> None:
     op.execute(sa.DDL("""
     CREATE POLICY comercios_insert ON comercios
       FOR INSERT
-      WITH CHECK (proprietario_id = app_usuario_id());
+      WITH CHECK (
+        proprietario_id = app_usuario_id()
+        AND (
+          (SELECT COUNT(*) FROM comercios c WHERE c.proprietario_id = app_usuario_id()) < 5
+        )
+      );
     """))
 
     # comercios_usuarios (associação n-n)

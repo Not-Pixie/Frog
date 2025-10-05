@@ -36,7 +36,7 @@ api.interceptors.response.use (
         {
             original._retry = true;
             try {
-                const newToken = authServices.refresh();
+                const newToken = await authServices.refresh();
                 original.headers = original.headers || {};
                 original.headers.Authorization = `Bearer ${newToken}`;
                 return api(original);
