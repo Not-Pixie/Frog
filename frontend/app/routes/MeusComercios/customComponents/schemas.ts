@@ -3,7 +3,8 @@ import { z } from "zod";
 export const companySchema = z.object({
   nome: z
     .string()
-    .min(1, "Nome é obrigatório.")
+    .min(1, "Nome é obrigatório!")
+    .max(50, "Nome pode ter até 50 caracteres!")
     .transform((s) => s.trim()),
   configs: z
     .object({
