@@ -44,7 +44,7 @@ def upgrade() -> None:
     op.create_table('comercios',
     sa.Column('comercio_id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('proprietario_id', sa.Integer(), nullable=False),
-    sa.Column('nome', sa.String(length=255), nullable=False),
+    sa.Column('nome', sa.String(length=50), nullable=False),
     sa.Column('configuracao_id', sa.Integer(), nullable=True),
     sa.Column('criado_em', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('atualizado_em', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
