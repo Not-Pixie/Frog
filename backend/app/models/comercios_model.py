@@ -8,7 +8,7 @@ class Comercio(Base):
 
     comercio_id = Column(Integer, primary_key=True, autoincrement=True)
     proprietario_id = Column(Integer, ForeignKey("usuarios.usuario_id", ondelete="RESTRICT"), nullable=False)
-    nome = Column(String(255), nullable=False, unique=True)
+    nome = Column(String(50), nullable=False, unique=True)
 
     # Nova coluna: FK para configuracao
     configuracao_id = Column(Integer, ForeignKey("configuracoes_comercio.id", ondelete="SET NULL"), nullable=True)
