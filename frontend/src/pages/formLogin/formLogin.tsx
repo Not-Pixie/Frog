@@ -32,7 +32,7 @@ export default function CadastroUser() {
   const onSubmit = async (data: any) => {
     try {
       if(await login(data?.email, data?.senha)) 
-        navigate("/usuario", { replace: true });
+        navigate("/meus-comercios", { replace: true });
       
     } catch (error) {
       console.error("Erro ao acessar a conta:", error);

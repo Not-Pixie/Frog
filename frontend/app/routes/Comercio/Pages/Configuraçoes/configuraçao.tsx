@@ -1,6 +1,6 @@
 import "../geral.css";
 
-function Configuracoes() {
+function Configuracao() {
 
 
   return (
@@ -9,4 +9,4 @@ function Configuracoes() {
   );
 }
 
-export default Configuracoes;
+export default Configuracao;

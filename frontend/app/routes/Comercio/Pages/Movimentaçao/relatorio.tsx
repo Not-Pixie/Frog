@@ -1,6 +1,6 @@
 import "../geral.css";
 
-function Relatorios() {
+function Relatorio() {
 
 
   return (
@@ -9,4 +9,4 @@ function Relatorios() {
   );
 }
 
-export default Relatorios;
+export default Relatorio;

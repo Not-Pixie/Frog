@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import ProtectedRoute from "src/api/auth/ProtectedRoute"; 
-import "./usuario.css";
+import "./MeusComercios.css";
 import { useAuth } from "src/api/auth/AuthProvider";
 import CommerceCard from "src/components/CommerceCard";
 import PopupCreateCompany from "./customComponents/PopUpCreateCompany";
@@ -13,7 +13,7 @@ interface Response {
   comercios: Comercio[];
 }
 
-function Usuario() {
+function MeusComercios() {
   const { user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [comercios, setComercios] = useState<Comercio[]>([]);
@@ -112,4 +112,4 @@ function Usuario() {
   );
 }
 
-export default Usuario;
+export default MeusComercios;

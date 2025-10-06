@@ -1,12 +1,12 @@
 import React from "react";
 import "./CommerceCard.css";
-import type { Comercio } from "~/routes/Usuário/customComponents/schemas";
+import type { Comercio } from "~/routes/MeusComercios/customComponents/schemas";
 import { Link } from "react-router";
 import { dateFormatter } from "./formatter";
 
 type CommerceCardProps = {
   onClick?: () => void;
-  variant?: "add" | "filled"; // mantive a prop caso precise depois
+  variant?: "add" | "filled"; 
   comercio?: Comercio;
 };
 

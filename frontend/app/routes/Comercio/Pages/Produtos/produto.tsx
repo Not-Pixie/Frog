@@ -1,6 +1,6 @@
 import "../geral.css";
 
-function Produtos() {
+function Produto() {
 
 
   return (
@@ -9,4 +9,4 @@ function Produtos() {
   );
 }
 
-export default Produtos;
+export default Produto;

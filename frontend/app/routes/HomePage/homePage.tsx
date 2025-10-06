@@ -15,7 +15,7 @@ export default function HomePage() {
       <div className="flex flex-col items-center justify-center h-screen">
         <h1 className="text-4xl font-bold mb-4 text-black">Bem-vindo ao Frog!</h1>
         <p className="text-lg mb-8">Uma nova forma de Organizar!</p>
-        <Link to="/acessar" className="text-blue-500 hover:underline">
+        <Link to="/entrar" className="text-blue-500 hover:underline">
           Ir para a página de cadastro
         </Link>
       </div>

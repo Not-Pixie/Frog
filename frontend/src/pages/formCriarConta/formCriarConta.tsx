@@ -35,7 +35,7 @@ export default function FormCadastrarUsuario() {
     const handleLogin = async (data: any) => {
         try{
             if(await login(data?.email, data?.senha))
-                navigate("/acessar", { replace: true });
+                navigate("/entrar", { replace: true });
         }
         catch (error) {
             console.error("Erro ao acessar a conta:", error);
