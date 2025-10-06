@@ -12,7 +12,7 @@ export default function ComercioLayout() {
     <ProtectedRoute>
       <div className="layout">
         <div className="sideBar">
-          <div className="logo">Logo</div>
+          <div className="logo"><img src="../../../public/vectors/frog.svg" height="100" width="100"></img></div>
           <nav className="menu">
             <ul>
               {/* Dashboard */}

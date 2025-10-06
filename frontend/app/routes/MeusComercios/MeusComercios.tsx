@@ -31,7 +31,6 @@ function MeusComercios() {
 
       if (!isMountedRef.current) {return;};
       setComercios(Array.isArray(data?.comercios) ? data.comercios : []);
-      console.log("era pra tá indo")
     } catch (err) {
       const axiosErr = err as AxiosError<any>;
       const serverMessage =
