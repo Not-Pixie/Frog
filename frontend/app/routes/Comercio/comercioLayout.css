@@ -35,7 +35,7 @@ body {
 }
 
 .menu {
-    margin-top: 60px;
+    margin-top: 2vh;
     height: 75%;
     display: flex;
     justify-content: center;
@@ -50,11 +50,8 @@ body {
 .opcao {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
   border-radius: 8px;
   cursor: pointer;
-  margin-bottom: 20px;
 }
 
 .opcao img,
@@ -122,7 +119,6 @@ body {
 .alinhar {
   display: flex;
   align-items: center;
-  gap: 8px;
   width: 100%;
   padding: 8px 12px;
   color: #fff;
@@ -134,3 +130,97 @@ body {
   background: rgb(0, 138, 126);
 }
 
+/* --- container/layout (mantive o que já tinha) --- */
+/* ... seu CSS existente acima ... */
+
+/* Submenu container: controla altura e overflow para empurrar itens */
+.sub-menu {
+  max-height: 0;                 
+  overflow: hidden;
+  transition: max-height 360ms cubic-bezier(.2,.9,.2,1);
+  width: 100%;
+  margin: 0;                     
+  padding-left: 0;
+  transform-origin: top center;  
+}
+
+
+.sub-menu.open {
+  max-height: 400px;             
+}
+
+/* Cada item do submenu anima translateY + opacity para o efeito de 'descida' */
+.sub-opcao {
+  list-style: none;
+  padding: 6px 15px 8px;
+  border-radius: 6px;
+  transform: translateY(-8px) scaleY(0.98);
+  opacity: 0;
+  transition:
+    transform 320ms cubic-bezier(.2,.9,.2,1),
+    opacity 320ms cubic-bezier(.2,.9,.2,1);
+  will-change: transform, opacity;
+}
+
+/* Quando o container abre, anima os itens para a posição natural */
+.sub-menu.open .sub-opcao {
+  transform: translateY(0) scaleY(1);
+  opacity: 1;
+}
+
+/* Stagger: pequenas diferenças de delay para efeito cascata (top -> down) */
+.sub-menu.open .sub-opcao:nth-child(1) { transition-delay: 200ms; }
+.sub-menu.open .sub-opcao:nth-child(2) { transition-delay: 350ms; }
+.sub-menu.open .sub-opcao:nth-child(3) { transition-delay: 500ms; }
+
+/* Ao fechar, remove delays para resposta imediata (opcional) */
+.sub-opcao { transition-delay: 0ms; }
+
+/* Ajustes de links (mantive a sua lógica de estilos) */
+.sub-opcao a {
+  color: white;
+  width: 100%;
+  padding: 3px 15px;
+  text-decoration: none;
+  display: block;
+}
+
+.sub-opcao a:hover,
+.sub-opcao a.active {
+  background: rgb(0, 138, 126);
+  color: #fff;
+  border-radius: 8px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+
+/* mantém a mesma margem entre itens principais */
+.opcao { margin-bottom: 20px; }
+
+/* opcional: marca visual quando o toggle estiver aberto */
+.movimentacoes-toggle[aria-expanded="true"] .alinhar {
+  background: rgba(0,0,0,0.08);
+}
+
+.movimentacoes-toggle{
+  margin-bottom: 0;
+}
+
+.movimentacoes-toggle + .sub-menu {
+  margin-top: 0;      
+  margin-bottom: 20px;
+}
+
+.logo img
+{
+  height: 90%;
+}
+
+.logo {
+  margin-top: 1vh;
+}
+
+.sideBar span
+{
+  margin-left: 5px;
+}

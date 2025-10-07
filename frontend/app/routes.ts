@@ -16,7 +16,7 @@ export default [
     index("./routes/Comercio/Pages/Dashboard/dashboard.tsx"),        // /comercio/42
     route("entradas", "./routes/Comercio/Pages/Movimentaçao/entrada.tsx"),    // /comercio/42/entradas
     route("saidas", "./routes/Comercio/Pages/Movimentaçao/saida.tsx"),        // /comercio/42/saidas
-    route("relatorios", "./routes/Comercio/Pages/Movimentaçao/relatorio.tsx"),
+    route("historico", "./routes/Comercio/Pages/Movimentaçao/relatorio.tsx"),
     route("produtos", "./routes/Comercio/Pages/Produtos/produto.tsx"),
     route("fornecedores", "./routes/Comercio/Pages/Fornecedores/fornecedores.tsx"),
     route("configuracoes", "./routes/Comercio/Pages/Configuraçoes/configuraçao.tsx")
