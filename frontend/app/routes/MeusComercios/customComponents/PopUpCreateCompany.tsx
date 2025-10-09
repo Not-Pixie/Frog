@@ -12,6 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import type { Company, FormValues } from "./schemas"
 import { companySchema } from "./schemas";
+import Button from "src/components/Button";
 
 interface Props {
   isOpen: boolean;
@@ -138,14 +139,6 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
     gap: 10,
   };
 
-  const btnStyle: React.CSSProperties = {
-    padding: "8px 12px",
-    borderRadius: 8,
-    border: "none",
-    cursor: "pointer",
-    fontWeight: 600,
-  };
-
   return (
     <PopUp
       isOpen={isOpen}
@@ -175,22 +168,22 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
           {error && <div className="text-red-600 mt-2 text-sm">{error}</div>}
 
           <div className="modal-actions" style={{ marginTop: 12 }}>
-            <button
+            <Button
               type="button"
               onClick={handleCancel}
-              style={{ ...btnStyle, background: "#f0f0f0", color: "#222" }}
+              theme="light"
               disabled={loading || isSubmitting}
             >
               Cancelar
-            </button>
+            </Button>
 
-            <button
+            <Button
               type="submit"
-              style={{ ...btnStyle, background: "rgba(53,172,151,1)", color: "#fff" }}
+              theme="green"
               disabled={loading || isSubmitting}
             >
               Próximo
-            </button>
+            </Button>
           </div>
         </form>
       )}
@@ -198,7 +191,6 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
       {step === 2 && (
         <form onSubmit={handleSubmit(onSubmit)}>
           <div style={scrollAreaStyle}>
-            {/* Para campos aninhados, use string literal como 'configs.campo1' */}
             <Input
               label="Unidade de medida padrão"
               id="company-campo1"
@@ -239,22 +231,22 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
           {error && <div className="text-red-600 mt-2 text-sm">{error}</div>}
 
           <div className="modal-actions" style={{ marginTop: 12 }}>
-            <button
+            <Button
               type="button"
               onClick={handleBack}
-              style={{ ...btnStyle, background: "#f0f0f0", color: "#222" }}
+              theme="light"
               disabled={loading || isSubmitting}
             >
               Voltar
-            </button>
+            </Button>
 
-            <button
+            <Button
               type="submit"
-              style={{ ...btnStyle, background: "rgba(53,172,151,1)", color: "#fff" }}
+              theme="green"
               disabled={loading || isSubmitting}
             >
               {loading || isSubmitting ? "Criando..." : "Criar"}
-            </button>
+            </Button>
           </div>
         </form>
       )}
