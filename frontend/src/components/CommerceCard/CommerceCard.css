@@ -27,9 +27,7 @@
   width: var(--card-width);
   max-width: var(--card-max-width);
   min-width: var(--card-min-width);
-  aspect-ratio: 1 / 0.9
-  ; /* força formato quadrado */
-  /* altura automática a partir do aspect-ratio */
+  aspect-ratio: 1 / 0.9  ; 
 }
 
 /* estado clicado */
@@ -100,10 +98,13 @@
   text-align: center;
   padding: 8px;
   user-select: none;
-  color: white;
   min-height: 90%;
   flex-direction: column;
   justify-content: space-between;
+}
+
+.card-content > * {
+  color: white;
 }
 
 .commerce-name

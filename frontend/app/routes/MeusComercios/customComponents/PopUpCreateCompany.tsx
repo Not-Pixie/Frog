@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import api from "../../../../src/api/axios"; // ajuste se necessário
 import axios from "axios";
-import Input from "../../../../src/components/Input"; // ajuste o path se necessário
+import Input from "../../../../src/components/Input"; 
 import PopUp from "../../../../src/components/PopUp";
 import { COMERCIO } from "src/api/enpoints";
 

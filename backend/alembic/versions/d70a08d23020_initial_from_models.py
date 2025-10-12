@@ -98,7 +98,7 @@ def upgrade() -> None:
     sa.UniqueConstraint('comercio_id', 'usuario_id', name='uq_comercio_usuario')
     )
     op.create_table('convites',
-    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('convite_id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('comercio_id', sa.Integer(), nullable=False),
     sa.Column('link', sa.String(length=16), nullable=False),
     sa.Column('criado_em', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),

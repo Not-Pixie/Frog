@@ -1,44 +1,126 @@
-import React from "react";
+import React, { useMemo } from "react";
 import "./CommerceCard.css";
 import type { Comercio } from "~/routes/MeusComercios/customComponents/schemas";
-import { Link } from "react-router";
+import { Link } from "react-router"; // <- use react-router-dom
 import { dateFormatter } from "./formatter";
 
 type CommerceCardProps = {
   onClick?: () => void;
-  variant?: "add" | "filled"; 
+  variant?: "add" | "filled";
   comercio?: Comercio;
+  clickable?: boolean;
+  children?: React.ReactNode;
 };
 
-export default function CommerceCard({ onClick, variant = "add", comercio }: CommerceCardProps) {
-  let className = `commerce-card ${!comercio ? "card-add" : "card-filled"}`;
+export default function CommerceCard({
+  onClick,
+  variant = "add",
+  comercio,
+  clickable = true,
+  children,
+}: CommerceCardProps) {
+  const baseClass = "commerce-card";
+  const modeClass =
+    !!comercio || variant === "filled" ? "card-filled" : "card-add";
+  const ownerClass = comercio?.is_proprietario ? "owner-card" : "";
+  const className = [baseClass, modeClass, ownerClass]
+    .filter(Boolean)
+    .join(" ");
 
-  if(!comercio)
+  const formattedDate = useMemo(() => {
+    const raw = comercio?.criado_em;
+    if (!raw) return "";
+    const d = new Date(raw as any);
+    if (Number.isNaN(d.getTime())) {
+      return typeof raw === "string" ? raw : "";
+    }
+    try {
+      return dateFormatter.format(d);
+    } catch {
+      return typeof raw === "string" ? raw : "";
+    }
+  }, [comercio?.criado_em]);
+
+  if (!comercio) {
+    if (variant === "add") {
+      return (
+        <button
+          type="button"
+          className={className}
+          onClick={onClick}
+          aria-label="Criar novo comércio"
+          disabled={!clickable}
+        >
+          <span className="plus-sign" aria-hidden={true}>
+            +
+          </span>
+        </button>
+      );
+    }
+
+    if (clickable && onClick) {
+      return (
+        <button
+          type="button"
+          className={className}
+          onClick={onClick}
+          aria-label="Cartão"
+        >
+          {children}
+        </button>
+      );
+    }
+
+    return (
+      <div className={className} role="group" aria-label="Cartão">
+        {children}
+      </div>
+    );
+  }
+
+
+  const commerceId = comercio.comercio_id;
+  const nameLabel = comercio.nome;
+  const enterLabel = `Entrar em ${nameLabel}`;
+
+  if (clickable && commerceId !== undefined) {
+    return (
+      <Link
+        to={`/comercio/${commerceId}`}
+        className={className}
+        onClick={onClick}
+        aria-label={enterLabel}
+      >
+        <div className="card-content">
+          <div className="commerce-name">{nameLabel}</div>
+          <div className="commerce-date">{formattedDate}</div>
+        </div>
+      </Link>
+    );
+  }
+
+  if (clickable && onClick) {
     return (
       <button
         type="button"
         className={className}
         onClick={onClick}
-        aria-label={variant === "add" ? "Criar novo comércio" : "Abrir comércio"}
+        aria-label={enterLabel}
       >
-        {variant === "add" ? <span className="plus-sign" aria-hidden>+</span> : <div className="card-content">Comércio</div>}
+        <div className="card-content">
+          <div className="commerce-name">{nameLabel}</div>
+          <div className="commerce-date">{formattedDate}</div>
+        </div>
       </button>
     );
-
-  className = comercio.is_proprietario ? `${className} owner-card` : className;
-  const formattedComercio =  {...comercio, criado_em: dateFormatter.format(new Date(comercio.criado_em))}
+  }
 
   return (
-    <Link
-      to={`/comercio/${formattedComercio.comercio_id}`}
-      className={className}
-      onClick={onClick}
-      aria-label={`Entrar em ${formattedComercio.nome}`}
-    >
+    <div className={className} role="group" aria-label={enterLabel}>
       <div className="card-content">
-        <div className="commerce-name">{formattedComercio.nome}</div>
-        <div className="commerce-date">{formattedComercio.criado_em}</div>
+        <div className="commerce-name">{nameLabel}</div>
+        <div className="commerce-date">{formattedDate}</div>
       </div>
-    </Link>
-  )
+    </div>
+  );
 }

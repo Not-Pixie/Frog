@@ -62,7 +62,6 @@ def query_comercios():
     usuario_id: int = usuario.get("usuario_id")
 
     if usuario is None or usuario_id is None:
-        current_app.logger.debug("Usuario não achado no g")
         return jsonify({"msg":"erro de atutenticação"}), 401
     
     comercios = get_comercios_que_usuario_tem_acesso(SessionLocal(), usuario_id)
