@@ -17,8 +17,7 @@ def validar_convite(invite_code: str, usuario: dict, db):
     if not invite_code:
         return {"isValid": False, "message": "Código de convite ausente"}
 
-    
-    convite: Convite = db.query(Convite).filter(Convite.convite_id == invite_code).first() 
+    convite: Convite = db.query(Convite).filter(Convite.link == invite_code).first() 
     if not convite:
         return {"isValid": False, "message": "Convite não encontrado"}
 
@@ -27,11 +26,20 @@ def validar_convite(invite_code: str, usuario: dict, db):
     #         return {"isValid": False, "message": "Convite expirado"}
 
     comercio: Comercio = db.query(Comercio).filter(Comercio.comercio_id == convite.comercio_id).first()
-
     if not comercio:
         return {"isValid": False, "message": "Comércio vinculado ao convite não encontrado"}
     
     usuario_id = usuario.get("usuario_id")
+    if not usuario_id:
+        return {"isValid": False, "message": "usuario_id ausente"}
+
+    # Verifica se o usuário já possui vínculo com o comércio
+    acesso_existente = db.query(ComercioUsuario).filter(
+        ComercioUsuario.usuario_id == usuario_id,
+        ComercioUsuario.comercio_id == convite.comercio_id
+    ).first()
+    if acesso_existente:
+        return {"isValid": False, "message": "Usuário já possui acesso a esse comércio"}
 
     comercio_serializado = {
         "comercio_id": getattr(comercio, "comercio_id", None),
@@ -54,19 +62,18 @@ def aceitar_convite(invite_code: str, usuario_id: int, db):
     if not invite_code:
         return {"success": False, "message": "inviteCode ausente"}
 
-    convite: Convite = db.query(Convite).filter(Convite.convite_id == invite_code).with_for_update().first()  # lock
+    convite: Convite = db.query(Convite).filter(Convite.link == invite_code).with_for_update().first()  # lock
 
     if not convite:
         return {"success": False, "message": "Convite não encontrado"}
 
-    # Validar convite com o usuário atual
     validation = validar_convite(invite_code, {"usuario_id": usuario_id}, db)
     if not validation.get("isValid", False):
         return {"success": False, "message": validation.get("message", "Convite inválido")}
 
-    # Verifica se o convite já foi usado
-    if getattr(convite, "usado", False):
-        return {"success": False, "message": "Convite já utilizado"}
+    # # Verifica se o convite já foi usado???
+    # if getattr(convite, "usado", False):
+    #     return {"success": False, "message": "Convite já utilizado"}
 
     try:
         # Obter o comércio vinculado
@@ -78,7 +85,7 @@ def aceitar_convite(invite_code: str, usuario_id: int, db):
         acesso = ComercioUsuario(
             usuario_id=usuario_id,
             comercio_id=getattr(comercio, "comercio_id"),
-            permissao="operador"
+            permissao="membro"
         )
         db.add(acesso)
         db.commit()

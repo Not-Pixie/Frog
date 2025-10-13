@@ -15,10 +15,13 @@ def get_convite(invite_code=None):
     """
     GET /convites?inviteCode=xxx  OR GET /convites/<invite_code>
     Retorna JSON compatível com o front:
-    { isValid: bool, comercio: {...}?, message?: "..." }
+    { 
+        isValid: bool, 
+        comercio: {...}?, 
+        message?: "..." 
+    }
     """
     current_app.logger.debug(f"ENTROU /convites, invite_code={invite_code}, headers={dict(request.headers)}")
-    # prioriza path param, depois query param
     if not invite_code:
         invite_code = request.args.get("inviteCode")
         

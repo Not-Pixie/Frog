@@ -97,10 +97,15 @@ export default function Convite() {
             {comercio ? (
               <>
                 <h3 className="titulo">
-                  Você foi convidado para{" "}
-                  {comercio.nome ?? comercio.comercio_id}
+                  Você foi convidado para
+                  <div className="name">
+                    {" "}
+                    {comercio.nome ?? comercio.comercio_id}
+                  </div>
                 </h3>
-                <CommerceCard comercio={comercio} clickable={false} />
+                <div className="custom-card">
+                  <CommerceCard comercio={comercio} clickable={false} />
+                </div>
                 <div className="botoes">
                   <Button
                     theme="light"

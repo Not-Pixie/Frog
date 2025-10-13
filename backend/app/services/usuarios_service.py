@@ -1,4 +1,5 @@
 from typing import List
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.models.comercios_model import Comercio
 from app.models.comercios_usuarios import ComercioUsuario
@@ -15,11 +16,19 @@ def get_comercios_que_usuario_tem_acesso(db: Session, usuario_id: int) -> List[C
             "Não foi possível detectar colunas PK/FK nos models."
         )
 
+    subq = (
+        db.query(
+            ComercioUsuario.comercio_id.label("comercio_id"),
+            func.max(ComercioUsuario.entrou_em).label("last_entrou")
+        )
+        .filter(ComercioUsuario.usuario_id == usuario_id)
+        .group_by(ComercioUsuario.comercio_id)
+    ).subquery()
+
     q = (
         db.query(Comercio)
-        .join(ComercioUsuario, comercio_pk == cu_comercio_col)
-        .filter(cu_usuario_col == usuario_id)
-        .distinct()
+        .join(subq, Comercio.comercio_id == subq.c.comercio_id)
+        .order_by(subq.c.last_entrou.asc())
     )
     
     return q.all()
