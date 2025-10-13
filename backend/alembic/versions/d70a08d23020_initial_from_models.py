@@ -104,7 +104,7 @@ def upgrade() -> None:
     sa.Column('criado_em', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('atualizado_em', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['comercio_id'], ['comercios.comercio_id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id'),
+    sa.PrimaryKeyConstraint('convite_id'),
     sa.UniqueConstraint('link')
     )
     op.create_table('fornecedores',
