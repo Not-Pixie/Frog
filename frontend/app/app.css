@@ -2,17 +2,19 @@
 
 @font-face {
   font-family: CocogooseRegular;
-  src: url("/fonts/cocogoose/Cocogoose-Pro-Regular-trial.ttf");
+  src: url("../public/fonts/cocogoose/Cocogoose-Pro-Regular-trial.ttf");
 }
 
 @font-face {
-  font-family: ChocolatesRegular;
-  src: url("/fonts/tt_chocolates/TT\ Chocolates\ Trial\ Regular.otf");
+  font-family: Chocolates;
+  src: url("../public/fonts/tt_chocolates/TT\ Chocolates\ Trial\ Regular.otf");
+  font-weight: normal;
 }
 
 @font-face {
-  font-family: ChocolatesBold;
-  src: url("/fonts/tt_chocolates/TT\ Chocolates\ Trial\ DemiBold.otf");
+  font-family: Chocolates;
+  src: url("../public/fonts/tt_chocolates/TT\ Chocolates\ Trial\ DemiBold.otf");
+  font-weight: bold;
 }
 
 html,
@@ -25,6 +27,7 @@ body {
   --primaryColor: rgba(53, 172, 151, 1);
   --accentColor: white;
 
-  --bodyFont: "CocogooseRegular", sans-serif;
+  --tittleFont: "CocogooseRegular", sans-serif;
+  --bodyFont: Chocolates, sans-serif;
 }
 
