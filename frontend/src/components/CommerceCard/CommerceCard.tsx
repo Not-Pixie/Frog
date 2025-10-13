@@ -115,8 +115,9 @@ export default function CommerceCard({
     );
   }
 
+  
   return (
-    <div className={className} role="group" aria-label={enterLabel}>
+    <div className={`${className} non-clickable`} role="group" aria-label={enterLabel}>
       <div className="card-content">
         <div className="commerce-name">{nameLabel}</div>
         <div className="commerce-date">{formattedDate}</div>

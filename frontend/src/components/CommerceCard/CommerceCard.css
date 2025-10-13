@@ -3,7 +3,7 @@
   --card-width: clamp(120px, 12vw, 180px);
 
   /* customizáveis */
-  --card-max-width: 220px;
+  --card-max-width: 500px;
   --card-min-width: 140px;
   --card-radius: 12px; /* menos "gordinho" -> mais quadrado */
   --card-accent: rgba(53,172,151,1);
@@ -112,6 +112,14 @@
   font-size: 1.25rem;
   font-weight: bold;
   margin-top: 5%;
+}
+
+.non-clickable{
+  transform: none !important;
+}
+
+.non-clickable:hover{
+  cursor: default;
 }
 
 /* Responsividade: sobrescreve a variável --card-width por breakpoint */
