@@ -3,7 +3,7 @@
 }
 
 h1 {
-    font-family: CocogooseRegular;
+    font-family: var(--tittleFont);
     font-size: 30px;
     color: rgb(0, 138, 126);
 }

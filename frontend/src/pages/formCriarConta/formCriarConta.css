@@ -12,8 +12,8 @@ p {
 }
 
 h2 {
-  font-family: var(--bodyFont);
-  color: rgba(53, 172, 151, 1);
+  font-family: var(--tittleFont);
+  color: var(--primaryColor);
   margin-bottom: 10%;
   font-size: 2.5rem;
   text-align: center;
@@ -67,7 +67,7 @@ h2 {
   justify-content: center;
   align-items: center;
   width: var(--slideWidth);
-  color: rgba(53, 172, 151, 1);
+  color: var(--primaryColor);
   font-size: 1.4rem;
   min-height: 10vh;
   gap: 8%;
@@ -114,7 +114,7 @@ h2 {
   display: flex;
   align-items: center;
   flex-direction: row;
-  background-color: rgba(53, 172, 151, 1);
+  background-color: var(--primaryColor);
   height: 35px;
   border-radius: 8px;
   color: white;
@@ -122,7 +122,8 @@ h2 {
 }
 
 .finalizeButton p {
-  font-family: ChocolatesBold;
+  font-family: var(--bodyFont);
+  font-weight: bold;
 }
 
 .erro {

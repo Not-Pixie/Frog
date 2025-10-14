@@ -20,8 +20,8 @@
   --commerce-row-max-width: 100%;
 
   /* tipografia */
-  --title-font-family: "CocogooseRegular", var(--font-stack);
-  --title-color: rgba(53, 172, 151, 1);
+  --title-font-family: var(--title-color), var(--font-stack);
+  --title-color: var(--primaryColor);
   --title-size: 2.5rem;
   --subtitle-size: 1rem;
   --text-color: #222;

@@ -19,7 +19,7 @@ export default function AcessarLayout() {
         <div className="leftContainer">
           <h1>Seja bem-vindo(a)!</h1>
           <Link to={toggleTarget} className="toggleButton">
-            {toggleText}
+            <p>{toggleText}</p>
           </Link>
         </div>
 

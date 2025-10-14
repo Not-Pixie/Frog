@@ -1,21 +1,245 @@
 @import "tailwindcss";
 
+/* ---------------------------
+   COCOGOOSE (Cocogoose-Pro)
+   --------------------------- */
+
+/* Thin */
 @font-face {
-  font-family: CocogooseRegular;
-  src: url("../public/fonts/cocogoose/Cocogoose-Pro-Regular-trial.ttf");
+  font-family: "Cocogoose";
+  src: url("/fonts/cocogoose/Cocogoose-Pro-Thin-trial.ttf") format("truetype");
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cocogoose";
+  src: url("/fonts/cocogoose/Cocogoose-Pro-Thin-Italic-trial.ttf") format("truetype");
+  font-weight: 100;
+  font-style: italic;
+  font-display: swap;
 }
 
+/* Ultralight */
 @font-face {
-  font-family: Chocolates;
-  src: url("../public/fonts/tt_chocolates/TT\ Chocolates\ Trial\ Regular.otf");
-  font-weight: normal;
+  font-family: "Cocogoose";
+  src: url("/fonts/cocogoose/Cocogoose-Pro-Ultralight-trial.ttf") format("truetype");
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cocogoose";
+  src: url("/fonts/cocogoose/Cocogoose-Pro-Ultralight-Italic-trial.ttf") format("truetype");
+  font-weight: 200;
+  font-style: italic;
+  font-display: swap;
 }
 
+/* Light */
 @font-face {
-  font-family: Chocolates;
-  src: url("../public/fonts/tt_chocolates/TT\ Chocolates\ Trial\ DemiBold.otf");
-  font-weight: bold;
+  font-family: "Cocogoose";
+  src: url("/fonts/cocogoose/Cocogoose-Pro-Light-trial.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
 }
+@font-face {
+  font-family: "Cocogoose";
+  src: url("/fonts/cocogoose/Cocogoose-Pro-Light-Italic-trial.ttf") format("truetype");
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Semilight (mapeado como 400 por convenção alternativa) */
+@font-face {
+  font-family: "Cocogoose";
+  src: url("/fonts/cocogoose/Cocogoose-Pro-Semilight-trial.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cocogoose";
+  src: url("/fonts/cocogoose/Cocogoose-Pro-Semilight-Italic-trial.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Regular & Letterpress Regular */
+@font-face {
+  font-family: "Cocogoose";
+  src: url("/fonts/cocogoose/Cocogoose-Pro-Regular-trial.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cocogoose";
+  src: url("/fonts/cocogoose/Cocogoose-Pro-Italic-trial.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+/* Letterpress (variante de regular — nome separável se quiser) */
+@font-face {
+  font-family: "Cocogoose";
+  src: url("/fonts/cocogoose/Cocogoose-Pro-Letterpress-Regular-trial.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Darkmode variants (mapeadas como 400 e italic quando aplicável) */
+@font-face {
+  font-family: "Cocogoose";
+  src: url("/fonts/cocogoose/Cocogoose-Pro-Darkmode-trial.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cocogoose";
+  src: url("/fonts/cocogoose/Cocogoose-Pro-Darkmode-Italic-trial.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Bold */
+@font-face {
+  font-family: "Cocogoose";
+  src: url("/fonts/cocogoose/Cocogoose-Pro-Bold-trial.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cocogoose";
+  src: url("/fonts/cocogoose/Cocogoose-Pro-Bold-Italic-trial.ttf") format("truetype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* ---------------------------
+   TT CHOCOLATES (TT Chocolates Trial)
+   --------------------------- */
+
+/* ExtraLight */
+@font-face {
+  font-family: "TTChocolates";
+  src: url("/fonts/tt_chocolates/TT Chocolates Trial ExtraLight.otf") format("opentype");
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "TTChocolates";
+  src: url("/fonts/tt_chocolates/TT Chocolates Trial ExtraLight Italic.otf") format("opentype");
+  font-weight: 200;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Light */
+@font-face {
+  font-family: "TTChocolates";
+  src: url("/fonts/tt_chocolates/TT Chocolates Trial Light.otf") format("opentype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "TTChocolates";
+  src: url("/fonts/tt_chocolates/TT Chocolates Trial Light Italic.otf") format("opentype");
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Regular */
+@font-face {
+  font-family: "TTChocolates";
+  src: url("/fonts/tt_chocolates/TT Chocolates Trial Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "TTChocolates";
+  src: url("/fonts/tt_chocolates/TT Chocolates Trial Italic.otf") format("opentype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Medium */
+@font-face {
+  font-family: "TTChocolates";
+  src: url("/fonts/tt_chocolates/TT Chocolates Trial Medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "TTChocolates";
+  src: url("/fonts/tt_chocolates/TT Chocolates Trial Medium Italic.otf") format("opentype");
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* DemiBold */
+@font-face {
+  font-family: "TTChocolates";
+  src: url("/fonts/tt_chocolates/TT Chocolates Trial DemiBold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "TTChocolates";
+  src: url("/fonts/tt_chocolates/TT Chocolates Trial DemiBold Italic.otf") format("opentype");
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Bold */
+@font-face {
+  font-family: "TTChocolates";
+  src: url("/fonts/tt_chocolates/TT Chocolates Trial Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "TTChocolates";
+  src: url("/fonts/tt_chocolates/TT Chocolates Trial Bold italic.otf") format("opentype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* ExtraBold */
+@font-face {
+  font-family: "TTChocolates";
+  src: url("/fonts/tt_chocolates/TT Chocolates Trial ExtraBold.otf") format("opentype");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "TTChocolates";
+  src: url("/fonts/tt_chocolates/TT Chocolates Trial ExtraBold Italic.otf") format("opentype");
+  font-weight: 800;
+  font-style: italic;
+  font-display: swap;
+}
+
 
 html,
 body {
@@ -27,7 +251,6 @@ body {
   --primaryColor: rgba(53, 172, 151, 1);
   --accentColor: white;
 
-  --tittleFont: "CocogooseRegular", sans-serif;
-  --bodyFont: Chocolates, sans-serif;
+  --tittleFont: "Cocogoose", sans-serif;
+  --bodyFont: "TTChocolates", sans-serif;
 }
-

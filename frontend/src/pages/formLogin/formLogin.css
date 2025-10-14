@@ -8,8 +8,8 @@
 }
 
 .tituloEntrar {
-  color: rgba(53, 172, 151, 1);
-  font-family: CocogooseRegular;
+  color: var(--primaryColor);
+  font-family: var(--tittleFont);
   margin-bottom: 10%;
   font-size: 2.5rem;
   text-align: center;
@@ -35,7 +35,7 @@
 
 .btnEntrarConta {
   margin-top: 5%;
-  background-color: rgba(53, 172, 151, 1);
+  background-color: var(--primaryColor);
   width: 65px;
   height: 35px;
   border-radius: 8px;
@@ -49,11 +49,12 @@
 
 .lblEntrarConta,
 .inputEntrarConta {
-  font-family: ChocolatesRegular;
+  font-family: var(--bodyFont);
 }
 
 .btnEntrarConta {
-  font-family: ChocolatesBold;
+  font-family: var(--bodyFont);
+  font-weight: bold;
 }
 
 .lblEntrarConta {
@@ -79,12 +80,12 @@
 }
 
 .inputEntrarConta:focus {
-    border:rgba(53, 172, 151, 1) solid 1.5px;
-    color: rgba(53, 172, 151, 1);
+    border:var(--primaryColor) solid 1.5px;
+    color: var(--primaryColor);
 }
 
 .formWrapEntrar:focus-within label {
-    color: rgba(53, 172, 151, 1);
+    color: var(--primaryColor);
 }
 
 .inputWithError {

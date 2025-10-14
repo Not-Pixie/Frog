@@ -14,8 +14,8 @@ body {
 }
 
 .tituloCriar {
-  color: rgba(53, 172, 151, 1);
-  font-family: CocogooseRegular;
+  color: var(--primaryColor);
+  font-family: var(--tittleFont);
   margin-bottom: 15%;
   font-size: 2.2rem;
   text-align: center;
@@ -75,16 +75,16 @@ body {
 }
 
 .inputCriarConta:focus {
-    border:rgba(53, 172, 151, 1) solid 1.5px;
-    color: rgba(53, 172, 151, 1);
+    border:var(--primaryColor) solid 1.5px;
+    color: var(--primaryColor);
 }
 
 .formGroupCriar:focus-within label {
-    color: rgba(53, 172, 151, 1);
+    color: var(--primaryColor);
 }
 
 .fa-arrow-right, .fa-arrow-left {
-    color: rgba(53, 172, 151, 1);
+    color: var(--primaryColor);
     font-size: 1.4rem;
 }
 
@@ -106,7 +106,7 @@ body {
   background: none;
   border: none;
   font-size: 1.2rem;
-  color: rgba(53, 172, 151, 1);
+  color: var(--primaryColor);
   cursor: pointer;
   padding: 0.3rem;
 }
@@ -121,7 +121,7 @@ body {
 }
 
 .btnCriarConta {
-  background-color: rgba(53, 172, 151, 1);
+  background-color: var(--primaryColor);
   width: 65px;
   height: 30px;
   border-radius: 8px;

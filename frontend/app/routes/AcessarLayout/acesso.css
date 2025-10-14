@@ -17,7 +17,7 @@
 
 .leftContainer {
   position: relative;
-  background: rgba(53, 172, 151, 1);
+  background: var(--primaryColor);
   flex-basis: 45%;
   border-radius: 0 20px 20px 0px;
   display: flex;
@@ -29,11 +29,11 @@
 
 p {
   text-align: center;
-  font-family: ChocolatesRegular;
+  font-family: var(--bodyFont);
 }
 
 h1 {
-  font-family: CocogooseRegular;
+  font-family: var(--tittleFont);
   font-size: 2.5rem;
   color: white;
   text-align: center;
@@ -45,7 +45,7 @@ h1 {
   font-size: 1.1rem;
   border-radius: 8px;
   border: none;
-  background-color: rgba(53, 172, 151, 1);
+  background-color: var(--primaryColor);
   color: white;
   cursor: pointer;
   width: 100%;
