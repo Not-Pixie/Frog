@@ -9,7 +9,7 @@
 
 .tituloEntrar {
   color: var(--primaryColor);
-  font-family: var(--tittleFont);
+  font-family: var(--titleFont);
   margin-bottom: 10%;
   font-size: 2.5rem;
   text-align: center;

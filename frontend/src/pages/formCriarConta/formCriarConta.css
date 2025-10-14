@@ -12,7 +12,7 @@ p {
 }
 
 h2 {
-  font-family: var(--tittleFont);
+  font-family: var(--titleFont);
   color: var(--primaryColor);
   margin-bottom: 10%;
   font-size: 2.5rem;

@@ -20,7 +20,7 @@
   --commerce-row-max-width: 100%;
 
   /* tipografia */
-  --title-font-family: var(--title-color), var(--font-stack);
+  --title-font-family: var(--titleFont), var(--font-stack);
   --title-color: var(--primaryColor);
   --title-size: 2.5rem;
   --subtitle-size: 1rem;

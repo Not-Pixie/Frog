@@ -3,7 +3,7 @@
 }
 
 h1 {
-    font-family: var(--tittleFont);
+    font-family: var(--titleFont);
     font-size: 30px;
     color: rgb(0, 138, 126);
 }

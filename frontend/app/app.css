@@ -251,6 +251,6 @@ body {
   --primaryColor: rgba(53, 172, 151, 1);
   --accentColor: white;
 
-  --tittleFont: "Cocogoose", sans-serif;
+  --titleFont: "Cocogoose", sans-serif;
   --bodyFont: "TTChocolates", sans-serif;
 }
