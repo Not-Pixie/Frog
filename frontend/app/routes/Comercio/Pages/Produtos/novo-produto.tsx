@@ -1,39 +1,53 @@
 // src/routes/Comercio/Pages/Produtos/novo-produto.tsx
-import React from "react";
+import React, { useEffect } from "react";
 import "./novo-produto.css";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router"; // mantenho como você tinha
 import { useForm } from "react-hook-form";
 import Button from "../../../../../src/components/Button/button.tsx";
+import Input from "../../../../../src/components/Input/Input.tsx"; // ajuste o caminho se necessário
 
 type FormValues = {
-  codigo: string;
   nome: string;
   categoria: string;
   preco: string;
   fornecedor: string;
-  limiteEstoque: string;
+  limiteEstoque: string; // agora é textbox
   tag: string;
 };
 
 export default function NovoProduto() {
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormValues>({
+
+  const { register, handleSubmit, formState: { errors, isSubmitting }, setValue } = useForm<FormValues>({
     defaultValues: {
-      codigo: "097356",
       nome: "",
       categoria: "",
-      preco: "R$ 99,99",
+      preco: "",
       fornecedor: "",
-      limiteEstoque: "padrao",
+      // valor padrão (pode vir de configurações do usuário depois)
+      limiteEstoque: "",
       tag: ""
     }
   });
+
+  // exemplo: se quiser popular limiteEstoque a partir de uma API / config do usuário,
+  // você pode usar setValue dentro de um useEffect (descomente e adapte quando for necessário).
+  /*
+  useEffect(() => {
+    async function loadUserDefaults() {
+      const resp = await fetch("/api/meu-usuario/config"); // exemplo
+      const json = await resp.json();
+      // supondo que json.limite_padrao exista
+      setValue("limiteEstoque", json.limite_padrao ?? "padrao");
+    }
+    loadUserDefaults();
+  }, [setValue]);
+  */
 
   const onSubmit = async (data: FormValues) => {
     // Por enquanto: apenas log e feedback visual local.
     console.log("Dados do produto (sem backend):", data);
     alert("O backend ainda não existe, então, dados salvos localmente. ;) ");
-    // Se quiser navegar de volta:
     // navigate(-1);
   };
 
@@ -53,71 +67,66 @@ export default function NovoProduto() {
       <p className="subtitulo">Adicionar novo produto:</p>
 
       <form className="product-form" onSubmit={handleSubmit(onSubmit)} noValidate>
-        <div className="field">
-          <label htmlFor="codigo">Código</label>
-          <input
-            id="codigo"
-            {...register("codigo", { required: "Código é obrigatório" })}
-            placeholder="097356"
-          />
-          {errors.codigo && <span className="err">{errors.codigo.message}</span>}
-        </div>
+        <Input
+          label="Nome"
+          id="nome"
+          type="text"
+          placeholder="Nome do produto"
+          wrapperClassName="field"
+          inputWrapperClassName="input-wrapper"
+          {...register("nome", { required: "Nome do produto é obrigatório" })}
+        />
+        {errors.nome && <span className="err">{errors.nome.message}</span>}
 
-        <div className="field">
-          <label htmlFor="nome">Nome</label>
-          <input
-            id="nome"
-            {...register("nome", { required: "Nome do produto é obrigatório" })}
-            placeholder="Nome do produto"
-          />
-          {errors.nome && <span className="err">{errors.nome.message}</span>}
-        </div>
+        <Input
+          label="Categoria"
+          id="categoria"
+          type="text"
+          placeholder="Categoria do Produto"
+          wrapperClassName="field"
+          inputWrapperClassName="input-wrapper"
+          {...register("categoria")}
+        />
 
-        <div className="field">
-          <label htmlFor="categoria">Categoria</label>
-          <input
-            id="categoria"
-            {...register("categoria")}
-            placeholder="Categoria do Produto"
-          />
-        </div>
+        <Input
+          label="Preço"
+          id="preco"
+          type="text"
+          placeholder="99,99"
+          wrapperClassName="field"
+          inputWrapperClassName="input-wrapper"
+          {...register("preco")}
+        />
 
-        <div className="field">
-          <label htmlFor="preco">Preço</label>
-          <input
-            id="preco"
-            {...register("preco")}
-            placeholder="R$ 99,99"
-          />
-        </div>
+        <Input
+          label="Fornecedor"
+          id="fornecedor"
+          type="text"
+          placeholder="Nome do Fornecedor"
+          wrapperClassName="field"
+          inputWrapperClassName="input-wrapper"
+          {...register("fornecedor")}
+        />
 
-        <div className="field">
-          <label htmlFor="fornecedor">Fornecedor</label>
-          <input
-            id="fornecedor"
-            {...register("fornecedor")}
-            placeholder="Nome do Fornecedor"
-          />
-        </div>
+        <Input
+          label="Limite mínimo de estoque"
+          id="limiteEstoque"
+          type="text"
+          placeholder="Padrão"
+          wrapperClassName="field"
+          inputWrapperClassName="input-wrapper"
+          {...register("limiteEstoque")}
+        />
 
-        <div className="field">
-          <label htmlFor="limiteEstoque">Limite mínimo de estoque</label>
-          <select id="limiteEstoque" {...register("limiteEstoque")}>
-            <option value="padrao">Padrão</option>
-            <option value="5">5</option>
-            <option value="10">10</option>
-            <option value="20">20</option>
-          </select>
-        </div>
-
-        <div className="field field-full">
-          <label htmlFor="tag">Tag</label>
-          <input
-            id="tag"
-            {...register("tag")}
-            placeholder="Tag do Produto"
-          />
-        </div>
+        <Input
+          label="Tag"
+          id="tag"
+          type="text"
+          placeholder="Tag do Produto"
+          wrapperClassName="field field-full"
+          inputWrapperClassName="input-wrapper"
+          {...register("tag")}
+        />
 
         <div className="form-actions">
           <Button theme="green" type="submit" disabled={isSubmitting}>
