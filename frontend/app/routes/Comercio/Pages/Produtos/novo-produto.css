@@ -1,0 +1,99 @@
+/* novo-produto.css - estilo inspirado na imagem */
+.produto-cadastro {
+  padding: 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+  color: #054b43; /* tom escuro do tema */
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.page-header h1 {
+  font-size: 32px;
+  margin: 0;
+  color: #0f8b78;
+}
+
+.back-link {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #0f8b78;
+  padding: 4px 8px;
+}
+
+.subtitulo {
+  color: #0f8b78;
+  font-weight: 600;
+  margin: 18px 0;
+}
+
+/* Form grid: duas colunas */
+.product-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 34px;
+  align-items: start;
+}
+
+/* Quando precisar que um campo ocupe a linha inteira */
+.field-full {
+  grid-column: 1 / -1;
+}
+
+/* Field */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field label {
+  font-size: 14px;
+  color: #1b5a52;
+  font-weight: 500;
+}
+
+.field input,
+.field select {
+  height: 44px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(15, 139, 120, 0.2);
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  color: #083a36;
+}
+
+/* placeholder */
+.field input::placeholder {
+  color: rgba(3, 20, 18, 0.25);
+  font-size: 13px;
+}
+
+/* erro */
+.err {
+  color: #c33a3a;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* ações do formulário */
+.form-actions {
+  grid-column: 1 / -1;
+  margin-top: 18px;
+}
+
+/* responsivo: uma coluna em telas pequenas */
+@media (max-width: 900px) {
+  .product-form {
+    grid-template-columns: 1fr;
+  }
+}

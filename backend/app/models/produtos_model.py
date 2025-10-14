@@ -10,6 +10,7 @@ class Produto(Base):
     nome = Column(String(150), nullable=False)
     preco = Column(Numeric(10, 2), nullable=False)
     quantidade_estoque = Column(Integer, nullable=False, default=0)
+    tag = Column(String(100), nullable=True)
 
     # nomes de coluna alinhados ao SQL: unimed_id, categoria_id, fornecedor_id, comercio_id
     unimed_id = Column(Integer, ForeignKey("unidade_medidas.unimed_id", ondelete="RESTRICT", onupdate="CASCADE"), nullable=False)
