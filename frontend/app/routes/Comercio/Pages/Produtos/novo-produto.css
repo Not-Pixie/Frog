@@ -14,9 +14,16 @@
 }
 
 .page-header h1 {
-  font-size: 32px;
+  font-size: 2rem;
   margin: 0;
   color: #0f8b78;
+  font-family: var(--titleFont);
+  margin-left: 0;
+}
+
+.page-header > button * {
+  font-size: 2rem;
+  margin-right: 0;
 }
 
 .back-link {

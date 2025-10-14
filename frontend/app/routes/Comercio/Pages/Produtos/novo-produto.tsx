@@ -5,6 +5,7 @@ import { useNavigate } from "react-router"; // mantenho como você tinha
 import { useForm } from "react-hook-form";
 import Button from "../../../../../src/components/Button/button.tsx";
 import Input from "../../../../../src/components/Input/Input.tsx"; // ajuste o caminho se necessário
+import { FaArrowLeft } from "react-icons/fa";
 
 type FormValues = {
   nome: string;
@@ -59,7 +60,7 @@ export default function NovoProduto() {
           onClick={() => navigate(-1)}
           aria-label="Voltar"
         >
-          ←
+          <FaArrowLeft />
         </button>
         <h1>Produtos</h1>
       </div>
