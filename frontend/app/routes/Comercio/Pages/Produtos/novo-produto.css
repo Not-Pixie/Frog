@@ -1,4 +1,4 @@
-/* novo-produto.css - estilo inspirado na imagem */
+
 .produto-cadastro {
   padding: 24px;
   max-width: 1100px;
@@ -8,9 +8,11 @@
 
 .page-header {
   display: flex;
+  flex-direction: column-reverse;
   align-items: center;
-  gap: 12px;
   margin-bottom: 8px;
+  align-items: flex-start;
+  justify-content: flex-end;
 }
 
 .page-header h1 {
@@ -18,12 +20,13 @@
   margin: 0;
   color: #0f8b78;
   font-family: var(--titleFont);
-  margin-left: 0;
 }
 
 .page-header > button * {
-  font-size: 2rem;
+  font-size: 1rem;
   margin-right: 0;
+  margin-bottom: 0;
+  margin-top: -10px;
 }
 
 .back-link {
