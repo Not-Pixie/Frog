@@ -4,6 +4,7 @@ import "./novo-produto.css";
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import Button from "../../../../../src/components/Button/button.tsx";
+import { FaArrowLeft } from "react-icons/fa";
 
 type FormValues = {
   codigo: string;
@@ -45,7 +46,7 @@ export default function NovoProduto() {
           onClick={() => navigate(-1)}
           aria-label="Voltar"
         >
-          ←
+          <FaArrowLeft />
         </button>
         <h1>Produtos</h1>
       </div>
