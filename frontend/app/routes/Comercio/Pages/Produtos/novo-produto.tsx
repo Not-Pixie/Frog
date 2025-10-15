@@ -13,7 +13,7 @@ type FormValues = {
   preco: string;
   fornecedor: string;
   limiteEstoque: string;
-  tag: string;
+  tags: string;
 };
 
 export default function NovoProduto() {
@@ -31,7 +31,7 @@ export default function NovoProduto() {
       preco: "",
       fornecedor: "",
       limiteEstoque: "",
-      tag: "",
+      tags: "",
     },
   });
 
@@ -134,12 +134,12 @@ export default function NovoProduto() {
 
         <div className="grid-item field-full">
           <Input
-            label="Tag"
-            id="tag"
+            label="Tags"
+            id="tags"
             type="text"
-            placeholder="Tag do Produto"
+            placeholder="Tags do Produto"
             wrapperClassName="form-field "
-            {...register("tag")}
+            {...register("tags")}
           />
         </div>
 
