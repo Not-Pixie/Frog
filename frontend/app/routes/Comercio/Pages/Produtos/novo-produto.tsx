@@ -4,7 +4,7 @@ import "./novo-produto.css";
 import { useNavigate } from "react-router"; // mantenho como você tinha
 import { useForm } from "react-hook-form";
 import Button from "../../../../../src/components/Button/button.tsx";
-import Input from "../../../../../src/components/Input/Input.tsx"; // ajuste o caminho se necessário
+import Input from "../../../../../src/components/Input/Input.tsx";
 import { FaArrowLeft } from "react-icons/fa";
 
 type FormValues = {
@@ -12,23 +12,27 @@ type FormValues = {
   categoria: string;
   preco: string;
   fornecedor: string;
-  limiteEstoque: string; // agora é textbox
+  limiteEstoque: string;
   tag: string;
 };
 
 export default function NovoProduto() {
   const navigate = useNavigate();
 
-  const { register, handleSubmit, formState: { errors, isSubmitting }, setValue } = useForm<FormValues>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setValue,
+  } = useForm<FormValues>({
     defaultValues: {
       nome: "",
       categoria: "",
       preco: "",
       fornecedor: "",
-      // valor padrão (pode vir de configurações do usuário depois)
       limiteEstoque: "",
-      tag: ""
-    }
+      tag: "",
+    },
   });
 
   // exemplo: se quiser popular limiteEstoque a partir de uma API / config do usuário,
@@ -67,67 +71,77 @@ export default function NovoProduto() {
 
       <p className="subtitulo">Adicionar novo produto:</p>
 
-      <form className="product-form" onSubmit={handleSubmit(onSubmit)} noValidate>
-        <Input
-          label="Nome"
-          id="nome"
-          type="text"
-          placeholder="Nome do produto"
-          wrapperClassName="field"
-          inputWrapperClassName="input-wrapper"
-          {...register("nome", { required: "Nome do produto é obrigatório" })}
-        />
-        {errors.nome && <span className="err">{errors.nome.message}</span>}
+      <form
+        className="product-form"
+        onSubmit={handleSubmit(onSubmit)}
+        noValidate
+      >
+        <div className="grid-item">
+          <Input
+            label="Nome"
+            id="nome"
+            type="text"
+            placeholder="Nome do produto"
+            inputWrapperClassName="input-wrapper"
+            {...register("nome", { required: "Nome do produto é obrigatório" })}
+          />
+          {errors.nome && <span className="err">{errors.nome.message}</span>}
+        </div>
 
-        <Input
-          label="Categoria"
-          id="categoria"
-          type="text"
-          placeholder="Categoria do Produto"
-          wrapperClassName="field"
-          inputWrapperClassName="input-wrapper"
-          {...register("categoria")}
-        />
+        <div className="grid-item">
+          <Input
+            label="Categoria"
+            id="categoria"
+            type="text"
+            placeholder="Categoria do Produto"
+            inputWrapperClassName="input-wrapper"
+            {...register("categoria")}
+          />
+        </div>
 
-        <Input
-          label="Preço"
-          id="preco"
-          type="text"
-          placeholder="99,99"
-          wrapperClassName="field"
-          inputWrapperClassName="input-wrapper"
-          {...register("preco")}
-        />
+        <div className="grid-item">
+          <Input
+            label="Preço"
+            id="preco"
+            type="number"
+            placeholder="99,99"
+            inputWrapperClassName="input-wrapper"
+            {...register("preco")}
+          />
+        </div>
 
-        <Input
-          label="Fornecedor"
-          id="fornecedor"
-          type="text"
-          placeholder="Nome do Fornecedor"
-          wrapperClassName="field"
-          inputWrapperClassName="input-wrapper"
-          {...register("fornecedor")}
-        />
+        <div className="grid-item">
+          <Input
+            label="Fornecedor"
+            id="fornecedor"
+            type="text"
+            placeholder="Nome do Fornecedor"
+            inputWrapperClassName="input-wrapper"
+            {...register("fornecedor")}
+          />
+        </div>
 
-        <Input
-          label="Limite mínimo de estoque"
-          id="limiteEstoque"
-          type="text"
-          placeholder="Padrão"
-          wrapperClassName="field"
-          inputWrapperClassName="input-wrapper"
-          {...register("limiteEstoque")}
-        />
+        <div className="grid-item">
+          <Input
+            label="Limite mínimo de estoque"
+            id="limiteEstoque"
+            type="text"
+            placeholder="Padrão"
+            inputWrapperClassName="input-wrapper"
+            {...register("limiteEstoque")}
+          />
+        </div>
 
-        <Input
-          label="Tag"
-          id="tag"
-          type="text"
-          placeholder="Tag do Produto"
-          wrapperClassName="field field-full"
-          inputWrapperClassName="input-wrapper"
-          {...register("tag")}
-        />
+        <div className="grid-item field-full">
+          <Input
+            label="Tag"
+            id="tag"
+            type="text"
+            placeholder="Tag do Produto"
+            wrapperClassName="form-field "
+            {...register("tag")}
+          />
+        </div>
 
         <div className="form-actions">
           <Button theme="green" type="submit" disabled={isSubmitting}>
