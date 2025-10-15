@@ -3,6 +3,18 @@
   width: 100%;
 
   --svg: url(../../../public/vectors/down-arrow.svg);
+
+  --unfocusedColor: black;
+
+  --fallbackLabelColor: color(lightslategray);
+  --fallbackLabelFocusedColor: var(--primaryColor);
+  --fallbackPlaceholderColor: lightslategray;
+  --fallbackPlaceholderFocusedColor: white;
+
+  --labelColor: var(--unfocusedColor);
+  --labelFocusedColor: var(--primaryColor);
+  --placeholderColor: color-mix(in oklab, var(--unfocusedColor) 70%, transparent 30%);
+  --placeholderFocusedColor: color-mix(in oklab, var(--primaryColor) 100%, white 80%);
 }
 
 .form-field > label {
@@ -17,10 +29,12 @@
   transition: color .18s ease;
   max-width: 90% !important;
   width: fit-content;
+  color: var(--unfocusedColor);
 }
 
-.form-field:focus-within > label {
-  color: var(--primaryColor) !important;
+.form-field > label {
+  color: var(--fallbackLabelColor);
+  color: var(--labelColor) ;
 }
 
 .form-field .input-wrapper > input {
@@ -31,14 +45,31 @@
   font-size: 1.1rem;
   font: var(--bodyFont);
   border-radius: 10px;
-  border: 1.5px solid #000;
+  border: 1.5px solid var(--unfocusedColor);
   transition: border-color .18s ease, color .18s ease;
+}
+
+.form-field:focus-within > label {
+  color:var(--fallbackLabelFocusedColor);
+  color: var(--labelFocusedColor) ;
+}
+
+.form-field .input-wrapper > input::placeholder {
+  color:var(--fallbackPlaceholderColor);
+  color: var(--placeholderColor);
 }
 
 .form-field .input-wrapper > input:focus {
   outline: none;
-  border: 1.5px solid var(--primaryColor) !important;
-  color: var(--primaryColor); 
+  border: 1.5px solid var(--fallbackLabelFocusedColor);
+  border-color: var(--labelFocusedColor);
+  color: var(--fallbackLabelFocusedColor);
+  color: var(--labelFocusedColor);
+}
+
+.form-field .input-wrapper > input:focus::placeholder {
+  color:var(--fallbackPlaceholderFocusedColor);
+  color: var(--placeholderFocusedColor);
 }
 
 .form-field .input-wrapper > select {
@@ -50,29 +81,28 @@
   font-size: 1.1rem;
   font: var(--bodyFont);
   border-radius: 10px;
-  border: 1.5px solid #000;
+  border: 1.5px solid var(--labelColor);
   transition: border-color .18s ease, color .18s ease;
   padding-left: 1em;
   padding-right: 1em;
 }
 
-
 .form-field .input-wrapper > select:focus{
   outline: none;
-  border: 1.5px solid var(--primaryColor) !important;
-  color: var(--primaryColor);
-  option {color: rgba(0, 0, 0, 1)}
+  border: 1.5px solid var(--fallbackLabelFocusedColor);
+  border-color: var(--labelFocusedColor);
+  color: var(--fallbackLabelFocusedColor);
+  color: var(--labelFocusedColor);
 }
 
-
+/* style open/hover/checked options if supported by the UA */
 .form-field .input-wrapper > select:open > option:checked, 
 .form-field .input-wrapper > select:open > option:hover{
   background-color: var(--primaryColor);
   color: rgb(255, 255, 255);
 }
 
-select::picker-icon
-{
+select::picker-icon {
   content: "";
   display: inline-block;
   width: 2em;
@@ -86,14 +116,13 @@ select::picker-icon
   background-color: currentColor;
 }
 
-select:focus::picker-icon
-{
-  background-color: var(--primaryColor);
+select:focus::picker-icon {
+  background-color: var(--fallbackLabelFocusedColor);
+  background-color: var(--labelFocusedColor);
   rotate: 180deg;
   transform: translateY(0.2em);
 }
 
-select::checkmark(select)
-{
+select::checkmark(select) {
   color: transparent;
 }
