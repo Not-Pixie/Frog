@@ -102,7 +102,7 @@
   color: rgb(255, 255, 255);
 }
 
-select::picker-icon {
+.form-field select::picker-icon {
   content: "";
   display: inline-block;
   width: 2em;
@@ -116,13 +116,13 @@ select::picker-icon {
   background-color: currentColor;
 }
 
-select:focus::picker-icon {
+.form-field select:focus::picker-icon {
   background-color: var(--fallbackLabelFocusedColor);
   background-color: var(--labelFocusedColor);
   rotate: 180deg;
   transform: translateY(0.2em);
 }
 
-select::checkmark(select) {
+.form-field select::checkmark(select) {
   color: transparent;
 }
