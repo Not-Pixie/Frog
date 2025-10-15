@@ -6,13 +6,13 @@
   --ft-primary-700: var(--primary-700); 
   --ft-border: rgba(39,125,110,0.15); /* borda externa */
   --ft-border-dim: rgba(0,0,0,0.06);  /* divisores internos */
-  --ft-bg: #ffffff;             /* fundo das linhas brancas */
-  --ft-row-alt: #f6f7f8;        /* fundo das linhas alternadas */
+  --ft-bg: #f8f8f8;             /* fundo das linhas brancas */
+  --ft-row-alt: #ebebeb;        /* fundo das linhas alternadas */
   --ft-text: #2b2b2b;           /* texto primário */
   --ft-muted: #7b8b8a;          /* texto secundário */
   --ft-radius: 10px;            /* borda arredondada da tabela */
   --ft-caption-bg: rgba(0,0,0,0.02);
-  --ft-row-hover: rgba(53,172,151,0.06);
+  --ft-row-hover: color-mix(in oklab, var(--primary-300) 30%, var(--ft-row-alt) 100%);
   --ft-padding-y: 0.9rem;
   --ft-padding-x: 1.15rem;
   --ft-font-size: 14px;
