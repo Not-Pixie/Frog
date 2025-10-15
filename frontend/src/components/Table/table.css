@@ -1,0 +1,159 @@
+/* frog-table.css
+   Variáveis padrão (substitua onde quiser)
+*/
+:root{
+  --ft-primary-500: var(--primary-500);    
+  --ft-primary-700: var(--primary-700); 
+  --ft-border: rgba(39,125,110,0.15); /* borda externa */
+  --ft-border-dim: rgba(0,0,0,0.06);  /* divisores internos */
+  --ft-bg: #ffffff;             /* fundo das linhas brancas */
+  --ft-row-alt: #f6f7f8;        /* fundo das linhas alternadas */
+  --ft-text: #2b2b2b;           /* texto primário */
+  --ft-muted: #7b8b8a;          /* texto secundário */
+  --ft-radius: 10px;            /* borda arredondada da tabela */
+  --ft-caption-bg: rgba(0,0,0,0.02);
+  --ft-row-hover: rgba(53,172,151,0.06);
+  --ft-padding-y: 0.9rem;
+  --ft-padding-x: 1.15rem;
+  --ft-font-size: 14px;
+}
+
+.frog-table-wrapper {
+  width: 100%;
+  max-height: 360px;      
+  overflow: auto;         
+  border-radius: var(--ft-radius);
+  border: 1px solid var(--ft-border);
+  background: transparent;
+}
+
+.frog-table{
+width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: var(--ft-font-size);
+  color: var(--ft-text);
+  background: transparent;
+  border: 1px solid var(--ft-border);
+  border-radius: var(--ft-radius);
+  overflow: hidden;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+  box-sizing: border-box;
+}
+
+.frog-table caption{
+  text-align: left;
+  padding: 0.6rem 1rem;
+  font-weight: 600;
+  background: var(--ft-caption-bg);
+  color: var(--ft-text);
+  font-size: 0.95rem;
+}
+
+.frog-table thead th{
+  background: var(--ft-primary-500);
+  color: white;
+  padding: var(--ft-padding-y) var(--ft-padding-x);
+  text-align: center;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  vertical-align: middle;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+  font-family: var(--titleFont);
+}
+
+.frog-table thead th:not(:first-child),
+.frog-table tbody td:not(:first-child){
+  border-left: 1px solid var(--ft-border-dim);
+}
+
+.frog-table tbody td{
+    font-family: var(--bodyFont);
+}
+
+.frog-table tbody tr{
+  background: var(--ft-bg);
+}
+
+.frog-table tbody tr:nth-child(even){
+  background: var(--ft-row-alt);
+}
+
+.frog-table tbody tr:hover{
+  background: var(--ft-row-hover);
+}
+
+.frog-table td,
+.frog-table tbody th[scope="row"]{
+  padding: calc(var(--ft-padding-y) - 0.15rem) var(--ft-padding-x);
+  vertical-align: middle;
+  font-weight: 400;
+  color: var(--ft-text);
+  border-bottom: 1px solid rgba(0,0,0,0.03);
+}
+
+.frog-table tbody th[scope="row"]{
+  font-weight: 600;
+  text-align: left;
+  color: var(--ft-text);
+  background: transparent;
+  white-space: nowrap;
+}
+
+.frog-table td[data-colname="actions"]{
+    display: flex;
+    justify-content: center;
+  white-space: nowrap;
+}
+
+.frog-table tbody td[role="cell"]{
+  font-style: normal;
+  color: var(--ft-muted);
+  text-align: center;
+}
+
+.frog-table-wrapper::-webkit-scrollbar{
+    width: 0.75rem;
+  height: 8px;
+}
+  
+.frog-table-wrapper::-webkit-scrollbar-thumb{
+  background: rgba(0,0,0,0.06);
+  border-radius: 6px;
+}
+
+
+@media (max-width: 680px){
+  :root{
+    --ft-padding-x: 0.8rem;
+    --ft-padding-y: 0.6rem;
+    --ft-font-size: 13px;
+  }
+
+  .frog-table thead{
+    display: table-header-group;
+  }
+
+  .frog-table td,
+  .frog-table tbody th[scope="row"]{
+    padding: 0.5rem 0.7rem;
+  }
+
+  .frog-table-wrapper {
+    width: 100%;
+    overflow-x: auto;        
+    border-radius: var(--ft-radius);
+    border: 1px solid var(--ft-border);
+    background: transparent;
+    }
+
+    .frog-table {
+    display: table;
+    width: 100%;
+    table-layout: fixed;    
+    border-collapse: separate;
+    border-spacing: 0;
+    box-sizing: border-box;
+    }
+} 
