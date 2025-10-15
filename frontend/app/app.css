@@ -251,6 +251,18 @@ body {
   --primaryColor: rgba(53, 172, 151, 1);
   --accentColor: white;
 
+  --primary-100: #C1ECE4; 
+  --primary-200: #87DACB;
+  --primary-300: #54CAB5;
+  --primary-500: var(--primaryColor); 
+  --primary-700: #277D6E;
+  --primary-900: #184E45;
+
+  --danger: #AC354A;
+  --success: #2BAF8F;
+  --warning: #E2A800;
+  --info: #2D8BF0;
+
   --titleFont: "Cocogoose", sans-serif;
   --bodyFont: "TTChocolates", sans-serif;
 }
