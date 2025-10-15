@@ -1,7 +1,7 @@
 /* frog-table.css
    Variáveis padrão (substitua onde quiser)
 */
-:root{
+.frog-table-wrapper{
   --ft-primary-500: var(--primary-500);    
   --ft-primary-700: var(--primary-700); 
   --ft-border: rgba(39,125,110,0.15); /* borda externa */
