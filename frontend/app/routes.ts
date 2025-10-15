@@ -13,9 +13,9 @@ export default [
   route("convite/:inviteCode", "./routes/Convite/Convite.tsx"),
 
   route("comercio/:comercioId", "./routes/Comercio/comercioLayout.tsx", [
-    index("./routes/Comercio/Pages/Dashboard/dashboard.tsx"),        // /comercio/42
-    route("entradas", "./routes/Comercio/Pages/Movimentaçao/entrada.tsx"),    // /comercio/42/entradas
-    route("saidas", "./routes/Comercio/Pages/Movimentaçao/saida.tsx"),        // /comercio/42/saidas
+    index("./routes/Comercio/Pages/Dashboard/dashboard.tsx"),        
+    route("entradas", "./routes/Comercio/Pages/Movimentaçao/entrada.tsx"),    
+    route("saidas", "./routes/Comercio/Pages/Movimentaçao/saida.tsx"),        
     route("historico", "./routes/Comercio/Pages/Movimentaçao/relatorio.tsx"),
     route("produtos", "./routes/Comercio/Pages/Produtos/produto.tsx"),
     route("produtos/novo-produto", "./routes/Comercio/Pages/Produtos/novo-produto.tsx"),
