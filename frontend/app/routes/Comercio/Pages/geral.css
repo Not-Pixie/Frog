@@ -2,8 +2,8 @@
     margin: 40px;
 }
 
-h1 {
+.conteudo h1 {
     font-family: var(--titleFont);
     font-size: 30px;
-    color: rgb(0, 138, 126);
+    color: var(--primary-500);
 }
