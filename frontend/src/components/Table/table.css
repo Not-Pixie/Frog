@@ -15,12 +15,12 @@
   --ft-row-hover: color-mix(in oklab, var(--primary-300) 30%, var(--ft-row-alt) 100%);
   --ft-padding-y: 0.9rem;
   --ft-padding-x: 1.15rem;
-  --ft-font-size: 14px;
+  --ft-font-size: 0.9rem;
 }
 
 .frog-table-wrapper {
   width: 100%;
-  max-height: 360px;      
+  max-height: 50vh;      
   overflow: auto;         
   border-radius: var(--ft-radius);
   border: 1px solid var(--ft-border);
@@ -36,7 +36,6 @@ width: 100%;
   background: transparent;
   border: 1px solid var(--ft-border);
   border-radius: var(--ft-radius);
-  overflow: hidden;
   box-shadow: 0 1px 0 rgba(0,0,0,0.02);
   box-sizing: border-box;
 }
@@ -60,6 +59,9 @@ width: 100%;
   vertical-align: middle;
   white-space: nowrap;
   letter-spacing: 0.2px;
+  position: sticky;
+  top: 0;
+  z-index: 3;
   font-family: var(--titleFont);
 }
 
@@ -120,6 +122,11 @@ width: 100%;
   
 .frog-table-wrapper::-webkit-scrollbar-thumb{
   background: rgba(0,0,0,0.06);
+  border-radius: 6px;
+}
+
+.frog-table-wrapper::-webkit-scrollbar-thumb:hover{
+  background: var(--primary-500);
   border-radius: 6px;
 }
 
