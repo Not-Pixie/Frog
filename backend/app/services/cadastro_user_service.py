@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from passlib.hash import bcrypt
+from passlib.hash import bcrypt # type: ignore
 from ..models.usuarios_model import Usuario
 from .usuarios_service import get_usuario_por_email
 
