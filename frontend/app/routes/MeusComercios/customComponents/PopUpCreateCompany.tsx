@@ -4,7 +4,7 @@ import api from "../../../../src/api/axios"; // ajuste se necessário
 import axios from "axios";
 import Input from "../../../../src/components/Input"; 
 import PopUp from "../../../../src/components/PopUp";
-import { COMERCIO } from "src/api/enpoints";
+import { COMERCIOS } from "src/api/enpoints";
 
 
 import { useForm, type Resolver, type SubmitHandler } from "react-hook-form";
@@ -94,7 +94,7 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
     };
 
     try {
-      const res = await api.post(COMERCIO, payload);
+      const res = await api.post(COMERCIOS, payload);
       const data = res.data;
 
       onCreated?.({
