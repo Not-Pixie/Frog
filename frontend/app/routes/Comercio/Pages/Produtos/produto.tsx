@@ -4,7 +4,6 @@ import Button from "../../../../../src/components/Button/button.tsx";
 import { useNavigate, useParams } from "react-router";
 import Table from "src/components/Table/Table.tsx";
 import { useState } from "react";
-import CategoriaPopUp from "./CategoriaPopUp";
 
 type Produto = {
   id: string;
@@ -18,7 +17,6 @@ function Produto() {
   const navigate = useNavigate();
   const { comercioId } = useParams();
 
-  const [isCategoriaOpen, setCategoriaOpen] = useState<boolean>(false);
   const [produtosMock, setProdutosMock] = useState<Produto[]>([
     {
       id: "1",
@@ -89,8 +87,7 @@ function Produto() {
       preco: 4.5,
       sku: "FAR-005",
       quantidade: 200,
-    },
-    {
+    },{
       id: "15",
       nome: "Arroz Integral",
       preco: 18.9,
@@ -180,24 +177,7 @@ function Produto() {
         >
           Cadastrar produto
         </Button>
-
-        <Button
-          theme="green"
-          onClick={() => setCategoriaOpen(true)}
-          className="btn-cadastrar"
-          style={{ marginLeft: 8 }}
-        >
-          Criar categoria
-        </Button>
       </div>
-
-      <CategoriaPopUp
-        isOpen={isCategoriaOpen}
-        onClose={() => setCategoriaOpen(false)}
-        onCreated={() => {
-          setCategoriaOpen(false);
-        }}
-      />
     </>
   );
 }
