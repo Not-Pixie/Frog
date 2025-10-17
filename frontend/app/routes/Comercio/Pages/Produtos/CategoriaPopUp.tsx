@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import PopUp from "src/components/PopUp";
 import Input from "src/components/Input";
 import Button from "src/components/Button/button.tsx";
-import {CATEGORIAS} from "src/api/enpoints";
+import {CATEGORIAS, COMERCIOS} from "src/api/enpoints";
 import api from "src/api/axios";
 import axios from "axios";
 import { useForm, Controller } from "react-hook-form";
+import { useParams } from "react-router";
 
 interface Category {
     id: string;
@@ -24,6 +25,7 @@ type FormValues = {
 
 export default function CategoriaPopUp({ isOpen, onClose, onCreated }: Props) {
     const [generalError, setGeneralError] = useState<string | null>(null);
+    const {comercioId} = useParams();
 
     const {
         control,
@@ -41,7 +43,7 @@ export default function CategoriaPopUp({ isOpen, onClose, onCreated }: Props) {
         setGeneralError(null);
 
         try {
-            const res = await api.post(CATEGORIAS, { nome: data.nome });
+            const res = await api.post(`${COMERCIOS}/${comercioId}/categorias`, { nome: data.nome });
             const resData = res.data;
 
             const created: Category = {

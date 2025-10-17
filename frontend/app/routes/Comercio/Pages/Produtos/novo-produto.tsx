@@ -7,6 +7,7 @@ import Button from "../../../../../src/components/Button/button.tsx";
 import Input from "../../../../../src/components/Input/Input.tsx";
 import { FaArrowLeft } from "react-icons/fa";
 import api from "../../../../../src/api/axios"; // <- caminho corrigido
+import { COMERCIOS } from "src/api/enpoints.ts";
 
 type FormValues = {
   nome: string;
@@ -48,7 +49,7 @@ export default function NovoProduto() {
       try {
         // 1) tenta endpoint dedicado (recomendado)
         try {
-          const resp = await api.get(`/api/comercios/${comercioId}/config`);
+          const resp = await api.get(`${COMERCIOS}/${comercioId}/config`);
           if (resp.status === 200 && resp.data) {
             const l = Number(resp.data.limite_padrao ?? resp.data.limitePadrao ?? resp.data.limite ?? 0);
             if (!Number.isNaN(l) && mounted) {
