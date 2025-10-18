@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import PopUp from "src/components/PopUp";
 import Input from "src/components/Input";
 import Button from "src/components/Button/button.tsx";
-import {CATEGORIAS, COMERCIOS} from "src/api/enpoints";
+import {COMERCIOS} from "src/api/enpoints";
 import api from "src/api/axios";
 import axios from "axios";
 import { useForm, Controller } from "react-hook-form";

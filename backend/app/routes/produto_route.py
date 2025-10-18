@@ -18,7 +18,7 @@ def create_produto_route(comercio_id):
     fornecedor = data.get("fornecedor")     # agora string
     unimed_sigla = data.get("unimed_sigla") # opcional, string
     limiteEstoque = data.get("limiteEstoque")
-    tag = data.get("tag")  # backend campo singular
+    tags = data.get("tags")  # backend campo singular
 
     if not nome:
         return jsonify({"error": "Campo 'nome' é obrigatório"}), 400
@@ -37,7 +37,7 @@ def create_produto_route(comercio_id):
             fornecedor=fornecedor,
             unimed_sigla=unimed_sigla,
             limiteEstoque=limiteEstoque,
-            tag=tag
+            tags=tags
         )
     except ValueError as ve:
         db.rollback()
@@ -58,6 +58,6 @@ def create_produto_route(comercio_id):
         "categoria_id": produto.categoria_id,
         "fornecedor_id": produto.fornecedor_id,
         "unimed_id": produto.unimed_id,
-        "tag": produto.tag,
+        "tags": produto.tags,
         "criado_em": produto.criado_em.isoformat() if produto.criado_em else None
     }), 201

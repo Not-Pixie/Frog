@@ -1,5 +1,5 @@
 from flask import Blueprint, current_app, request, jsonify, g
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.middleware.auth import token_required
 from app.database.database import SessionLocal
@@ -7,7 +7,9 @@ from app.models.categoria_model import Categoria
 
 from app.services.usuarios_service import get_comercios_que_usuario_tem_acesso, usuario_tem_acesso_ao_comercio
 from app.api.auth import get_current_user
-from app.services.cadastro_comercio_service import criar_comercio  # supondo que exista
+from app.services.cadastro_comercio_service import criar_comercio
+from app.services.comercio_service import get_produtos_de_comercio_por_id
+from app.utils.model_utils import model_to_dict  # supondo que exista
 
 bp = Blueprint("comercios", __name__, url_prefix="/comercios")
 
@@ -87,3 +89,36 @@ def criar_categoria_no_comercio(comercio_id: int):
         except Exception as e:
             db.rollback()
             return jsonify({"msg": "Erro ao criar categoria.", "detail": str(e)}), 500
+        
+@bp.route('/<int:comercio_id>/produtos', methods=['GET'])
+@token_required
+def listar_produtos(comercio_id):
+    """
+    GET /comercio/<comercio_id>/produtos
+    Args:
+      - comercio_id: id do comércio cujos produtos serão listados
+    Retorna (200):
+      JSON { "items": [ ... ], "total": <int> }
+      onde cada item é um dict do produto (campos da tabela) + categoriaNome, fornecedorNome, unidadeMedidaNome
+    Erros:
+      - 500 em caso de SQLAlchemyError (registro do erro no logger)
+    """
+    db = SessionLocal()
+    try:
+        produtos = get_produtos_de_comercio_por_id(db, comercio_id)
+        items = []
+        for p in produtos:
+            pd = model_to_dict(p)
+            pd["categoriaNome"] = getattr(p.categoria, "nome", None) if getattr(p, "categoria", None) is not None else None
+            pd["fornecedorNome"] = getattr(p.fornecedor, "nome", None) if getattr(p, "fornecedor", None) is not None else None
+            pd["unidadeMedidaNome"] = getattr(p.unidade_medida, "nome", None) if getattr(p, "unidade_medida", None) is not None else None
+            items.append(pd)
+        return jsonify({"items": items, "total": len(items)}), 200
+    except SQLAlchemyError:
+        current_app.logger.exception("Erro ao listar produtos com join")
+        return jsonify({"error": "Erro interno ao listar produtos"}), 500
+    finally:
+        try:
+            db.close()
+        except Exception:
+            current_app.logger.exception("Erro ao fechar sessão do DB em listar_produtos")

@@ -1,137 +1,106 @@
 // produto.tsx
 import "../geral.css";
 import Button from "../../../../../src/components/Button/button.tsx";
-import { useNavigate, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import Table from "src/components/Table/Table.tsx";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import CategoriaPopUp from "./CategoriaPopUp.tsx";
+import { COMERCIOS } from "src/api/enpoints.ts";
+import api from "src/api/axios.ts";
+import axios from "axios";
 
 type Produto = {
-  id: string;
-  nome: string;
-  preco: number;
-  sku: string;
-  quantidade: number;
+  produto_id: number;           // INT no DB
+  codigo: string;               // String(50) no DB (único, not null)
+  nome: string;                 // String no DB
+  preco: number;                // Numeric -> enviado como number
+  quantidade_estoque: number;   // INT no DB
+  tags?: string | null;         // String nullable
+  unimed_id: number;
+  categoria_id: number;
+  fornecedor_id: number;
+  comercio_id: number;
+
+  criado_em: string;            // ISO datetime string (server_default func.now() -> isoformat)
+  atualizado_em: string;        // ISO datetime string
+
+  // Campos derivados adicionados pela lógica do endpoint (podem não existir em todos os responses)
+  categoriaNome?: string | null;
+  fornecedorNome?: string | null;
+  unidadeMedidaNome?: string | null;
+
+};
+
+type APIResponse = {
+  items: Produto[];
+  total: number;
 };
 
 function Produto() {
-  const navigate = useNavigate();
   const { comercioId } = useParams();
+  const [isModal, setModal] = useState<boolean>(false);
+  const [isLoad, setLoading] = useState<boolean>(false);
+  const [produtos, setProdutos] = useState<Produto[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const mountedRef = useRef(false);
 
-  const [produtosMock, setProdutosMock] = useState<Produto[]>([
+  const fetchProdutos = useCallback(async () => {
+    const url = `${COMERCIOS}/${comercioId}/produtos`;
+    setLoading(true);
+    try {
+      const res = await api.get<APIResponse>(url);
+      setProdutos(res.data.items);
+    }
+    catch (error: unknown) 
     {
-      id: "1",
-      nome: "Arroz Integral",
-      preco: 18.9,
-      sku: "ARZ-001",
-      quantidade: 50,
-    },
-    {
-      id: "2",
-      nome: "Feijão Preto",
-      preco: 9.5,
-      sku: "FJN-002",
-      quantidade: 120,
-    },
-    {
-      id: "3",
-      nome: "Açúcar Mascavo",
-      preco: 6.75,
-      sku: "ACR-003",
-      quantidade: 80,
-    },
-    {
-      id: "4",
-      nome: "Óleo de Soja",
-      preco: 7.99,
-      sku: "OLE-004",
-      quantidade: 30,
-    },
-    {
-      id: "5",
-      nome: "Farinha de Trigo",
-      preco: 4.5,
-      sku: "FAR-005",
-      quantidade: 200,
-    },
-    {
-      id: "10",
-      nome: "Arroz Integral",
-      preco: 18.9,
-      sku: "ARZ-001",
-      quantidade: 50,
-    },
-    {
-      id: "20",
-      nome: "Feijão Preto",
-      preco: 9.5,
-      sku: "FJN-002",
-      quantidade: 120,
-    },
-    {
-      id: "30",
-      nome: "Açúcar Mascavo",
-      preco: 6.75,
-      sku: "ACR-003",
-      quantidade: 80,
-    },
-    {
-      id: "40",
-      nome: "Óleo de Soja",
-      preco: 7.99,
-      sku: "OLE-004",
-      quantidade: 30,
-    },
-    {
-      id: "56",
-      nome: "Farinha de Trigo",
-      preco: 4.5,
-      sku: "FAR-005",
-      quantidade: 200,
-    },{
-      id: "15",
-      nome: "Arroz Integral",
-      preco: 18.9,
-      sku: "ARZ-001",
-      quantidade: 50,
-    },
-    {
-      id: "24",
-      nome: "Feijão Preto",
-      preco: 9.5,
-      sku: "FJN-002",
-      quantidade: 120,
-    },
-    {
-      id: "33",
-      nome: "Açúcar Mascavo",
-      preco: 6.75,
-      sku: "ACR-003",
-      quantidade: 80,
-    },
-    {
-      id: "42",
-      nome: "Óleo de Soja",
-      preco: 7.99,
-      sku: "OLE-004",
-      quantidade: 30,
-    },
-    {
-      id: "51",
-      nome: "Farinha de Trigo",
-      preco: 4.5,
-      sku: "FAR-005",
-      quantidade: 200,
-    },
-  ]);
+      console.error("Erro ao buscar produtos:", error);
 
-  function irParaCadastro() {
-    // navegação ABSOLUTA dentro do comercio, para a rota irmã
-    navigate(`/comercio/${comercioId}/produtos/novo-produto`);
-  }
+    // Caso AxiosError (erros HTTP, network, timeout, etc)
+    if (axios.isAxiosError(error)) {
+      const axiosError = error;
+      const status = axiosError.response?.status;
+      const body = axiosError.response?.data;
 
-  function handleDelete(id: string) {
-    setProdutosMock((prev) => prev.filter((p) => p.id !== id));
-  }
+      // Mensagem preferencial: payload do servidor (se existir)
+      const serverMsg = body?.msg ?? body?.message ?? body?.error ?? null;
+
+      // Diferenciar causas comuns
+      if (status === 401) {
+        setError("Não autorizado. Faça login novamente.");
+      } else if (status === 404) {
+        setError("Recursos não encontrados.");
+      } else if (status && status >= 500) {
+        setError("Erro no servidor. Tente novamente mais tarde.");
+      } else if (serverMsg) {
+        setError(String(serverMsg));
+      } else if (axiosError.code === "ECONNABORTED") {
+        setError("Tempo de conexão esgotado. Tente novamente.");
+      } else if (!axiosError.response) {
+        setError("Falha de rede. Verifique sua conexão e tente novamente.");
+      } else {
+        setError(`Erro na requisição. (${status ?? "desconhecido"})`);
+      }
+    } else {
+      const maybeError = error as Error | undefined;
+      setError(maybeError?.message ?? "Erro desconhecido ao buscar produtos.");
+    }
+    }
+    finally{
+      setLoading(true);
+    }
+  }, [])
+
+  const handleDelete = (id: number) => {
+  };
+
+  useEffect(() => {
+    if(!mountedRef.current)
+      mountedRef.current = true;
+   
+    fetchProdutos();
+
+    return () => {mountedRef.current = false};
+  }, [])
 
   return (
     <>
@@ -141,43 +110,50 @@ function Produto() {
 
       <div className="conteudo-item">
         <Table
-          data={produtosMock}
-          keyField="id"
+          data={produtos}
+          keyField="produto_id"
           columns={[
-            { key: "nome", label: "Produto" },
-            { key: "preco", label: "Preço (R$)" },
-            { key: "sku", label: "SKU" },
-            { key: "quantidade", label: "Qtd" },
+        { key: "codigo", label: "Código" },
+        { key: "nome", label: "Produto" },
+        { key: "preco", label: "Preço (R$)" },
+        { key: "quantidade_estoque", label: "Qtd" },
           ]}
-          rowActions={(row) => (
-            <div style={{ display: "flex", gap: 8 }}>
-              <button
-                aria-label={`Editar ${row.id}`}
-                onClick={() => /* navegar/editar */ null}
-              >
-                Editar
-              </button>
-              <button
-                aria-label={`Excluir ${row.id}`}
-                onClick={() => handleDelete(row.id)}
-              >
-                Excluir
-              </button>
-            </div>
+          rowActions={(row: any) => (
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            aria-label={`Editar ${row.produto_id}`}
+            onClick={() => /* navegar/editar */ null}
+          >
+            Editar
+          </button>
+          <button
+            aria-label={`Excluir ${row.produto_id}`}
+            onClick={() => handleDelete(row.produto_id)}
+          >
+            Excluir
+          </button>
+        </div>
           )}
           actionHeader="Opções"
         />
       </div>
 
-      <div className="conteudo-item">
-        <Button
-          theme="green"
-          onClick={irParaCadastro}
-          className="btn-cadastrar"
-        >
-          Cadastrar produto
+      <div className="conteudo-item botoes">
+        <Link to={`/comercio/${comercioId}/produtos/novo-produto`}>
+          <Button theme="green" className="btn-cadastrar">
+            Cadastrar produto
+          </Button>
+        </Link>
+        <Button theme="green" onClick={() => setModal(true)}>
+          Gerenciar categorias
         </Button>
       </div>
+
+      <CategoriaPopUp
+        isOpen={isModal}
+        onClose={() => setModal(false)}
+        onCreated={() => setModal(false)}
+      />
     </>
   );
 }

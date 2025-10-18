@@ -106,7 +106,7 @@ def create_produto(db: Session,
                    fornecedor: Optional[str] = None,  # string do front
                    unimed_sigla: Optional[str] = None,
                    limiteEstoque: Optional[int] = 0,
-                   tag: Optional[str] = None) -> Produto:
+                   tags: Optional[str] = None) -> Produto:
     """
     Cria produto, garantindo que categoria_id/fornecedor_id/unimed_id existam.
     - se categoria/fornecedor.zip (string) vier, tentamos achar; senão criamos.
@@ -143,9 +143,7 @@ def create_produto(db: Session,
     # NOTA: estamos usando db.flush() nos helpers para conseguir os ids antes do commit
     try:
         # conseguiu achar/criar categoria
-        cat = _get_or_create_category(db, comercio_id, categoria)
-        forn = _get_or_create_fornecedor(db, comercio_id, fornecedor)
-        unid = _get_or_create_unimed(db, comercio_id, unimed_sigla)
+ 
 
         # gerar codigo único
         codigo = None
@@ -163,11 +161,11 @@ def create_produto(db: Session,
             nome=nome.strip(),
             preco=preco_dec,
             quantidade_estoque=quantidade_int,
-            categoria_id=cat.categoria_id,
-            fornecedor_id=forn.fornecedor_id,
-            unimed_id=unid.unimed_id,
+            categoria_id=1,
+            fornecedor_id=1,
+            unimed_id=1,
             comercio_id=comercio_id,
-            tag=tag,
+            tags=tags,
             criado_em=datetime.datetime.now(),
             atualizado_em=datetime.datetime.now()
         )

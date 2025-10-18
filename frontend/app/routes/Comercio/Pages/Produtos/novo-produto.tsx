@@ -1,5 +1,5 @@
 // src/routes/Comercio/Pages/Produtos/novo-produto.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "./novo-produto.css";
 import { useNavigate, useParams } from "react-router";
 import { useForm } from "react-hook-form";
@@ -23,6 +23,7 @@ export default function NovoProduto() {
   const { comercioId } = useParams() as { comercioId?: string };
   const [loadingDefaults, setLoadingDefaults] = useState(false);
   const [defaultLimite, setDefaultLimite] = useState<number>(0);
+  const mountedRef = useRef(false);
 
   const {
     register,
@@ -40,19 +41,18 @@ export default function NovoProduto() {
     },
   });
 
-  // tentativa em cadeia para obter limite padrão
   useEffect(() => {
     if (!comercioId) return;
-    let mounted = true;
+    mountedRef.current = true;
+
     async function loadLimit() {
       setLoadingDefaults(true);
       try {
-        // 1) tenta endpoint dedicado (recomendado)
         try {
           const resp = await api.get(`${COMERCIOS}/${comercioId}/config`);
           if (resp.status === 200 && resp.data) {
             const l = Number(resp.data.limite_padrao ?? resp.data.limitePadrao ?? resp.data.limite ?? 0);
-            if (!Number.isNaN(l) && mounted) {
+            if (!Number.isNaN(l) && mountedRef.current) {
               setDefaultLimite(l);
               setValue("limiteEstoque", String(l));
               return;
@@ -60,55 +60,20 @@ export default function NovoProduto() {
           }
         } catch (e) {
           // ignora e tenta fallback
-        }
-
-        // 2) fallback: /api/comercio/me (info do comércio do usuário)
-        try {
-          const resp2 = await api.get(`/api/comercio/me`);
-          if (resp2.status === 200 && resp2.data) {
-            // tenta campos comuns
-            const data = resp2.data;
-            const l = Number(data.limite_padrao ?? data.limitePadrao ?? data.limite ?? data.config?.limite_padrao ?? 0);
-            if (!Number.isNaN(l) && mounted) {
-              setDefaultLimite(l);
-              setValue("limiteEstoque", String(l));
-              return;
-            }
+          if (mountedRef.current) {
+            setDefaultLimite(0);
+            // setValue("limiteEstoque", String(0));
           }
-        } catch (e) {
-          // ignora e tenta próximo fallback
-        }
-
-        // 3) fallback: /api/me/comercios -> procurar comércio por id
-        try {
-          const resp3 = await api.get(`/api/me/comercios`);
-          if (resp3.status === 200 && Array.isArray(resp3.data)) {
-            const found = (resp3.data as any[]).find(c => String(c.comercio_id ?? c.id ?? c.comercioId) === String(comercioId));
-            if (found) {
-              const l = Number(found.limite_padrao ?? found.limitePadrao ?? found.limite ?? found.config?.limite_padrao ?? 0);
-              if (!Number.isNaN(l) && mounted) {
-                setDefaultLimite(l);
-                setValue("limiteEstoque", String(l));
-                return;
-              }
-            }
-          }
-        } catch (e) {
-          // tudo falhou -> usa 0
-        }
-
-        // 4) se nada deu certo, mantém 0 e não preenche
-        if (mounted) {
-          setDefaultLimite(0);
-          // se preferir mostrar vazio em vez de 0, comente a linha abaixo
-          setValue("limiteEstoque", String(0));
         }
       } finally {
-        if (mounted) setLoadingDefaults(false);
+        if (mountedRef.current) setLoadingDefaults(false);
       }
     }
+
     loadLimit();
-    return () => { mounted = false; };
+    return () => {
+      mountedRef.current = false;
+    };
   }, [comercioId, setValue]);
 
   const safeNumberFromInputString = (v: string, fallback: number) => {
