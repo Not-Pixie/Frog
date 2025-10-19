@@ -1,4 +1,9 @@
-export type User = { usuario_id: number; email: string; nome?: string, comercios?: number[] | null } | null;
+export type User = {
+  usuario_id: number;
+  email: string;
+  nome?: string;
+  comercios?: number[] | null;
+} | null;
 
 export interface AuthContextType {
   user: User;

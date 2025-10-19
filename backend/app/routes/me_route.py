@@ -34,17 +34,33 @@ def me():
         db_gen = get_db()
         db = next(db_gen)
         usuario = get_usuario_por_id(db, usuario_id)
+        
+        comercios_puro = get_comercios_que_usuario_tem_acesso(db, usuario.usuario_id)
+        comercios = []
+        if comercios_puro:
+            for c in comercios_puro:
+                comercios.append(c.comercio_id)
 
         if not usuario:
             return jsonify({'mensagem': 'Usuário não encontrado'}), 404
-
+        
+        if len(comercios) == 0:
+            return jsonify({
+                'usuario': {
+                    'usuario_id': usuario.usuario_id,
+                    'email': usuario.email,
+                    'nome': usuario.nome_completo
+                }
+            }), 200
+        
         return jsonify({
-            'usuario': {
-                'usuario_id': usuario.usuario_id,
-                'email': usuario.email,
-                'nome': usuario.nome_completo
-            }
-        }), 200
+                'usuario': {
+                    'usuario_id': usuario.usuario_id,
+                    'email': usuario.email,
+                    'nome': usuario.nome_completo,
+                    'comercios': comercios
+                }
+            }), 200
 
     except jwt.ExpiredSignatureError:
         return jsonify({'mensagem': 'Token expirado'}), 401
