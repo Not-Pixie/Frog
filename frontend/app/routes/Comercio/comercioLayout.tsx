@@ -5,7 +5,6 @@ import ProtectedRoute from "src/api/auth/ProtectedRoute";
 import { Sidebar } from "./customComponents/SideBar";
 import { useAuth } from "src/api/auth/AuthProvider";
 
-import type { AuthContextType, User } from "src/types/auth.types"
 import LoadingPage from "src/pages/LoadingPages";
 
 export default function ComercioLayout() {

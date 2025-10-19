@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import "./CommerceCard.css";
-import type { Comercio } from "~/routes/MeusComercios/customComponents/schemas";
+import type { Comercio } from "src/types/comercio";
 import { Link } from "react-router"; // <- use react-router-dom
 import { dateFormatter } from "./formatter";
 

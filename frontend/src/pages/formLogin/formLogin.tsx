@@ -3,11 +3,8 @@ import type { Route } from "../../../app/+types/root";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import api from "src/api/axios";
-import { LOGIN } from "src/api/enpoints";
 import { useNavigate } from "react-router";
 import { useAuth } from "src/api/auth/AuthProvider";
-import PublicRoute from "src/api/auth/PublicRoute";
 
 export function meta({}: Route.MetaArgs) {
   return [

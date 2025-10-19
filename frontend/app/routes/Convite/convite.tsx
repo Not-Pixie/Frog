@@ -5,9 +5,10 @@ import { useNavigate, useParams } from "react-router";
 import ProtectedRoute from "src/api/auth/ProtectedRoute";
 import api from "src/api/axios";
 import { CONVITES } from "src/api/enpoints";
-import type { Comercio } from "../MeusComercios/customComponents/schemas";
 import CommerceCard from "src/components/CommerceCard";
 import Button from "src/components/Button";
+
+import type { Comercio } from "src/types/comercio";
 
 interface GetConviteResponse {
   comercio?: Comercio;
