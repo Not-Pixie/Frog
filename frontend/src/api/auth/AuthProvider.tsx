@@ -4,19 +4,10 @@ import type { ReactNode } from 'react';
 import api from '../axios';
 import * as authServices from "./authServices"
 import { LOGIN } from '../enpoints';
+import type { User, AuthContextType } from "src/types/auth.types";
 
-type User = { usuario_id: number; email: string; nome?: string } | null;
 
-interface AuthContextType {
-  user: User;
-  token?: string | null;
-  loading: boolean;
-  checkAuth: () => Promise<boolean>;
-  login: (email: string, password: string) => Promise<boolean>;
-  logout: () => Promise<void>;
-  setUser: (u: User) => void;
-  setToken?: (t: string | null) => void;
-}
+
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
