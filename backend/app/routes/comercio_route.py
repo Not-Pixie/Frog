@@ -4,6 +4,8 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from app.middleware.auth import token_required
 from app.database.database import SessionLocal
 from app.models.categoria_model import Categoria
+from app.models.produtos_model import Produto
+
 
 from app.services.usuarios_service import get_comercios_que_usuario_tem_acesso, usuario_tem_acesso_ao_comercio
 from app.api.auth import get_current_user
@@ -88,7 +90,114 @@ def criar_categoria_no_comercio(comercio_id: int):
             return jsonify({"msg": "Categoria com esse nome já existe."}), 409
         except Exception as e:
             db.rollback()
-            return jsonify({"msg": "Erro ao criar categoria.", "detail": str(e)}), 500
+            return jsonify({"msg": "Erro ao criar categoria.", "detail": str(e)}), 
+            
+@bp.route('/<int:comercio_id>/categorias', methods=['GET'])
+@token_required
+def listar_categorias_do_comercio(comercio_id: int):
+    """
+    GET /comercios/<comercio_id>/categorias
+    Retorna: { "items": [...], "total": n }
+    Cada item: { "categoria_id": int, "nome": str, "comercio_id": int, "criado_em": iso | None }
+    """
+    usuario: dict = g.get("usuario")
+    usuario_id = usuario.get("usuario_id") if usuario else None
+    if usuario is None or usuario_id is None:
+        return jsonify({"msg": "erro de autenticação"}), 401
+
+    db = SessionLocal()
+    try:
+        # verifica permissão do usuário sobre o comércio
+        if not usuario_tem_acesso_ao_comercio(db, usuario_id, comercio_id):
+            return jsonify({"msg": "Usuário não tem acesso a este comércio."}), 403
+
+        categorias = db.query(Categoria).filter(Categoria.comercio_id == comercio_id).order_by(getattr(Categoria, "criado_em", None).desc() if hasattr(Categoria, "criado_em") else Categoria.categoria_id.desc()).all()
+
+        items = []
+        for c in categorias:
+            # normaliza saída (compatível com frontend)
+            items.append({
+                "categoria_id": getattr(c, "categoria_id", None) or getattr(c, "id", None),
+                "id": getattr(c, "categoria_id", None) or getattr(c, "id", None),
+                "nome": getattr(c, "nome", None),
+                "comercio_id": getattr(c, "comercio_id", None),
+                "criado_em": getattr(c, "criado_em", None).isoformat() if getattr(c, "criado_em", None) else None
+            })
+
+        return jsonify({"items": items, "total": len(items)}), 200
+
+    except SQLAlchemyError:
+        current_app.logger.exception("Erro ao listar categorias")
+        return jsonify({"error": "Erro interno ao listar categorias"}), 500
+    except Exception:
+        current_app.logger.exception("Erro inesperado ao listar categorias")
+        return jsonify({"error": "Erro interno"}), 500
+    finally:
+        try:
+            db.close()
+        except Exception:
+            current_app.logger.exception("Erro ao fechar sessão do DB em listar_categorias")
+
+
+@bp.route('/<int:comercio_id>/categorias/<int:categoria_id>', methods=['DELETE'])
+@token_required
+def deletar_categoria_cascade_setnull(comercio_id: int, categoria_id: int):
+    """
+    DELETE /comercios/<comercio_id>/categorias/<categoria_id>
+    Comportamento: remove referência categoria_id nos produtos (set NULL) e depois deleta a categoria.
+    Retornos: 204 no sucesso, 400/403/404/500 conforme o caso.
+    """
+    usuario: dict = g.get("usuario")
+    usuario_id = usuario.get("usuario_id") if usuario else None
+    if usuario is None or usuario_id is None:
+        return jsonify({"msg": "erro de autenticação"}), 401
+
+    db = SessionLocal()
+    try:
+        # verifica permissão do usuário
+        if not usuario_tem_acesso_ao_comercio(db, usuario_id, comercio_id):
+            return jsonify({"msg": "Usuário não tem acesso a este comércio."}), 403
+
+        # busca categoria
+        categoria = db.query(Categoria).filter(
+            Categoria.categoria_id == categoria_id,
+            Categoria.comercio_id == comercio_id
+        ).first()
+
+        if categoria is None:
+            return jsonify({"msg": "Categoria não encontrada."}), 404
+
+        # Atualiza produtos vinculados: seta categoria_id = NULL
+        # Filtra por comercio_id também para garantir segurança
+        db.query(Produto).filter(
+            Produto.categoria_id == categoria_id,
+            Produto.comercio_id == comercio_id
+        ).update({Produto.categoria_id: None}, synchronize_session=False)
+
+        # Deleta a categoria
+        db.delete(categoria)
+
+        # commit transacional
+        db.commit()
+
+        # 204 No Content
+        return "", 204
+
+    except SQLAlchemyError:
+        db.rollback()
+        current_app.logger.exception("Erro ao deletar categoria em cascade (set null)")
+        return jsonify({"error": "Erro interno ao deletar categoria"}), 500
+    except Exception:
+        db.rollback()
+        current_app.logger.exception("Erro inesperado ao deletar categoria em cascade (set null)")
+        return jsonify({"error": "Erro interno"}), 500
+    finally:
+        try:
+            db.close()
+        except Exception:
+            current_app.logger.exception("Erro ao fechar sessão do DB em deletar_categoria")
+
+
         
 @bp.route('/<int:comercio_id>/produtos', methods=['GET'])
 @token_required
