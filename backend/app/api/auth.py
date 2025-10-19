@@ -29,14 +29,14 @@ def login():
         if not check_password_hash(user.senha_hash, senha):
             return jsonify({"mensagem": "Credenciais inválidas"}), 401
 
+        now = datetime.datetime.now(datetime.timezone.utc)
         payload = {
             "usuario_id": user.usuario_id,
-            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=8)  # ajuste expiração
+            "exp": int((now + datetime.timedelta(hours=8)).timestamp())
         }
         token = jwt.encode(payload, current_app.config.get("SECRET_KEY"), algorithm="HS256")
 
-        resp = make_response(jsonify({"access_token": token}))  # opcional: retorno do token também
-        # Cookie: HttpOnly para segurança. Em produção use secure=True (https).
+        resp = make_response(jsonify({"access_token": token})) 
         resp.set_cookie(
             "access_token",
             token,
