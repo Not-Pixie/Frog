@@ -7,6 +7,7 @@ class Fornecedor(Base):
     __tablename__ = "fornecedores"
 
     fornecedor_id = Column(Integer, primary_key=True, autoincrement=True)
+    codigo = Column(Integer, nullable=False)
     nome = Column(String(150), nullable=False)
     cnpj = Column(String(18), unique=True)
     telefone = Column(String(20))

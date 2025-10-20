@@ -6,6 +6,7 @@ class Categoria(Base):
     __tablename__ = "categorias"
 
     categoria_id = Column(Integer, primary_key=True, autoincrement=True)
+    codigo = Column(Integer, nullable=False)
     nome = Column(String(100), unique=True, nullable=False)
 
     comercio_id = Column(Integer, ForeignKey("comercios.comercio_id", ondelete="CASCADE"), nullable=False)
