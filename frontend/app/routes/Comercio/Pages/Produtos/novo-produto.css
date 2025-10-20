@@ -3,7 +3,6 @@
   padding: 24px;
   max-width: 1100px;
   margin: 0 auto;
-  color: var(--primaryColor); 
 }
 
 .page-header {
@@ -39,6 +38,7 @@
 .subtitulo {
   font-weight: 600;
   margin: 18px 0;
+  color: var(--primaryColor); 
 }
 
 /* Form grid: duas colunas */
