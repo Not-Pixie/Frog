@@ -1,9 +1,9 @@
 from flask import current_app, g, has_request_context
-from sqlalchemy import event, text
+from sqlalchemy import Engine, event, text
 from sqlalchemy.orm import Session
 
-@event.listens_for(Session, "after_begin")
-def _apply_app_user_id(session, transaction, connection):
+@event.listens_for(Engine, "begin")
+def _apply_app_user_id(connection):
     """
     Sempre que uma transação começar nessa conexão, seta o parâmetro
     local da transaction com o user_id que colocamos em `flask.g`.
@@ -12,7 +12,13 @@ def _apply_app_user_id(session, transaction, connection):
         return
     
     usuario = g.get("usuario") or None
-    usuario_id = getattr(usuario, "usuario_id", None) if usuario is not None else None
+    
+    if usuario is None:
+        usuario_id = None
+    elif isinstance(usuario, dict):
+        usuario_id = usuario.get("usuario_id") or usuario.get("id")  # adapte chaves se necessário
+    else:
+        usuario_id = getattr(usuario, "usuario_id", None)
     
     if usuario_id is None:
         current_app.logger.debug("g não tem id de usuário")
