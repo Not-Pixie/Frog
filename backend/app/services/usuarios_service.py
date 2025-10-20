@@ -1,4 +1,5 @@
 from typing import List
+from flask import current_app
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.models.comercios_model import Comercio
@@ -42,7 +43,5 @@ def get_usuario_por_id(db: Session, usuario_id: int) -> Usuario | None:
     return db.query(Usuario).filter(Usuario.usuario_id == usuario_id).first()
 
 def usuario_tem_acesso_ao_comercio(db, usuario_id: int, comercio_id: int) -> bool:
-    return db.query(Comercio).filter(
-        Comercio.comercio_id == comercio_id,
-        Comercio.proprietario_id == usuario_id
-    ).first() is not None
+    comercios = get_comercios_que_usuario_tem_acesso(db, usuario_id)
+    return any(getattr(c, "comercio_id") == comercio_id for c in comercios)
