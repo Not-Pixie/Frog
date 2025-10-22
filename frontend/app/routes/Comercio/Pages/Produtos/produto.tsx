@@ -8,23 +8,7 @@ import { COMERCIOS } from "src/api/enpoints.ts";
 import api from "src/api/axios.ts";
 import axios from "axios";
 
-type Produto = {
-  produto_id: number;
-  codigo: string;
-  nome: string;
-  preco: number;
-  quantidade_estoque: number;
-  tags?: string | null;
-  unimed_id: number;
-  categoria_id: number;
-  fornecedor_id: number;
-  comercio_id: number;
-  criado_em: string;
-  atualizado_em: string;
-  categoriaNome?: string | null;
-  fornecedorNome?: string | null;
-  unidadeMedidaNome?: string | null;
-};
+import type { Produto } from "src/types/produto.ts";
 
 type APIResponse = {
   items: Produto[];
