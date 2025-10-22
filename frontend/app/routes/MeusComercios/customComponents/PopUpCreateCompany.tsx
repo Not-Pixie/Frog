@@ -13,6 +13,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { Company, FormValues } from "./schemas"
 import { companySchema } from "./schemas";
 import Button from "src/components/Button";
+import { useAuth } from "src/api/auth/AuthProvider";
 
 interface Props {
   isOpen: boolean;
@@ -24,6 +25,7 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
   const [step, setStep] = useState<1 | 2>(1);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const {checkAuth} = useAuth();
 
   const resolver = zodResolver(companySchema) as unknown as Resolver<FormValues>;
 
@@ -102,6 +104,8 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
         nome: data.nome ?? values.nome,
         ...data,
       });
+
+      await checkAuth();
 
       resetAll();
       onClose?.();

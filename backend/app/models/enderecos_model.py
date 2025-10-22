@@ -26,5 +26,3 @@ class Endereco(Base):
     atualizado_em = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     fornecedores = relationship("Fornecedor", back_populates="endereco", passive_deletes=True)
-
-   
