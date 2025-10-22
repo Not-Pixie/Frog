@@ -1,6 +1,7 @@
 # app/models/__init__.py
 from .usuarios_model import Usuario
 from .comercios_model import Comercio
+from .enderecos_model import Endereco
 from .fornecedores_model import Fornecedor
 from .comercios_usuarios import ComercioUsuario
 from .categoria_model import Categoria
