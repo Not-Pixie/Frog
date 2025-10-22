@@ -15,7 +15,10 @@ echo "Postgres pronto."
 
 # aplica migrations (Alembic)
 echo "Aplicando migrations (alembic upgrade head)..."
+
 alembic upgrade head
+
+echo "Que delícia!"
 
 # Por seguranÃ§a, vocÃª pode tambÃ©m garantir create_all em dev:
 # python -c "from app.database.database import Base, engine; import app.models; Base.metadata.create_all(bind=engine)"

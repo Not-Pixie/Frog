@@ -5,6 +5,8 @@ from app.middleware.auth import token_required
 from app.database.database import SessionLocal
 from app.models.categoria_model import Categoria
 from app.models.produtos_model import Produto
+from app.models.enderecos_model import Endereco
+from app.models.fornecedores_model import Fornecedor
 
 
 from app.services.usuarios_service import get_comercios_que_usuario_tem_acesso, usuario_tem_acesso_ao_comercio
@@ -231,3 +233,158 @@ def listar_produtos(comercio_id):
             db.close()
         except Exception:
             current_app.logger.exception("Erro ao fechar sessão do DB em listar_produtos")
+
+@bp.route('/<int:comercio_id>/fornecedores', methods=['GET'])
+@token_required
+def listar_fornecedores_do_comercio(comercio_id: int):
+    usuario: dict = g.get("usuario")
+    usuario_id = usuario.get("usuario_id") if usuario else None
+    if usuario is None or usuario_id is None:
+        return jsonify({"msg": "erro de autenticação"}), 401
+
+    db = SessionLocal()
+    try:
+        if not usuario_tem_acesso_ao_comercio(db, usuario_id, comercio_id):
+            return jsonify({"msg": "Usuário não tem acesso a este comércio."}), 403
+
+        fornecedores = db.query(Fornecedor).filter(Fornecedor.comercio_id == comercio_id).order_by(Fornecedor.fornecedor_id.desc()).all()
+        items = []
+        for f in fornecedores:
+            item = {
+                "fornecedor_id": getattr(f, "fornecedor_id", None),
+                "nome": getattr(f, "nome", None),
+                "cnpj": getattr(f, "cnpj", None),
+                "telefone": getattr(f, "telefone", None),
+                "email": getattr(f, "email", None),
+                "comercio_id": getattr(f, "comercio_id", None),
+                "criado_em": getattr(f, "criado_em", None).isoformat() if getattr(f, "criado_em", None) else None,
+                # endereço (pode ser None)
+                "endereco": None
+            }
+            if getattr(f, "endereco", None) is not None:
+                e = f.endereco
+                item["endereco"] = {
+                    "endereco_id": getattr(e, "endereco_id", None),
+                    "cep": getattr(e, "cep", None),
+                    "numero": getattr(e, "numero", None),
+                    "logradouro": getattr(e, "logradouro", None),
+                    "complemento": getattr(e, "complemento", None),
+                    "bairro": getattr(e, "bairro", None),
+                    "cidade": getattr(e, "cidade", None),
+                    "estado": getattr(e, "estado", None),
+                    "pais": getattr(e, "pais", None),
+                }
+            items.append(item)
+
+        return jsonify({"items": items, "total": len(items)}), 200
+
+    except SQLAlchemyError:
+        current_app.logger.exception("Erro ao listar fornecedores")
+        return jsonify({"error": "Erro interno ao listar fornecedores"}), 500
+    finally:
+        try:
+            db.close()
+        except Exception:
+            current_app.logger.exception("Erro ao fechar sessão do DB em listar_fornecedores")
+
+
+# --- CRIAR FORNECEDOR (com endereço) ---
+@bp.route('/<int:comercio_id>/fornecedores', methods=['POST'])
+@token_required
+def criar_fornecedor_no_comercio(comercio_id: int):
+    usuario: dict = g.get("usuario")
+    usuario_id = usuario.get("usuario_id") if usuario else None
+    if usuario is None or usuario_id is None:
+        return jsonify({"msg": "erro de autenticação"}), 401
+
+    data = request.get_json() or {}
+    nome = (data.get("nome") or "").strip()
+    cnpj = (data.get("cnpj") or "").strip()
+    telefone = (data.get("telefone") or "").strip() or None
+    email = (data.get("email") or "").strip() or None
+    cep = (data.get("cep") or "").strip() or None
+    numero = (data.get("numero") or "").strip() or None
+    complemento = (data.get("complemento") or "").strip() or None  # opcional
+
+    if not nome:
+        return jsonify({"msg": "Campo 'nome' é obrigatório."}), 400
+    if not cnpj:
+        return jsonify({"msg": "Campo 'cnpj' é obrigatório."}), 400
+    # aqui você pode adicionar validação de formato de CNPJ se quiser
+
+    db = SessionLocal()
+    try:
+        # autorização
+        if not usuario_tem_acesso_ao_comercio(db, usuario_id, comercio_id):
+            return jsonify({"msg": "Usuário não tem acesso a este comércio."}), 403
+
+        # Criar endereço (se cep ou numero forem fornecidos)
+        endereco_obj = None
+        if cep or numero or complemento:
+            endereco_obj = Endereco(
+                cep=cep or "",
+                numero=numero,
+                complemento=complemento,
+                status="partial",
+                source="user"
+            )
+            db.add(endereco_obj)
+            db.flush()  # garante que endereco_obj.endereco_id seja preenchido antes de criar fornecedor
+
+        # Criar fornecedor
+        fornecedor = Fornecedor(
+            nome=nome,
+            cnpj=cnpj,
+            telefone=telefone,
+            email=email,
+            comercio_id=comercio_id,
+            endereco_id=(endereco_obj.endereco_id if endereco_obj is not None else None)
+        )
+        db.add(fornecedor)
+        db.commit()
+        db.refresh(fornecedor)
+        if endereco_obj is not None:
+            db.refresh(endereco_obj)
+
+        location = f"/comercios/{comercio_id}/fornecedores/{fornecedor.fornecedor_id}"
+        resp_body = {
+            "fornecedor_id": fornecedor.fornecedor_id,
+            "nome": fornecedor.nome,
+            "cnpj": fornecedor.cnpj,
+            "telefone": fornecedor.telefone,
+            "email": fornecedor.email,
+            "comercio_id": fornecedor.comercio_id,
+            "endereco": None,
+            "criado_em": fornecedor.criado_em.isoformat() if fornecedor.criado_em else None
+        }
+        if endereco_obj is not None:
+            resp_body["endereco"] = {
+                "endereco_id": endereco_obj.endereco_id,
+                "cep": endereco_obj.cep,
+                "numero": endereco_obj.numero,
+                "complemento": endereco_obj.complemento,
+            }
+
+        resp = jsonify(resp_body)
+        resp.status_code = 201
+        resp.headers["Location"] = location
+        return resp
+
+    except IntegrityError as ie:
+        db.rollback()
+        # provável conflito no campo unique (cnpj)
+        current_app.logger.debug(ie)
+        return jsonify({"msg": "Fornecedor com esse CNPJ já existe."}), 409
+    except SQLAlchemyError as e:
+        db.rollback()
+        current_app.logger.exception("Erro ao criar fornecedor")
+        return jsonify({"msg": "Erro interno ao criar fornecedor"}), 500
+    except Exception as e:
+        db.rollback()
+        current_app.logger.exception("Erro inesperado ao criar fornecedor")
+        return jsonify({"msg": "Erro interno"}), 500
+    finally:
+        try:
+            db.close()
+        except Exception:
+            current_app.logger.exception("Erro ao fechar sessão do DB em criar_fornecedor")
