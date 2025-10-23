@@ -8,7 +8,8 @@ import secrets
 import datetime
 
 from app.models import Produto, Categoria, Fornecedor, UnidadeMedida
-from app.models.contadores_locais import ContadorLocal  # ajuste conforme seus módulos
+from app.models.contadores_locais import ContadorLocal
+from backend.app.utils.contador_utils import next_codigo  # ajuste conforme seus módulos
 
 MAX_CODE_TRIES = 5
 
@@ -147,17 +148,9 @@ def create_produto(db: Session,
     # usamos uma transação; se algum create falhar, faremos rollback abaixo
     # NOTA: estamos usando db.flush() nos helpers para conseguir os ids antes do commit
     try:
-        upsert_stmt = insert(ContadorLocal).values(
-            comercio_id=comercio_id,
-            ultimo_codigo=1
-        ).on_conflict_do_update(
-            index_elements=[ContadorLocal.comercio_id],
-            set_={"ultimo_codigo": ContadorLocal.ultimo_codigo + 1}   
-        ).returning(ContadorLocal.ultimo_codigo)
 
         with db.begin():
-            result = db.execute(upsert_stmt)
-            codigo_resultado = int(result.scalar_one())
+            codigo_resultado = next_codigo(db, comercio_id,'produtos')
             
             produto = Produto(
                 codigo=codigo_resultado,
