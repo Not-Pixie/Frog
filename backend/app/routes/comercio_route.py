@@ -1,3 +1,4 @@
+from decimal import Decimal
 from flask import Blueprint, current_app, request, jsonify, g
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
@@ -13,7 +14,8 @@ from app.services.usuarios_service import get_comercios_que_usuario_tem_acesso, 
 from app.api.auth import get_current_user
 from app.services.cadastro_comercio_service import criar_comercio
 from app.services.comercio_service import get_produtos_de_comercio_por_id
-from app.utils.model_utils import model_to_dict  # supondo que exista
+from app.utils.model_utils import model_to_dict
+from app.services.produto_service import create_produto  # supondo que exista
 
 bp = Blueprint("comercios", __name__, url_prefix="/comercios")
 
@@ -65,11 +67,8 @@ def criar_categoria_no_comercio(comercio_id: int):
     nome = (data.get('nome') or "").strip()
     if not nome:
         return jsonify({"msg": "Campo 'nome' é obrigatório."}), 400
-    if len(nome) > 100:  # exemplo de validação
-        return jsonify({"msg": "Campo 'nome' muito longo."}), 400
 
     with SessionLocal() as db:
-        # autoriza
         if not usuario_tem_acesso_ao_comercio(db, usuario_id, comercio_id):
             return jsonify({"msg": "Usuário não tem acesso a este comércio."}), 403
 
@@ -288,7 +287,7 @@ def listar_fornecedores_do_comercio(comercio_id: int):
             current_app.logger.exception("Erro ao fechar sessão do DB em listar_fornecedores")
 
 
-# --- CRIAR FORNECEDOR (com endereço) ---
+
 @bp.route('/<int:comercio_id>/fornecedores', methods=['POST'])
 @token_required
 def criar_fornecedor_no_comercio(comercio_id: int):
@@ -388,3 +387,65 @@ def criar_fornecedor_no_comercio(comercio_id: int):
             db.close()
         except Exception:
             current_app.logger.exception("Erro ao fechar sessão do DB em criar_fornecedor")
+            
+@bp.route("/<int:comercio_id>/produtos", methods=["POST"])
+def create_produto_route(comercio_id):
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({"error": "JSON body obrigatório"}), 400
+
+    nome = data.get("nome")
+    preco: Decimal = Decimal(data.get("preco"))
+    quantidade_estoque = data.get("quantidade_estoque", 0)
+    categoria = data.get("categoria_id")       
+    fornecedor = data.get("fornecedor_id")     
+    unimed_id = data.get("unimed_id")
+    limiteEstoque = data.get("limiteEstoque")
+    tags = data.get("tags")  # backend campo singular
+    
+    current_app.logger.debug(categoria)
+
+    if not nome:
+        return jsonify({"error": "Campo 'nome' é obrigatório"}), 400
+    if preco is None:
+        return jsonify({"error": "Campo 'preco' é obrigatório"}), 400
+
+    db = SessionLocal()
+    try:
+        produto: Produto = create_produto(
+            db=db,
+            comercio_id=comercio_id,
+            nome=nome,
+            preco=preco,
+            quantidade_estoque=quantidade_estoque,
+            categoria=categoria,
+            fornecedor=fornecedor,
+            unimed=unimed_id,
+            limiteEstoque=limiteEstoque,
+            tags=tags
+        )
+        
+        response_data = {
+            "produto_id": produto.produto_id,
+            "codigo": produto.codigo,
+            "nome": produto.nome,
+            "preco": str(produto.preco),
+            "quantidade_estoque": produto.quantidade_estoque,
+            "categoria_id": produto.categoria_id,
+            "fornecedor_id": produto.fornecedor_id,
+            "unimed_id": produto.unimed_id,
+            "tags": produto.tags,
+            "criado_em": produto.criado_em.isoformat() if produto.criado_em else None
+        }
+        
+    except ValueError as ve:
+        db.rollback()
+        return jsonify({"error": str(ve)}), 400
+    except Exception as e:
+        db.rollback()
+        current_app.logger.exception("Erro criando produto")
+        return jsonify({"error": "Erro interno"}), 500
+    finally:
+        db.close()
+
+    return jsonify(response_data), 201

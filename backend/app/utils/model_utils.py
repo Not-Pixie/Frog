@@ -19,9 +19,9 @@ def model_to_dict(obj):
                 out[name] = val.isoformat()
             elif isinstance(val, Decimal):
                 try:
-                    out[name] = float(val)
-                except (ValueError, TypeError):
                     out[name] = str(val)
+                except (ValueError, TypeError):
+                    raise
             elif isinstance(val, uuid.UUID):
                 out[name] = str(val)
             else:

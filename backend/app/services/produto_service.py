@@ -1,12 +1,14 @@
 # app/services/product_service.py
 from typing import Optional, Any
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from decimal import Decimal, InvalidOperation
 import secrets
 import datetime
 
-from app.models import Produto, Categoria, Fornecedor, UnidadeMedida  # ajuste conforme seus módulos
+from app.models import Produto, Categoria, Fornecedor, UnidadeMedida
+from app.models.contadores_locais import ContadorLocal  # ajuste conforme seus módulos
 
 MAX_CODE_TRIES = 5
 
@@ -100,11 +102,11 @@ def _get_or_create_unimed(db: Session, comercio_id: int, sigla_or_none: Optional
 def create_produto(db: Session,
                    comercio_id: int,
                    nome: str,
-                   preco: Any,
+                   preco: Decimal,
                    quantidade_estoque: Optional[int] = 0,
-                   categoria: Optional[str] = None,   # string do front
-                   fornecedor: Optional[str] = None,  # string do front
-                   unimed_sigla: Optional[str] = None,
+                   categoria: Optional[int] = None,   # string do front
+                   fornecedor: Optional[int] = None,  # string do front
+                   unimed: Optional[int] = None,
                    limiteEstoque: Optional[int] = 0,
                    tags: Optional[str] = None) -> Produto:
     """
@@ -118,7 +120,10 @@ def create_produto(db: Session,
         raise ValueError("Campo 'nome' é obrigatório")
 
     try:
-        preco_dec = Decimal(str(preco))
+        if preco is Decimal:
+            preco_dec = preco
+        else:
+            preco_dec = Decimal(str(preco))
     except (InvalidOperation, TypeError, ValueError):
         raise ValueError("Formato de preço inválido. Use número ex.: 99.90")
     if preco_dec < 0:
@@ -142,38 +147,31 @@ def create_produto(db: Session,
     # usamos uma transação; se algum create falhar, faremos rollback abaixo
     # NOTA: estamos usando db.flush() nos helpers para conseguir os ids antes do commit
     try:
-        # conseguiu achar/criar categoria
- 
-
-        # gerar codigo único
-        codigo = None
-        for _ in range(MAX_CODE_TRIES):
-            candidate = _generate_codigo()
-            existing = db.query(Produto).filter_by(codigo=candidate).first()
-            if not existing:
-                codigo = candidate
-                break
-        if not codigo:
-            raise RuntimeError("Falha ao gerar código único para o produto; tente novamente")
-
-        produto = Produto(
-            codigo=codigo,
-            nome=nome.strip(),
-            preco=preco_dec,
-            quantidade_estoque=quantidade_int,
-            categoria_id=1,
-            fornecedor_id=1,
-            unimed_id=1,
+        upsert_stmt = insert(ContadorLocal).values(
             comercio_id=comercio_id,
-            tags=tags,
-            criado_em=datetime.datetime.now(),
-            atualizado_em=datetime.datetime.now()
-        )
+            ultimo_codigo=1
+        ).on_conflict_do_update(
+            index_elements=[ContadorLocal.comercio_id],
+            set_={"ultimo_codigo": ContadorLocal.ultimo_codigo + 1}   
+        ).returning(ContadorLocal.ultimo_codigo)
 
-        db.add(produto)
-        db.commit()
-        db.refresh(produto)
-        return produto
+        with db.begin():
+            result = db.execute(upsert_stmt)
+            codigo_resultado = int(result.scalar_one())
+            
+            produto = Produto(
+                codigo=codigo_resultado,
+                nome=nome,
+                preco=preco,
+                quantidade_estoque=quantidade_estoque,
+                tags=tags,
+                comercio_id=comercio_id,
+                fornecedor_id=fornecedor,
+                unimed_id=unimed,
+                categoria_id=categoria
+            )
+            db.add(produto)
+            return produto
 
     except Exception as e:
         db.rollback()

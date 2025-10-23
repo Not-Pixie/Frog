@@ -12,7 +12,7 @@ import { COMERCIOS } from "src/api/enpoints.ts";
 type FormValues = {
   nome: string;
   categoria: string;
-  preco: number | ""; // valueAsNumber
+  preco: string | ""; // valueAsNumber
   fornecedor: string;
   limiteEstoque: string; // textbox (editará string, converter antes de enviar)
   tags: string; // UI usa plural; backend recebe payload.tag
@@ -83,28 +83,42 @@ export default function NovoProduto() {
     return Number.isNaN(n) ? fallback : n;
   };
 
+  const decimalString = (v: string | undefined | null): string | null => {
+    if(v === null || v === undefined) return null;
+    const cleaned = String(v).trim().replace(/[^\d\-,.]/g, "");
+    if(cleaned === "") return null;
+    const withDot = cleaned.replace(",", ".");
+    const m = withDot.match(/-?\d+(\.\d+)?/);
+    return m ? m[0] : null;
+  }
+
+  const toIntOrDefault = (v: string | undefined | null, fallback = 1) => {
+  if (v === undefined || v === null || String(v).trim() === "") return fallback;
+  const n = parseInt(String(v).trim(), 10);
+  return Number.isNaN(n) ? fallback : n;
+}
+
   async function onSubmit(values: FormValues) {
     if (!comercioId) {
       alert("ID do comércio não encontrado na URL.");
       return;
     }
 
-    const precoNumber = typeof values.preco === "number" ? values.preco : safeNumberFromInputString(String(values.preco), 0);
+    const precoNumber = decimalString(values.preco) ?? "0";
     const limiteNumber = safeNumberFromInputString(values.limiteEstoque, defaultLimite ?? 0);
 
     const payload = {
       nome: values.nome,
       preco: precoNumber,
-      quantidade_estoque: 0, // padrão inicial
-      categoria_id: values.categoria ? Number(values.categoria) : undefined,
-      fornecedor_id: values.fornecedor ? Number(values.fornecedor) : undefined,
-      unimed_id: undefined,
+      quantidade_estoque: 0, 
+      categoria_id: 2/*toIntOrDefault(values.categoria, 1)*/,
+      fornecedor_id: 1/*toIntOrDefault(values.fornecedor, 1)*/,
+      unimed_id: 1,
       limiteEstoque: Number(limiteNumber), // número (não null)
-      tag: values.tags || undefined // backend espera 'tag' (singular)
+      tags: values.tags || undefined // backend espera 'tag' (singular)
     };
 
     try {
-      // usar endpoint existente: /comercios/:id/produtos
       const resp = await api.post(`/comercios/${comercioId}/produtos`, payload);
       if (resp.status === 201) {
         alert("Produto criado com sucesso.");
@@ -162,7 +176,8 @@ export default function NovoProduto() {
           <Input
             label="Preço"
             id="preco"
-            type="number"
+            type="text"
+            inputMode="decimal"
             placeholder="Preço em reais"
             inputWrapperClassName="input-wrapper"
             {...register("preco", { valueAsNumber: true })}

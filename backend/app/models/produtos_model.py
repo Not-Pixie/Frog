@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Numeric, DateTime, ForeignKey, func
+from sqlalchemy import Column, Integer, String, Numeric, DateTime, ForeignKey, UniqueConstraint, func
 from sqlalchemy.orm import relationship
 from app.database.database import Base
 
@@ -25,3 +25,7 @@ class Produto(Base):
     categoria = relationship("Categoria", back_populates="produtos", lazy="joined")
     fornecedor = relationship("Fornecedor", back_populates="produtos", lazy="joined")
     comercio = relationship("Comercio", back_populates="produtos", lazy="joined")
+
+    __table_args__ = (
+        UniqueConstraint("comercio_id", "codigo", name="produtos_comercio_key"),
+    )
