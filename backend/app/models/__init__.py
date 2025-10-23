@@ -11,4 +11,5 @@ from .unimed_model import UnidadeMedida
 from .configs_comercio import ConfiguracaoComercio
 from .configs_usuario import ConfiguracaoUsuario
 from .convites_model import Convite
+from .contadores_locais import ContadorLocal
 
