@@ -30,5 +30,3 @@ class Comercio(Base):
     unidade_medidas = relationship("UnidadeMedida", back_populates="comercio")
     fornecedores = relationship("Fornecedor", back_populates="comercio")
     convites = relationship("Convite", back_populates="comercio")
-
-    contador = relationship("ContadorLocal", back_populates="comercio", uselist=False, cascade="all, delete-orphan")
