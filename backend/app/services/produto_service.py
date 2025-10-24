@@ -9,7 +9,7 @@ import datetime
 
 from app.models import Produto, Categoria, Fornecedor, UnidadeMedida
 from app.models.contadores_locais import ContadorLocal
-from backend.app.utils.contador_utils import next_codigo  # ajuste conforme seus módulos
+from app.utils.contador_utils import next_codigo  # ajuste conforme seus módulos
 
 MAX_CODE_TRIES = 5
 
