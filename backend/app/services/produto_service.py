@@ -9,7 +9,7 @@ import datetime
 
 from app.models import Produto, Categoria, Fornecedor, UnidadeMedida
 from app.models.contadores_locais import ContadorLocal
-from app.utils.contador_utils import next_codigo  # ajuste conforme seus módulos
+from app.utils.contador_utils import next_codigo_atomic  # ajuste conforme seus módulos
 
 MAX_CODE_TRIES = 5
 
@@ -105,17 +105,11 @@ def create_produto(db: Session,
                    nome: str,
                    preco: Decimal,
                    quantidade_estoque: Optional[int] = 0,
-                   categoria: Optional[int] = None,   # string do front
-                   fornecedor: Optional[int] = None,  # string do front
+                   categoria: Optional[int] = None,
+                   fornecedor: Optional[int] = None,
                    unimed: Optional[int] = None,
                    limiteEstoque: Optional[int] = 0,
                    tags: Optional[str] = None) -> Produto:
-    """
-    Cria produto, garantindo que categoria_id/fornecedor_id/unimed_id existam.
-    - se categoria/fornecedor.zip (string) vier, tentamos achar; senão criamos.
-    - se unimed_sigla for fornecido, tentamos achar por sigla; senão criamos/usa placeholder 'un'.
-    """
-
     # validações básicas
     if not nome or not str(nome).strip():
         raise ValueError("Campo 'nome' é obrigatório")
@@ -144,28 +138,24 @@ def create_produto(db: Session,
     if limite_int < 0:
         raise ValueError("limiteEstoque não pode ser negativo")
 
-    # agora, garantimos os registros de categoria, fornecedor e unidade
-    # usamos uma transação; se algum create falhar, faremos rollback abaixo
-    # NOTA: estamos usando db.flush() nos helpers para conseguir os ids antes do commit
-    try:
+    # operação dentro de transação
+    with db.begin():
+        # obtém código atômico (irá inserir/atualizar contadores_locais)
+        codigo_resultado = next_codigo_atomic(db, comercio_id, 'produtos')
 
-        with db.begin():
-            codigo_resultado = next_codigo(db, comercio_id,'produtos')
-            
-            produto = Produto(
-                codigo=codigo_resultado,
-                nome=nome,
-                preco=preco,
-                quantidade_estoque=quantidade_estoque,
-                tags=tags,
-                comercio_id=comercio_id,
-                fornecedor_id=fornecedor,
-                unimed_id=unimed,
-                categoria_id=categoria
-            )
-            db.add(produto)
-            return produto
-
-    except Exception as e:
-        db.rollback()
-        raise
+        produto = Produto(
+            codigo=codigo_resultado,
+            nome=nome.strip(),
+            preco=preco_dec,                 # usar valor convertido
+            quantidade_estoque=quantidade_int,  # usar valor convertido
+            # se houver campo limite_estoque no model, defina-o aqui:
+            # limite_estoque=limite_int,
+            tags=tags,
+            comercio_id=comercio_id,
+            fornecedor_id=fornecedor,
+            unimed_id=unimed,
+            categoria_id=categoria
+        )
+        db.add(produto)
+        db.flush()  # garante que ids / defaults sejam populados
+        return produto

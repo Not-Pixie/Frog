@@ -15,4 +15,3 @@ class ContadorLocal(Base):
         CheckConstraint("scope IN ('produtos','fornecedores','categorias','unidade_medidas')", name="ck_contadores_scope_allowed"),
     )
 
-    comercio = relationship("Comercio", back_populates="contador")

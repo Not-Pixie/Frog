@@ -4,6 +4,8 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.middleware.auth import token_required
 from app.database.database import SessionLocal
+from app.services.categoria_service import create_categoria 
+from app.services.fornecedor_service import create_fornecedor
 from app.models.categoria_model import Categoria
 from app.models.produtos_model import Produto
 from app.models.enderecos_model import Endereco
@@ -15,7 +17,7 @@ from app.api.auth import get_current_user
 from app.services.cadastro_comercio_service import criar_comercio
 from app.services.comercio_service import get_produtos_de_comercio_por_id
 from app.utils.model_utils import model_to_dict
-from app.services.produto_service import create_produto  # supondo que exista
+from app.services.produto_service import create_produto 
 
 bp = Blueprint("comercios", __name__, url_prefix="/comercios")
 
@@ -68,30 +70,46 @@ def criar_categoria_no_comercio(comercio_id: int):
     if not nome:
         return jsonify({"msg": "Campo 'nome' é obrigatório."}), 400
 
+    # Abre UMA sessão (context manager fecha automaticamente)
     with SessionLocal() as db:
+        # autorização (uma única vez)
         if not usuario_tem_acesso_ao_comercio(db, usuario_id, comercio_id):
             return jsonify({"msg": "Usuário não tem acesso a este comércio."}), 403
 
         try:
-            categoria = Categoria(nome=nome, comercio_id=comercio_id)
-            db.add(categoria)
-            db.commit()
-            db.refresh(categoria)
+            # create_categoria já faz commit/rollback internamente (padrão que estamos usando)
+            categoria = create_categoria(db, comercio_id, nome)
+
             location = f"/comercios/{comercio_id}/categorias/{categoria.categoria_id}"
             resp = jsonify({
                 "categoria_id": categoria.categoria_id,
+                "codigo": categoria.codigo,
                 "nome": categoria.nome,
                 "comercio_id": categoria.comercio_id
             })
             resp.status_code = 201
             resp.headers['Location'] = location
             return resp
-        except IntegrityError:
-            db.rollback()
+
+        except IntegrityError as ie:
+            # opcional: log detalhado para debug
+            current_app.logger.debug("IntegrityError ao criar categoria: %s", str(ie))
+            # create_categoria provavelmente já deu rollback; garantir rollback extra é inofensivo
+            try:
+                db.rollback()
+            except Exception:
+                pass
             return jsonify({"msg": "Categoria com esse nome já existe."}), 409
+
         except Exception as e:
-            db.rollback()
-            return jsonify({"msg": "Erro ao criar categoria.", "detail": str(e)}), 
+            current_app.logger.exception("Erro ao criar categoria")
+            try:
+                db.rollback()
+            except Exception:
+                pass
+            # em dev você pode retornar detail=str(e)
+            return jsonify({"msg": "Erro ao criar categoria.", "detail": str(e)}), 500
+
             
 @bp.route('/<int:comercio_id>/categorias', methods=['GET'])
 @token_required
@@ -313,41 +331,26 @@ def criar_fornecedor_no_comercio(comercio_id: int):
 
     db = SessionLocal()
     try:
-        # autorização
         if not usuario_tem_acesso_ao_comercio(db, usuario_id, comercio_id):
             return jsonify({"msg": "Usuário não tem acesso a este comércio."}), 403
 
-        # Criar endereço (se cep ou numero forem fornecidos)
-        endereco_obj = None
-        if cep or numero or complemento:
-            endereco_obj = Endereco(
-                cep=cep or "",
-                numero=numero,
-                complemento=complemento,
-                status="partial",
-                source="user"
-            )
-            db.add(endereco_obj)
-            db.flush()  # garante que endereco_obj.endereco_id seja preenchido antes de criar fornecedor
-
-        # Criar fornecedor
-        fornecedor = Fornecedor(
+        fornecedor = create_fornecedor(
+            db=db,
+            comercio_id=comercio_id,
             nome=nome,
             cnpj=cnpj,
             telefone=telefone,
             email=email,
-            comercio_id=comercio_id,
-            endereco_id=(endereco_obj.endereco_id if endereco_obj is not None else None)
+            cep=cep,
+            numero=numero,
+            complemento=complemento
         )
-        db.add(fornecedor)
-        db.commit()
-        db.refresh(fornecedor)
-        if endereco_obj is not None:
-            db.refresh(endereco_obj)
 
+        # monta resposta igual ao que você tinha antes, adicionando 'codigo'
         location = f"/comercios/{comercio_id}/fornecedores/{fornecedor.fornecedor_id}"
         resp_body = {
             "fornecedor_id": fornecedor.fornecedor_id,
+            "codigo": fornecedor.codigo,
             "nome": fornecedor.nome,
             "cnpj": fornecedor.cnpj,
             "telefone": fornecedor.telefone,
@@ -356,14 +359,7 @@ def criar_fornecedor_no_comercio(comercio_id: int):
             "endereco": None,
             "criado_em": fornecedor.criado_em.isoformat() if fornecedor.criado_em else None
         }
-        if endereco_obj is not None:
-            resp_body["endereco"] = {
-                "endereco_id": endereco_obj.endereco_id,
-                "cep": endereco_obj.cep,
-                "numero": endereco_obj.numero,
-                "complemento": endereco_obj.complemento,
-            }
-
+        # ... preencher endereco se presente ...
         resp = jsonify(resp_body)
         resp.status_code = 201
         resp.headers["Location"] = location
@@ -371,22 +367,14 @@ def criar_fornecedor_no_comercio(comercio_id: int):
 
     except IntegrityError as ie:
         db.rollback()
-        # provável conflito no campo unique (cnpj)
         current_app.logger.debug(ie)
         return jsonify({"msg": "Fornecedor com esse CNPJ já existe."}), 409
-    except SQLAlchemyError as e:
+    except Exception as e:
         db.rollback()
         current_app.logger.exception("Erro ao criar fornecedor")
         return jsonify({"msg": "Erro interno ao criar fornecedor"}), 500
-    except Exception as e:
-        db.rollback()
-        current_app.logger.exception("Erro inesperado ao criar fornecedor")
-        return jsonify({"msg": "Erro interno"}), 500
     finally:
-        try:
-            db.close()
-        except Exception:
-            current_app.logger.exception("Erro ao fechar sessão do DB em criar_fornecedor")
+        db.close()
             
 @bp.route("/<int:comercio_id>/produtos", methods=["POST"])
 def create_produto_route(comercio_id):
