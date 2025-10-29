@@ -9,7 +9,6 @@ cadastro_bp = Blueprint("cadastro", __name__, url_prefix="/cadastro")
 @cadastro_bp.route("/", methods=["POST"])
 def cadastrar_usuario_route():
     db: Session = SessionLocal()
-    print("-- Recebendo requisição de cadastro de usuário --")
     try:
         data = request.json
 
@@ -31,7 +30,7 @@ def cadastrar_usuario_route():
 
     except ValueError as ve:
         # Erro esperado, como e-mail já cadastrado
-        return jsonify({"erro": str(ve)}), 400
+        return jsonify({"msg": "email já cadastrado"}), 400
     except Exception as e:
         # Erro inesperado
         return jsonify({"erro": "Erro interno no servidor.", "detalhes": str(e)}), 500
