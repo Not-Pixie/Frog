@@ -10,6 +10,7 @@ import api from "src/api/axios.ts";
 import { CADASTRO, LOGIN } from "src/api/enpoints.ts";
 import { useNavigate } from "react-router";
 import { useAuth } from "src/api/auth/AuthProvider.tsx";
+import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 
 export default function FormCadastrarUsuario() {
     const navigate = useNavigate();
@@ -81,12 +82,12 @@ export default function FormCadastrarUsuario() {
             <div className="controls">
                 <div>
                     {step > 0 && <button type="button" onClick={previousStep}>
-                        <i className="fa-solid fa-arrow-left"></i>
+                        <FaArrowLeft/>
                     </button>}
                 </div>
                 <div>
                     {step < 1 && <button type="button" onClick={nextStep}>
-                        <i className="fa-solid fa-arrow-right"></i>
+                        <FaArrowRight/>
                     </button>}
                     {step === 1 && <button type="submit">
                         <div className="finalizeButton">
