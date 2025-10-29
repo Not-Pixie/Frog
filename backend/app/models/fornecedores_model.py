@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, func
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, UniqueConstraint, func
 from sqlalchemy.orm import relationship
 from app.database.database import Base
 
@@ -17,6 +17,11 @@ class Fornecedor(Base):
     atualizado_em = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     comercio_id = Column(Integer, ForeignKey("comercios.comercio_id", ondelete="CASCADE"), nullable=False)
+
+    __table_args__ = (
+            UniqueConstraint("comercio_id", "codigo", name="uq_fornecedor_comercio_codigo"),
+            UniqueConstraint("comercio_id", "cnpj", name="uq_fornecedor_comercio_cnpj"),
+        )
 
     
     endereco_id = Column(Integer, ForeignKey("enderecos.endereco_id", ondelete="SET NULL"), nullable=True)
