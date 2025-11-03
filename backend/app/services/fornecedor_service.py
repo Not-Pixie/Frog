@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from app.models.fornecedores_model import Fornecedor
 from app.models.enderecos_model import Endereco
-from app.utils.contador_utils import next_codigo_atomic
+from app.utils.contador_utils import next_codigo
 
 def create_fornecedor(db: Session,
                       comercio_id: int,
@@ -40,7 +40,7 @@ def create_fornecedor(db: Session,
             db.flush()  # endereco_obj.endereco_id disponível
 
         # pega código atômico para fornecedores
-        codigo_local = next_codigo_atomic(db, comercio_id, "fornecedores")
+        codigo_local = next_codigo(db, comercio_id, "fornecedores")
 
         fornecedor = Fornecedor(
             comercio_id=comercio_id,

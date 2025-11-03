@@ -130,7 +130,7 @@ def listar_categorias_do_comercio(comercio_id: int):
         if not usuario_tem_acesso_ao_comercio(db, usuario_id, comercio_id):
             return jsonify({"msg": "Usuário não tem acesso a este comércio."}), 403
 
-        categorias = db.query(Categoria).filter(Categoria.comercio_id == comercio_id).order_by(getattr(Categoria, "criado_em", None).desc() if hasattr(Categoria, "criado_em") else Categoria.categoria_id.desc()).all()
+        categorias = db.query(Categoria).filter(Categoria.comercio_id == comercio_id).order_by(Categoria.categoria_id.asc()).all()
 
         items = []
         for c in categorias:

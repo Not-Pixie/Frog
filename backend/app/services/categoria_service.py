@@ -2,7 +2,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from app.models.categoria_model import Categoria
-from app.utils.contador_utils import next_codigo_atomic
+from app.utils.contador_utils import next_codigo
 
 def create_categoria(db: Session, comercio_id: int, nome: str) -> Categoria:
     nome = (nome or "").strip()
@@ -10,7 +10,7 @@ def create_categoria(db: Session, comercio_id: int, nome: str) -> Categoria:
         raise ValueError("Campo 'nome' é obrigatório")
 
     try:
-        codigo_local = next_codigo_atomic(db, comercio_id, "categorias")
+        codigo_local = next_codigo(db, comercio_id, "categorias")
 
         categoria = Categoria(
             comercio_id=comercio_id,

@@ -7,7 +7,7 @@ class ContadorLocal(Base):
     __tablename__ = "contadores_locais"
 
     comercio_id = Column(Integer, ForeignKey("comercios.comercio_id", ondelete="CASCADE"), nullable=False, primary_key=True)
-    scope = Column(String(32), nullable=False, primary_key=True)   # ex: 'produto','fornecedor','categoria','unidade'
+    scope = Column(String(32), nullable=False, primary_key=True)  
     ultimo_codigo = Column(Integer, nullable=False, server_default="0")
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 

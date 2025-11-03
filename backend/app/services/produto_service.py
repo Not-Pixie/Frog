@@ -9,7 +9,7 @@ import datetime
 
 from app.models import Produto, Categoria, Fornecedor, UnidadeMedida
 from app.models.contadores_locais import ContadorLocal
-from app.utils.contador_utils import next_codigo_atomic  # ajuste conforme seus módulos
+from app.utils.contador_utils import next_codigo  # ajuste conforme seus módulos
 
 MAX_CODE_TRIES = 5
 
@@ -141,7 +141,7 @@ def create_produto(db: Session,
     # operação dentro de transação
     with db.begin():
         # obtém código atômico (irá inserir/atualizar contadores_locais)
-        codigo_resultado = next_codigo_atomic(db, comercio_id, 'produtos')
+        codigo_resultado = next_codigo(db, comercio_id, 'produtos')
 
         produto = Produto(
             codigo=codigo_resultado,
