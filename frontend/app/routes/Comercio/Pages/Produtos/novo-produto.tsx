@@ -9,6 +9,7 @@ import Input from "../../../../../src/components/Input/Input.tsx";
 import { FaArrowLeft } from "react-icons/fa";
 import api from "../../../../../src/api/axios";
 import { COMERCIOS } from "src/api/enpoints.ts";
+import type { Fornecedor } from "src/types/fornecedor.ts";
 
 type FormValues = {
   nome: string;
@@ -262,7 +263,7 @@ export default function NovoProduto() {
 
       <p className="subtitulo">Adicionar novo produto:</p>
 
-      <form className="product-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+      <form className="cadastro-form" onSubmit={handleSubmit(onSubmit)} noValidate>
         <div className="grid-item">
           <Input
             label="Nome"

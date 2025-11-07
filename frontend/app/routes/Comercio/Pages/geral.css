@@ -12,3 +12,69 @@
     display: flex;
     gap: 1vw
 }
+
+.page-header {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  margin-bottom: 8px;
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+
+.page-header h1 {
+  font-size: 2rem;
+  margin: 0;
+  font-family: var(--titleFont);
+}
+
+.page-header > button * {
+  font-size: 1rem;
+  margin-right: 0;
+  margin-bottom: 0;
+  margin-top: -10px;
+}
+
+.back-link {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.subtitulo {
+  font-weight: 600;
+  margin: 18px 0;
+  color: var(--primaryColor); 
+}
+
+.cadastro-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 34px;
+  align-items: start;
+}
+
+.field-full {
+  grid-column: 1 / -1;
+}
+
+/* erro */
+.err {
+  color: var(--danger);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.form-actions {
+  grid-column: 1 / -1;
+  margin-top: 18px;
+}
+
+/* responsivo: uma coluna em telas pequenas */
+@media (max-width: 900px) {
+  .product-form {
+    grid-template-columns: 1fr;
+  }
+}
