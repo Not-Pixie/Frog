@@ -1,25 +1,12 @@
-// src/routes/Comercio/Pages/Fornecedores/fornecedores.tsx
 import "../geral.css";
 import Button from "../../../../../src/components/Button/button.tsx";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import Table from "src/components/Table/Table.tsx";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { COMERCIOS } from "src/api/enpoints.ts";
 import api from "src/api/axios.ts";
 import axios from "axios";
-
-type Fornecedor = {
-  fornecedor_id: number;
-  nome: string;
-  cnpj: string;
-  telefone?: string | null;
-  email?: string | null;
-  endereco?: {
-    cep?: string | null;
-    numero?: string | null;
-    logradouro?: string | null;
-  } | null;
-};
+import type { Fornecedor } from "src/types/fornecedor.ts"
 
 function Fornecedores() {
   const { comercioId } = useParams();
