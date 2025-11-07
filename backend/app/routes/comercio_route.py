@@ -10,7 +10,7 @@ from app.models.categoria_model import Categoria
 from app.models.produtos_model import Produto
 from app.models.enderecos_model import Endereco
 from app.models.fornecedores_model import Fornecedor
-
+from app.models.unimed_model import UnidadeMedida
 
 from app.services.usuarios_service import get_comercios_que_usuario_tem_acesso, usuario_tem_acesso_ao_comercio
 from app.api.auth import get_current_user
@@ -304,6 +304,46 @@ def listar_fornecedores_do_comercio(comercio_id: int):
         except Exception:
             current_app.logger.exception("Erro ao fechar sessão do DB em listar_fornecedores")
 
+# GET /comercios/<comercio_id>/unidades
+@bp.route("/<int:comercio_id>/unidades", methods=["GET"])
+@token_required
+def listar_unidades_do_comercio(comercio_id: int):
+    usuario: dict = g.get("usuario")
+    usuario_id = usuario.get("usuario_id") if usuario else None
+    if usuario is None or usuario_id is None:
+        return jsonify({"msg": "erro de autenticação"}), 401
+
+    db = SessionLocal()
+    try:
+        # opcional: verificar se usuario tem acesso ao comercio (igual nas outras rotas)
+        if not usuario_tem_acesso_ao_comercio(db, usuario_id, comercio_id):
+            return jsonify({"msg": "Usuário não tem acesso a este comércio."}), 403
+
+        # busca unidades que pertençam ao comercio OU unidades globais (comercio_id IS NULL)
+        unidades = db.query(UnidadeMedida).filter(
+            (UnidadeMedida.comercio_id == comercio_id) | (UnidadeMedida.comercio_id == None)
+        ).order_by(UnidadeMedida.unimed_id.asc()).all()
+
+        items = []
+        for u in unidades:
+            items.append({
+                "unimed_id": getattr(u, "unimed_id", None) or getattr(u, "id", None),
+                "nome": getattr(u, "nome", None),
+                "sigla": getattr(u, "sigla", None),
+                "comercio_id": getattr(u, "comercio_id", None),
+                "criado_em": getattr(u, "criado_em", None).isoformat() if getattr(u, "criado_em", None) else None
+            })
+
+        return jsonify({"items": items, "total": len(items)}), 200
+
+    except Exception:
+        current_app.logger.exception("Erro ao listar unidades")
+        return jsonify({"error": "Erro interno ao listar unidades"}), 500
+    finally:
+        try:
+            db.close()
+        except Exception:
+            current_app.logger.exception("Erro ao fechar sessão DB em listar_unidades")
 
 
 @bp.route('/<int:comercio_id>/fornecedores', methods=['POST'])
