@@ -1,37 +1,31 @@
-// src/routes/Comercio/Pages/Fornecedores/novo-fornecedor.tsx
-import React from "react";
+import "../geral.css"
 import { useNavigate, useParams } from "react-router";
-import { useForm } from "react-hook-form";
 import Button from "../../../../../src/components/Button/button.tsx";
 import Input from "../../../../../src/components/Input/Input.tsx";
 import { FaArrowLeft } from "react-icons/fa";
 import api from "../../../../../src/api/axios"; // adapte caminho
 import { COMERCIOS } from "src/api/enpoints.ts";
 
-type FormValues = {
-  nome: string;
-  cnpj: string;
-  telefone?: string;
-  email?: string;
-  cep?: string;
-  numero?: string;
-};
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { fornecedorSchema, type FornecedorForm } from "./schemas";
+
 
 export default function NovoFornecedor() {
   const navigate = useNavigate();
   const { comercioId } = useParams() as { comercioId?: string };
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormValues>({
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
+    resolver: zodResolver(fornecedorSchema),
     defaultValues: { nome: "", cnpj: "", telefone: "", email: "", cep: "", numero: "" }
   });
 
-  async function onSubmit(values: FormValues) {
+  const onSubmit = async (values: FornecedorForm) => {
     if (!comercioId) {
       alert("ID do comércio não encontrado na URL.");
       return;
     }
 
-    // payload esperado pelo backend
     const payload = {
       nome: values.nome,
       cnpj: values.cnpj,
@@ -70,14 +64,14 @@ export default function NovoFornecedor() {
 
       <p className="subtitulo">Adicionar fornecedor:</p>
 
-      <form className="product-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+      <form className="cadastro-form" onSubmit={handleSubmit(onSubmit)} noValidate>
         <div className="grid-item">
-          <Input label="Nome" id="nome" type="text" placeholder="Nome do fornecedor" {...register("nome", { required: "Nome é obrigatório" })} />
+          <Input label="Nome" id="nome" type="text" placeholder="Nome do fornecedor" {...register("nome")} />
           {errors.nome && <span className="err">{errors.nome.message}</span>}
         </div>
 
         <div className="grid-item">
-          <Input label="CNPJ" id="cnpj" type="text" placeholder="00.000.000/0000-00" {...register("cnpj", { required: "CNPJ é obrigatório" })} />
+          <Input label="CNPJ" id="cnpj" type="text" placeholder="00.000.000/0000-00" {...register("cnpj")} />
           {errors.cnpj && <span className="err">{errors.cnpj.message}</span>}
         </div>
 
