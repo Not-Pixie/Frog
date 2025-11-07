@@ -21,6 +21,7 @@ export default function NovoFornecedor() {
   });
 
   const onSubmit = async (values: FornecedorForm) => {
+    console.log("tá enviando")
     if (!comercioId) {
       alert("ID do comércio não encontrado na URL.");
       return;
@@ -53,6 +54,8 @@ export default function NovoFornecedor() {
     }
   }
 
+  const onError = () => {console.log("duck")}
+
   return (
     <div className="conteudo-item produto-cadastro">
       <div className="page-header">
@@ -64,7 +67,7 @@ export default function NovoFornecedor() {
 
       <p className="subtitulo">Adicionar fornecedor:</p>
 
-      <form className="cadastro-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+      <form className="cadastro-form" onSubmit={handleSubmit(onSubmit, onError)} noValidate>
         <div className="grid-item">
           <Input label="Nome" id="nome" type="text" placeholder="Nome do fornecedor" {...register("nome")} />
           {errors.nome && <span className="err">{errors.nome.message}</span>}
@@ -77,18 +80,22 @@ export default function NovoFornecedor() {
 
         <div className="grid-item">
           <Input label="Telefone" id="telefone" type="text" placeholder="(xx) xxxxx-xxxx" {...register("telefone")} />
+          {errors.telefone && <span className="err">{errors.telefone.message}</span>}
         </div>
 
         <div className="grid-item">
           <Input label="Email" id="email" type="email" placeholder="email@exemplo.com" {...register("email")} />
+          {errors.email && <span className="err">{errors.email.message}</span>}
         </div>
 
         <div className="grid-item">
           <Input label="CEP" id="cep" type="text" placeholder="00000-000" {...register("cep")} />
+          {errors.cep && <span className="err">{errors.cep.message}</span>}
         </div>
 
         <div className="grid-item">
           <Input label="Número" id="numero" type="text" placeholder="123" {...register("numero")} />
+          {errors.numero && <span className="err">{errors.numero.message}</span>}
         </div>
 
         <div className="form-actions">
