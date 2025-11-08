@@ -1,6 +1,7 @@
 import {z} from "zod";
 
-function validateCNPJ(cnpjRaw: string) {
+
+const validateCNPJ = (cnpjRaw: string) => {
   const cnpj = cnpjRaw.replace(/\D/g, "");
   if (cnpj.length !== 14) return false;
   if (/^(\d)\1+$/.test(cnpj)) return false; // todos iguais
@@ -24,25 +25,31 @@ function validateCNPJ(cnpjRaw: string) {
 }
 
 const optionalNonEmptyString = (schema: z.ZodTypeAny) =>
-  z.preprocess((val) => (val === "" ? undefined : val), schema).optional();
+  z.preprocess((val) => (val === "" ? undefined : val), schema.optional());
 
 
 export const fornecedorSchema = z.object({
   nome: z.string().min(1, "Nome é obrigatório"),
   cnpj: z.preprocess(
     (val) => (typeof val === "string" ? val.replace(/\D/g, "") : val),
-    z
-      .string()
-      .length(14, "CNPJ deve ter 14 dígitos")
-      .refine((v) => validateCNPJ(v), { message: "CNPJ inválido" })
+    optionalNonEmptyString(
+      z
+        .string()
+        .length(14, "CNPJ deve ter 14 dígitos")
+        .refine((v) => validateCNPJ(v), { message: "CNPJ inválido" })
+    )
   ),
-  telefone: optionalNonEmptyString(z.string().min(8, "Telefone inválido").max(15)),
-  email: optionalNonEmptyString(z.string().regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Email inválido")),
+  telefone: optionalNonEmptyString(
+    z.string().min(8, "Telefone inválido").max(15, "Telefone inválido")
+  ),
+  email: optionalNonEmptyString(
+    z.string().regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Email inválido")
+  ),
   cep: z.preprocess(
     (val) => (typeof val === "string" ? val.replace(/\D/g, "") : val),
-    z.string().length(8, "CEP deve ter 8 dígitos").optional()
-  ).optional(),
-  numero: optionalNonEmptyString(z.string().max(10, "Número muito longo"))
+    optionalNonEmptyString(z.string().length(8, "CEP deve ter 8 dígitos"))
+  ),
+  numero: optionalNonEmptyString(z.string().max(10, "Número muito longo")),
 });
 
 export type FornecedorForm = z.infer<typeof fornecedorSchema>;
