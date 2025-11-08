@@ -117,7 +117,7 @@ def listar_categorias_do_comercio(comercio_id: int):
     """
     GET /comercios/<comercio_id>/categorias
     Retorna: { "items": [...], "total": n }
-    Cada item: { "categoria_id": int, "nome": str, "comercio_id": int, "criado_em": iso | None }
+    Cada item: { "categoria_id": int, "codigo": int, "nome": str, "comercio_id": int }
     """
     usuario: dict = g.get("usuario")
     usuario_id = usuario.get("usuario_id") if usuario else None
@@ -130,18 +130,11 @@ def listar_categorias_do_comercio(comercio_id: int):
         if not usuario_tem_acesso_ao_comercio(db, usuario_id, comercio_id):
             return jsonify({"msg": "Usuário não tem acesso a este comércio."}), 403
 
-        categorias = db.query(Categoria).filter(Categoria.comercio_id == comercio_id).order_by(Categoria.categoria_id.asc()).all()
+        categorias = db.query(Categoria).filter(Categoria.comercio_id == comercio_id).all()
 
         items = []
         for c in categorias:
-            # normaliza saída (compatível com frontend)
-            items.append({
-                "categoria_id": getattr(c, "categoria_id", None) or getattr(c, "id", None),
-                "id": getattr(c, "categoria_id", None) or getattr(c, "id", None),
-                "nome": getattr(c, "nome", None),
-                "comercio_id": getattr(c, "comercio_id", None),
-                "criado_em": getattr(c, "criado_em", None).isoformat() if getattr(c, "criado_em", None) else None
-            })
+            items.append(model_to_dict(c))
 
         return jsonify({"items": items, "total": len(items)}), 200
 

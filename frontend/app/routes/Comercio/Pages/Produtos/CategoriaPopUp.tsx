@@ -7,16 +7,12 @@ import api from "src/api/axios";
 import axios from "axios";
 import { useForm, Controller } from "react-hook-form";
 import { useParams } from "react-router";
-
-interface Category {
-    id: string;
-    nome: string;
-}
+import type { Categoria } from "src/types/categoria";
 
 interface Props {
     isOpen: boolean;
     onClose?: () => void;
-    onCreated?: (c: Category) => void;
+    onCreated?: (c: Categoria) => void;
 }
 
 type FormValues = {
@@ -46,12 +42,7 @@ export default function CategoriaPopUp({ isOpen, onClose, onCreated }: Props) {
             const res = await api.post(`${COMERCIOS}/${comercioId}/categorias`, { nome: data.nome });
             const resData = res.data;
 
-            const created: Category = {
-                id: resData?.id ?? resData?.categoria_id ?? `temp-${Date.now()}`,
-                nome: resData?.nome ?? data.nome,
-            };
-
-            onCreated?.(created);
+            onCreated?.(resData);
             reset();
             onClose?.();
         } catch (err: any) {

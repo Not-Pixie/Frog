@@ -9,16 +9,13 @@ import { COMERCIOS } from "src/api/enpoints";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router";
 import { FaArrowLeft } from "react-icons/fa";
+import type { Categoria } from "src/types/categoria";
 
-interface Category {
-  id: string;
-  nome: string;
-}
 
 export default function Categorias() {
   const { comercioId } = useParams() as { comercioId?: string };
   const navigate = useNavigate();
-  const [categorias, setCategorias] = useState<Category[]>([]);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -29,13 +26,7 @@ export default function Categorias() {
     try {
       const res = await api.get(`${COMERCIOS}/${comercioId}/categorias`);
       const items = res.data?.items ?? res.data ?? [];
-      const mapped: Category[] = Array.isArray(items)
-        ? items.map((it: any) => ({
-            id: String(it.id ?? it.categoria_id ?? it._id ?? `cat-${Date.now()}`),
-            nome: it.nome ?? it.name ?? "",
-          }))
-        : [];
-      setCategorias(mapped);
+      setCategorias(items);
       setError(null);
     } catch (err: any) {
       console.error("Erro ao buscar categorias:", err);
@@ -56,14 +47,14 @@ export default function Categorias() {
     fetchCategorias();
   }, [fetchCategorias]);
 
-  function handleCreated(c: Category) {
+  function handleCreated(c: Categoria) {
     setCategorias((prev) => {
-      if (prev.some((p) => p.id === c.id || p.nome === c.nome)) return prev;
+      if (prev.some((p) => p.categoria_id === c.categoria_id || p.nome === c.nome)) return prev;
       return [c, ...prev];
     });
   }
 
-async function handleDelete(id: string) {
+async function handleDelete(id: number) {
   if (!comercioId) {
     alert("ID do comércio não encontrado.");
     return;
@@ -74,11 +65,9 @@ async function handleDelete(id: string) {
 
   try {
     const resp = await api.delete(`${COMERCIOS}/${comercioId}/categorias/${id}`);
-    // servidor deve retornar 204; alguns servers retornam 200 com body
     if (resp.status === 204 || resp.status === 200) {
-      setCategorias((prev) => prev.filter((c) => c.id !== id));
+      setCategorias((prev) => prev.filter((c) => c.categoria_id !== id));
     } else {
-      // trata respostas inesperadas
       const data = resp.data ?? {};
       alert("Erro ao excluir categoria: " + (data.msg ?? JSON.stringify(data)));
     }
@@ -94,7 +83,7 @@ async function handleDelete(id: string) {
       } else if (status === 404) {
         alert("Categoria não encontrada.");
         // já remove localmente para sincronizar UI (opcional)
-        setCategorias((prev) => prev.filter((c) => c.id !== id));
+        setCategorias((prev) => prev.filter((c) => c.categoria_id !== id));
       } else {
         alert("Erro ao comunicar com o servidor. Veja o console para detalhes.");
       }
@@ -130,9 +119,9 @@ async function handleDelete(id: string) {
 
         <Table
           data={categorias}
-          keyField="id"
+          keyField="codigo"
           columns={[
-            { key: "id", label: "ID" },
+            { key: "codigo", label: "Codigo" },
             { key: "nome", label: "Nome" },
           ]}
           rowActions={(row: any) => (
