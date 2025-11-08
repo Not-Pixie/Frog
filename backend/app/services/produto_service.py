@@ -80,13 +80,12 @@ def _find_unimed_by_id(db: Session, comercio_id: int, unimed_id: int) -> Optiona
 
     if uni is None:
         return None
-
-    # aceita unidades globais (comercio_id is None) ou unidades do próprio comercio
+    
     uni_comercio = getattr(uni, "comercio_id", None)
     if uni_comercio is None or uni_comercio == comercio_id:
         return uni
 
-    # existe, mas pertence a outro comercio -> não permite
+ 
     return None
 
 
@@ -123,18 +122,6 @@ def _get_model_id(instance: Any) -> Optional[int]:
         return int(val) if val is not None else None
     except Exception:
         return None
-
-# verifica existência de UnidadeMedida por id, tentando nomes de coluna possíveis
-def _find_unimed_by_id(db: Session, comercio_id: int, unimed_id: int) -> Optional[UnidadeMedida]:
-    # tenta vários nomes de coluna que podem existir no model
-    possible_attrs = ["unidade_medida_id", "unimed_id", "id", "pk"]
-    for attr in possible_attrs:
-        if hasattr(UnidadeMedida, attr):
-            column = getattr(UnidadeMedida, attr)
-            found = db.query(UnidadeMedida).filter(column == unimed_id, UnidadeMedida.comercio_id == comercio_id).first()
-            if found:
-                return found
-    return None
 
 # ---------- create_produto (principal) ----------
 def create_produto(db: Session,
@@ -220,26 +207,21 @@ def create_produto(db: Session,
 
     # operação dentro de transação
     try:
-        with db.begin():
-            codigo_resultado = next_codigo(db, comercio_id, 'produtos')
+        codigo_resultado = next_codigo(db, comercio_id, 'produtos')
 
-            produto = Produto(
-                codigo=codigo_resultado,
-                nome=nome.strip(),
-                preco=preco_dec,
-                quantidade_estoque=quantidade_int,
-                tags=tags,
-                comercio_id=comercio_id,
-                fornecedor_id=fornecedor_id,
-                unimed_id=unimed_id,
-                categoria_id=categoria_id
-            )
-            db.add(produto)
-            db.flush()
-            return produto
-    except IntegrityError:
-        db.rollback()
-        raise
+        produto = Produto(
+            codigo=codigo_resultado,
+            nome=nome.strip(),
+            preco=preco_dec,
+            quantidade_estoque=quantidade_int,
+            tags=tags,
+            comercio_id=comercio_id,
+            fornecedor_id=fornecedor_id,
+            unimed_id=unimed_id,
+            categoria_id=categoria_id
+        )
+        db.add(produto)
+        db.flush()
+        return produto
     except Exception:
-        db.rollback()
         raise

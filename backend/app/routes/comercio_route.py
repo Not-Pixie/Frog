@@ -410,6 +410,7 @@ def criar_fornecedor_no_comercio(comercio_id: int):
         db.close()
             
 @bp.route("/<int:comercio_id>/produtos", methods=["POST"])
+@token_required
 def create_produto_route(comercio_id):
     data = request.get_json(silent=True)
     if not data:
@@ -426,6 +427,9 @@ def create_produto_route(comercio_id):
     
     current_app.logger.debug(categoria)
 
+    if unimed_id in (None, ""):
+        return jsonify({"error":"Campo 'unimed_id' é obrigatório"}), 400
+
     if not nome:
         return jsonify({"error": "Campo 'nome' é obrigatório"}), 400
     if preco is None:
@@ -433,31 +437,32 @@ def create_produto_route(comercio_id):
 
     db = SessionLocal()
     try:
-        produto: Produto = create_produto(
-            db=db,
-            comercio_id=comercio_id,
-            nome=nome,
-            preco=preco,
-            quantidade_estoque=quantidade_estoque,
-            categoria=categoria,
-            fornecedor=fornecedor,
-            unimed=unimed_id,
-            limiteEstoque=limiteEstoque,
-            tags=tags
-        )
-        
-        response_data = {
-            "produto_id": produto.produto_id,
-            "codigo": produto.codigo,
-            "nome": produto.nome,
-            "preco": str(produto.preco),
-            "quantidade_estoque": produto.quantidade_estoque,
-            "categoria_id": produto.categoria_id,
-            "fornecedor_id": produto.fornecedor_id,
-            "unimed_id": produto.unimed_id,
-            "tags": produto.tags,
-            "criado_em": produto.criado_em.isoformat() if produto.criado_em else None
-        }
+        with db.begin():
+            produto: Produto = create_produto(
+                db=db,
+                comercio_id=comercio_id,
+                nome=nome,
+                preco=preco,
+                quantidade_estoque=quantidade_estoque,
+                categoria=categoria,
+                fornecedor=fornecedor,
+                unimed=unimed_id,
+                limiteEstoque=limiteEstoque,
+                tags=tags
+            )
+            
+            response_data = {
+                "produto_id": produto.produto_id,
+                "codigo": produto.codigo,
+                "nome": produto.nome,
+                "preco": str(produto.preco),
+                "quantidade_estoque": produto.quantidade_estoque,
+                "categoria_id": produto.categoria_id,
+                "fornecedor_id": produto.fornecedor_id,
+                "unimed_id": produto.unimed_id,
+                "tags": produto.tags,
+                "criado_em": produto.criado_em.isoformat() if produto.criado_em else None
+            }
         
     except ValueError as ve:
         db.rollback()

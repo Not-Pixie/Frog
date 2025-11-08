@@ -1,15 +1,15 @@
-// src/routes/Comercio/Pages/Produtos/novo-produto.tsx
-
-import React, { useEffect, useRef, useState } from "react";
 import "./novo-produto.css";
+import "../geral.css"
+
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useForm } from "react-hook-form";
+import { FaArrowLeft } from "react-icons/fa";
+import { COMERCIOS } from "src/api/enpoints.ts";
+
 import Button from "../../../../../src/components/Button/button.tsx";
 import Input from "../../../../../src/components/Input/Input.tsx";
-import { FaArrowLeft } from "react-icons/fa";
 import api from "../../../../../src/api/axios";
-import { COMERCIOS } from "src/api/enpoints.ts";
-import type { Fornecedor } from "src/types/fornecedor.ts";
 
 type FormValues = {
   nome: string;
@@ -68,7 +68,12 @@ export default function NovoProduto() {
       try {
         const resp = await api.get(`${COMERCIOS}/${comercioId}/config`);
         if (resp.status === 200 && resp.data) {
-          const l = Number(resp.data.limite_padrao ?? resp.data.limitePadrao ?? resp.data.limite ?? 0);
+          const l = Number(
+            resp.data.limite_padrao ??
+              resp.data.limitePadrao ??
+              resp.data.limite ??
+              0
+          );
           if (!Number.isNaN(l) && mountedRef.current) {
             setDefaultLimite(l);
             setValue("limiteEstoque", String(l));
@@ -157,13 +162,25 @@ export default function NovoProduto() {
           setUnidades(
             arr
               .map((u: any) => ({
-                id: Number(u.unidade_medida_id ?? u.unimed_id ?? u.id ?? u.pk ?? 0) || undefined,
+                id:
+                  Number(
+                    u.unidade_medida_id ?? u.unimed_id ?? u.id ?? u.pk ?? 0
+                  ) || undefined,
                 nome: u.nome ? String(u.nome) : undefined,
-                sigla: u.sigla ? String(u.sigla) : u.sig ? String(u.sig) : undefined,
+                sigla: u.sigla
+                  ? String(u.sigla)
+                  : u.sig
+                    ? String(u.sig)
+                    : undefined,
                 raw: u,
               }))
               // permite unidades que tenham id ou uma sigla/nome
-              .filter((x) => x.id !== undefined || (x.sigla && x.sigla.length > 0) || (x.nome && x.nome.length > 0))
+              .filter(
+                (x) =>
+                  x.id !== undefined ||
+                  (x.sigla && x.sigla.length > 0) ||
+                  (x.nome && x.nome.length > 0)
+              )
           );
         } else {
           console.debug("Unidades fetch failed:", (uniResp as any).reason);
@@ -172,7 +189,9 @@ export default function NovoProduto() {
         setOptionsError(null);
       } catch (e: any) {
         console.error("fetchOptions error", e);
-        setOptionsError("Erro ao carregar categorias/fornecedores/unidades. Veja o console.");
+        setOptionsError(
+          "Erro ao carregar categorias/fornecedores/unidades. Veja o console."
+        );
       } finally {
         if (mountedRef.current) setLoadingOptions(false);
       }
@@ -188,22 +207,29 @@ export default function NovoProduto() {
   // utilitários
   const safeNumberFromInputString = (v: string, fallback: number) => {
     if (v === null || v === undefined || v === "") return fallback;
-    const cleaned = String(v).replace(/[^\d\-,.]/g, "").replace(",", ".");
+    const cleaned = String(v)
+      .replace(/[^\d\-,.]/g, "")
+      .replace(",", ".");
     const n = Number(cleaned);
     return Number.isNaN(n) ? fallback : n;
   };
 
   const decimalString = (v: string | undefined | null): string | null => {
     if (v === null || v === undefined) return null;
-    const cleaned = String(v).trim().replace(/[^\d\-,.]/g, "");
+    const cleaned = String(v)
+      .trim()
+      .replace(/[^\d\-,.]/g, "");
     if (cleaned === "") return null;
     const withDot = cleaned.replace(",", ".");
     const m = withDot.match(/-?\d+(\.\d+)?/);
     return m ? m[0] : null;
   };
 
-  const toIntOrUndefined = (v: string | undefined | null): number | undefined => {
-    if (v === undefined || v === null || String(v).trim() === "") return undefined;
+  const toIntOrUndefined = (
+    v: string | undefined | null
+  ): number | undefined => {
+    if (v === undefined || v === null || String(v).trim() === "")
+      return undefined;
     const n = parseInt(String(v).trim(), 10);
     return Number.isNaN(n) ? undefined : n;
   };
@@ -215,9 +241,12 @@ export default function NovoProduto() {
     }
 
     const precoNumber = decimalString(values.preco) ?? "0";
-    const limiteNumber = safeNumberFromInputString(values.limiteEstoque, defaultLimite ?? 0);
+    const limiteNumber = safeNumberFromInputString(
+      values.limiteEstoque,
+      defaultLimite ?? 0
+    );
 
-    // converte os selects para número (ou undefined se vazio)
+   const unimedInt = toIntOrUndefined(values.unimed);
     const categoriaId = toIntOrUndefined(values.categoria);
     const fornecedorId = toIntOrUndefined(values.fornecedor);
 
@@ -227,8 +256,7 @@ export default function NovoProduto() {
       quantidade_estoque: 0,
       categoria_id: categoriaId,
       fornecedor_id: fornecedorId,
-      // envia o valor selecionado: pode ser id numérico (string) ou sigla/texto
-      unimed_id: values.unimed || undefined,
+      unimed_id: unimedInt ?? (values.unimed?.trim() ? values.unimed : undefined),
       limiteEstoque: Number(limiteNumber),
       tags: values.tags || undefined,
     };
@@ -245,7 +273,10 @@ export default function NovoProduto() {
     } catch (err: any) {
       console.error("Erro ao criar produto:", err);
       if (err.response?.data) {
-        alert("Erro: " + (err.response.data.error ?? JSON.stringify(err.response.data)));
+        alert(
+          "Erro: " +
+            (err.response.data.error ?? JSON.stringify(err.response.data))
+        );
       } else {
         alert("Erro ao conectar com o servidor.");
       }
@@ -255,7 +286,11 @@ export default function NovoProduto() {
   return (
     <div className="conteudo-item produto-cadastro">
       <div className="page-header">
-        <button className="back-link" onClick={() => navigate(-1)} aria-label="Voltar">
+        <button
+          className="back-link"
+          onClick={() => navigate(-1)}
+          aria-label="Voltar"
+        >
           <FaArrowLeft />
         </button>
         <h1>Produtos</h1>
@@ -263,7 +298,11 @@ export default function NovoProduto() {
 
       <p className="subtitulo">Adicionar novo produto:</p>
 
-      <form className="cadastro-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+      <form
+        className="cadastro-form"
+        onSubmit={handleSubmit(onSubmit)}
+        noValidate
+      >
         <div className="grid-item">
           <Input
             label="Nome"
@@ -282,12 +321,15 @@ export default function NovoProduto() {
             id="categoria"
             type="select"
             {...register("categoria", { required: "Selecione uma categoria" })}
+            placeholder="selecione..."
           >
             {categorias.map((c) => (
               <option key={String(c.id)} value={String(c.id)}>{c.nome}</option>
             ))}
           </Input>
-          {errors.categoria && <span className="err">{errors.categoria.message}</span>}
+          {errors.categoria && (
+            <span className="err">{errors.categoria.message}</span>
+          )}
         </div>
 
         <div className="grid-item">
@@ -308,20 +350,31 @@ export default function NovoProduto() {
             id="fornecedor"
             type="select"
             {...register("fornecedor", { required: "Selecione um fornecedor" })}
+            placeholder="selecione..."
           >
             {fornecedores.map((f) => (
-              <option key={String(f.id)} value={String(f.id)}>{f.nome}</option>
+              <option key={String(f.id)} value={String(f.id)}>
+                {f.nome}
+              </option>
             ))}
           </Input>
-          {errors.fornecedor && <span className="err">{errors.fornecedor.message}</span>}
+          {errors.fornecedor && (
+            <span className="err">{errors.fornecedor.message}</span>
+          )}
         </div>
 
         <div className="grid-item">
           <Input
-            label={defaultLimite !== null ? `Limite mínimo de estoque` : "Limite mínimo de estoque"}
+            label={
+              defaultLimite !== null
+                ? `Limite mínimo de estoque`
+                : "Limite mínimo de estoque"
+            }
             id="limiteEstoque"
             type="text"
-            placeholder={defaultLimite !== null ? String(defaultLimite) : "Ex: 5"}
+            placeholder={
+              defaultLimite !== null ? String(defaultLimite) : "Ex: 5"
+            }
             inputWrapperClassName="input-wrapper"
             {...register("limiteEstoque")}
           />
@@ -333,11 +386,20 @@ export default function NovoProduto() {
             id="unimed"
             type="select"
             {...register("unimed")}
+            placeholder="selecione..."
           >
             {unidades.map((u) => {
-              const value = u.id ? String(u.id) : String(u.sigla ?? u.nome ?? "");
-              const label = (u.nome ? `${u.nome}` : u.sigla ? `${u.sigla}` : `#${value}`) + (u.sigla ? ` (${u.sigla})` : "");
-              return <option key={value} value={value}>{label}</option>;
+              const value = u.id
+                ? String(u.id)
+                : String(u.sigla ?? u.nome ?? "");
+              const label =
+                (u.nome ? `${u.nome}` : u.sigla ? `${u.sigla}` : `#${value}`) +
+                (u.sigla ? ` (${u.sigla})` : "");
+              return (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              );
             })}
           </Input>
         </div>
@@ -353,10 +415,18 @@ export default function NovoProduto() {
           />
         </div>
 
-        {optionsError && <div className="err" style={{ marginBottom: 8 }}>{optionsError}</div>}
+        {optionsError && (
+          <div className="err" style={{ marginBottom: 8 }}>
+            {optionsError}
+          </div>
+        )}
 
         <div className="form-actions">
-          <Button theme="green" type="submit" disabled={isSubmitting || loadingDefaults || loadingOptions}>
+          <Button
+            theme="green"
+            type="submit"
+            disabled={isSubmitting || loadingDefaults || loadingOptions}
+          >
             {isSubmitting ? "Salvando..." : "Adicionar produto"}
           </Button>
         </div>
