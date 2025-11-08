@@ -1,6 +1,6 @@
 export type Produto = {
   produto_id: number;
-  codigo: string;
+  codigo: number;
   nome: string;
   preco: string;
   quantidade_estoque: number;

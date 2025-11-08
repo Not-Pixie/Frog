@@ -83,7 +83,7 @@ function Produto() {
       <div className="conteudo-item">
         <Table
           data={produtos}
-          keyField="produto_id"
+          keyField="codigo"
           columns={[
             { key: "codigo", label: "Código" },
             { key: "nome", label: "Produto" },
