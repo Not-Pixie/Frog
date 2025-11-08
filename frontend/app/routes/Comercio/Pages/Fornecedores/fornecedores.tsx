@@ -53,9 +53,9 @@ function Fornecedores() {
       <div className="conteudo-item">
         <Table
           data={fornecedores}
-          keyField="fornecedor_id"
+          keyField="codigo"
           columns={[
-            { key: "fornecedor_id", label: "Código" },
+            { key: "codigo", label: "Código" },
             { key: "nome", label: "Nome" },
             { key: "cnpj", label: "CNPJ" },
             { key: "endereco.cep", label: "CEP" },

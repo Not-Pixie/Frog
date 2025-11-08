@@ -264,7 +264,7 @@ def listar_fornecedores_do_comercio(comercio_id: int):
         if not usuario_tem_acesso_ao_comercio(db, usuario_id, comercio_id):
             return jsonify({"msg": "Usuário não tem acesso a este comércio."}), 403
 
-        fornecedores = db.query(Fornecedor).filter(Fornecedor.comercio_id == comercio_id).order_by(Fornecedor.fornecedor_id.desc()).all()
+        fornecedores = db.query(Fornecedor).filter(Fornecedor.comercio_id == comercio_id).order_by(Fornecedor.fornecedor_id.asc()).all()
         items = []
         for f in fornecedores:
             item = {
@@ -275,7 +275,7 @@ def listar_fornecedores_do_comercio(comercio_id: int):
                 "email": getattr(f, "email", None),
                 "comercio_id": getattr(f, "comercio_id", None),
                 "criado_em": getattr(f, "criado_em", None).isoformat() if getattr(f, "criado_em", None) else None,
-                # endereço (pode ser None)
+                "codigo": getattr(f, "codigo", None),
                 "endereco": None
             }
             if getattr(f, "endereco", None) is not None:
