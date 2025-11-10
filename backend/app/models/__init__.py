@@ -12,4 +12,7 @@ from .configs_comercio import ConfiguracaoComercio
 from .configs_usuario import ConfiguracaoUsuario
 from .convites_model import Convite
 from .contadores_locais import ContadorLocal
+from .carrinho_model import Carrinho 
+from .carrinho_item_model import CarrinhoItem
+from .movimentacao_model import Movimentacao
 

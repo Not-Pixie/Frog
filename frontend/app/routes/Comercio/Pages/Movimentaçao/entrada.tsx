@@ -1,12 +1,12 @@
 import "../geral.css";
 
-function Entrada() {
+function Entradas() {
 
 
   return (
-    <div className="conteudo-item"><h1>Entrada</h1></div>
+    <div className="conteudo-item"><h1>Entradas</h1></div>
      
   );
 }
 
-export default Entrada;
+export default Entradas;
