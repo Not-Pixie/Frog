@@ -74,27 +74,27 @@ export default function NovoFornecedor() {
         </div>
 
         <div className="grid-item">
-          <Input label="CNPJ" id="cnpj" type="text" placeholder="00.000.000/0000-00" {...register("cnpj")} />
+          <Input label="CNPJ" id="cnpj" type="text" placeholder="CNPJ do fornecedor" {...register("cnpj")} />
           {errors.cnpj && <span className="err">{errors.cnpj.message}</span>}
         </div>
 
         <div className="grid-item">
-          <Input label="Telefone" id="telefone" type="text" placeholder="(xx) xxxxx-xxxx" {...register("telefone")} />
+          <Input label="Telefone" id="telefone" type="text" placeholder="Telefone do fornecedor" {...register("telefone")} />
           {errors.telefone && <span className="err">{errors.telefone.message}</span>}
         </div>
 
         <div className="grid-item">
-          <Input label="Email" id="email" type="email" placeholder="email@exemplo.com" {...register("email")} />
+          <Input label="Email" id="email" type="email" placeholder="Email do fornecedor" {...register("email")} />
           {errors.email && <span className="err">{errors.email.message}</span>}
         </div>
 
         <div className="grid-item">
-          <Input label="CEP" id="cep" type="text" placeholder="00000-000" {...register("cep")} />
+          <Input label="CEP" id="cep" type="text" placeholder="CEP do endereço" {...register("cep")} />
           {errors.cep && <span className="err">{errors.cep.message}</span>}
         </div>
 
         <div className="grid-item">
-          <Input label="Número" id="numero" type="text" placeholder="123" {...register("numero")} />
+          <Input label="Número" id="numero" type="text" placeholder="Número do endereço" {...register("numero")} />
           {errors.numero && <span className="err">{errors.numero.message}</span>}
         </div>
 

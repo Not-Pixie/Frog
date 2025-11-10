@@ -321,7 +321,7 @@ export default function NovoProduto() {
             id="categoria"
             type="select"
             {...register("categoria", { required: "Selecione uma categoria" })}
-            placeholder="selecione..."
+            placeholder=""
           >
             {categorias.map((c) => (
               <option key={String(c.id)} value={String(c.id)}>{c.nome}</option>
@@ -350,7 +350,7 @@ export default function NovoProduto() {
             id="fornecedor"
             type="select"
             {...register("fornecedor", { required: "Selecione um fornecedor" })}
-            placeholder="selecione..."
+            placeholder=""
           >
             {fornecedores.map((f) => (
               <option key={String(f.id)} value={String(f.id)}>
@@ -386,7 +386,7 @@ export default function NovoProduto() {
             id="unimed"
             type="select"
             {...register("unimed")}
-            placeholder="selecione..."
+            placeholder=""
           >
             {unidades.map((u) => {
               const value = u.id
