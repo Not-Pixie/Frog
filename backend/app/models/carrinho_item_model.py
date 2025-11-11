@@ -13,8 +13,11 @@ class CarrinhoItem(Base):
 
     criado_em = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
+    comercio_id = Column(Integer, ForeignKey("comercios.comercio_id", ondelete="CASCADE"), nullable=False)
+
     carrinho = relationship("Carrinho", back_populates="itens", lazy="joined")
     produto = relationship("Produto", lazy="joined")  # já existe na sua model
+    comercio = relationship("Comercio", back_populates="movimentacoes" )
 
     __table_args__ = (
         UniqueConstraint("carrinho_id", "produto_id", name="uq_carrinho_produto"),

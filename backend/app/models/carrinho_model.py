@@ -12,5 +12,8 @@ class Carrinho(Base):
     criado_em = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     atualizado_em = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
+    comercio_id = Column(Integer, ForeignKey("comercios.comercio_id", ondelete="CASCADE"), nullable=False)
+
     # relacionamento para itens
     itens = relationship("CarrinhoItem", back_populates="carrinho", cascade="all, delete-orphan", lazy="joined")
+    comercio = relationship("Comercio", back_populates="movimentacoes")
