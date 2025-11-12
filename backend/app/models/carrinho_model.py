@@ -16,4 +16,4 @@ class Carrinho(Base):
 
     # relacionamento para itens
     itens = relationship("CarrinhoItem", back_populates="carrinho", cascade="all, delete-orphan", lazy="joined")
-    comercio = relationship("Comercio", back_populates="movimentacoes")
+    comercio = relationship("Comercio", back_populates="carrinhos")

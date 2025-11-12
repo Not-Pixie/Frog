@@ -17,7 +17,7 @@ class CarrinhoItem(Base):
 
     carrinho = relationship("Carrinho", back_populates="itens", lazy="joined")
     produto = relationship("Produto", lazy="joined")  # já existe na sua model
-    comercio = relationship("Comercio", back_populates="movimentacoes" )
+    comercio = relationship("Comercio", back_populates="carrinhoitens" )
 
     __table_args__ = (
         UniqueConstraint("carrinho_id", "produto_id", name="uq_carrinho_produto"),

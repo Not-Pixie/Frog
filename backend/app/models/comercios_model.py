@@ -30,3 +30,6 @@ class Comercio(Base):
     unidade_medidas = relationship("UnidadeMedida", back_populates="comercio")
     fornecedores = relationship("Fornecedor", back_populates="comercio")
     convites = relationship("Convite", back_populates="comercio")
+    movimentacoes = relationship("Movimentacao", back_populates="comercio")
+    carrinhos = relationship("Carrinho", back_populates="comercio")
+    carrinhoitens = relationship("CarrinhoItem", back_populates="comercio")
