@@ -16,7 +16,7 @@ type OptionItem = {
   raw?: any;
 };
 
-type APIResponse = {
+interface APIResponse {
   items: Produto[];
   total: number;
 };
@@ -82,21 +82,22 @@ export default function Entradas() {
     }
   }
 
-  async function ensureCart() {
+  async function ensureCart(): Promise<Cart> {
     if (cart) return cart;
     setLoading(true);
     try {
-      const res = await fetch("/api/carrinhos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ comercioId: comercioId }),
-      });
-      if (!res.ok) throw new Error("Não foi possível criar carrinho");
-      const newCart: Cart = await res.json();
-      setCart(newCart);
+      const resp = await api.post<Cart>("/carrinhos", { comercioId });
+      if (resp.status < 200 || resp.status >= 300) {
+        throw new Error("Não foi possível criar carrinho");
+      }
+      const newCart = resp.data;
+      if (mountedRef.current) setCart(newCart);
       return newCart;
+    } catch (err) {
+      console.error("ensureCart error", err);
+      throw err;
     } finally {
-      setLoading(false);
+      if (mountedRef.current) setLoading(false);
     }
   }
 
