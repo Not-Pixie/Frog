@@ -6,6 +6,8 @@ import Button from "../../../../../src/components/Button/button.tsx";
 import Input from "../../../../../src/components/Input/Input.tsx";
 import api from "../../../../../src/api/axios";
 import { COMERCIOS } from "src/api/enpoints";
+import type { Produto } from "src/types/produto.ts";
+import { useParams } from "react-router";
 
 type OptionItem = {
   id?: number;
@@ -14,12 +16,9 @@ type OptionItem = {
   raw?: any;
 };
 
-type Product = {
-  produto_id: number;
-  codigo?: number;
-  nome: string;
-  preco: number;
-  quantidade_estoque: number;
+type APIResponse = {
+  items: Produto[];
+  total: number;
 };
 
 type CartItem = {
@@ -29,7 +28,7 @@ type CartItem = {
   quantidade: number;
   valor_unitario?: number;
   subtotal?: number;
-  produto?: Product;
+  produto?: Produto;
 };
 
 type Cart = {
@@ -39,14 +38,13 @@ type Cart = {
   status?: string;
 };
 
-const COMERCIO_ID: number = (window as any).COMERCIO_ID ?? 1;
-
 export default function Entradas() {
   const mountedRef = React.useRef(false);
+  const {comercioId} = useParams();
 
   const [produtos, setProdutos] = React.useState<OptionItem[]>([]);
   const [cart, setCart] = React.useState<Cart | null>(null);
-  const [selectedProductId, setSelectedProductId] = React.useState<number | "">("");
+  const [selectedProdutoId, setSelectedProdutoId] = React.useState<number | "">("");
   const [selectedQty, setSelectedQty] = React.useState<number>(1);
   const [loading, setLoading] = React.useState(false);
   const [loadingOptions, setLoadingOptions] = React.useState(false);
@@ -54,9 +52,8 @@ export default function Entradas() {
 
   React.useEffect(() => {
     mountedRef.current = true;
-    if (COMERCIO_ID) fetchProdutos();
+    if (comercioId) fetchProdutos();
     return () => { mountedRef.current = false; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function fetchProdutos() {
@@ -64,16 +61,15 @@ export default function Entradas() {
     setError(null);
     try {
       // usa mesma rota que você usa no NovoProduto
-      const resp = await api.get(`${COMERCIOS}/${COMERCIO_ID}/produtos`);
+      const resp = await api.get<APIResponse>(`${COMERCIOS}/${comercioId}/produtos`);
       if (resp.status !== 200) throw new Error("Erro ao buscar produtos");
 
       // trata formatos: array direto ou { items: [...] }
       const arr = Array.isArray(resp.data) ? resp.data : (Array.isArray(resp.data?.items) ? resp.data.items : []);
-      // mapeia para OptionItem mantendo raw
       const mapped: OptionItem[] = arr
-        .map((p: any) => ({
-          id: Number(p.produto_id ?? p.id ?? p.pk ?? 0) || undefined,
-          nome: String(p.nome ?? p.name ?? p.label ?? ""),
+        .map((p: Produto) => ({
+          id: p.produto_id,
+          nome: p.nome,
           raw: p,
         }))
         .filter((x: OptionItem) => x.id !== undefined);
@@ -86,9 +82,6 @@ export default function Entradas() {
     }
   }
 
-  // --- resto das funções de carrinho (ensureCart, addProductToCart, updateQuantity, removeItem)
-  // você pode copiar as mesmas que já tinha — mantive apenas a interface
-
   async function ensureCart() {
     if (cart) return cart;
     setLoading(true);
@@ -96,7 +89,7 @@ export default function Entradas() {
       const res = await fetch("/api/carrinhos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ comercio_id: COMERCIO_ID }),
+        body: JSON.stringify({ comercioId: comercioId }),
       });
       if (!res.ok) throw new Error("Não foi possível criar carrinho");
       const newCart: Cart = await res.json();
@@ -107,8 +100,8 @@ export default function Entradas() {
     }
   }
 
-  async function addProductToCart() {
-    if (!selectedProductId) { setError("Selecione um produto"); return; }
+  async function addProdutoToCart() {
+    if (!selectedProdutoId) { setError("Selecione um produto"); return; }
     if (selectedQty <= 0) { setError("Quantidade inválida"); return; }
     setError(null);
     try {
@@ -117,7 +110,7 @@ export default function Entradas() {
       const res = await fetch(`/api/carrinhos/${c.carrinho_id}/itens`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ produto_id: selectedProductId, quantidade: selectedQty }),
+        body: JSON.stringify({ produto_id: selectedProdutoId, quantidade: selectedQty }),
       });
       if (!res.ok) {
         const txt = await res.text();
@@ -125,7 +118,7 @@ export default function Entradas() {
       }
       const updatedCart: Cart = await res.json();
       setCart(updatedCart);
-      setSelectedProductId("");
+      setSelectedProdutoId("");
       setSelectedQty(1);
     } catch (err: any) {
       console.error(err);
@@ -136,14 +129,18 @@ export default function Entradas() {
   }
 
   // simplified tableData
-  const tableData = (cart?.itens ?? []).map(it => ({
-    item_id: it.item_id,
-    nome: it.produto?.nome ?? String(it.produto_id),
-    codigo: it.produto?.codigo ?? "",
-    valor_unitario: it.valor_unitario ?? it.produto?.preco ?? 0,
-    quantidade: it.quantidade,
-    subtotal: it.subtotal ?? ((it.valor_unitario ?? it.produto?.preco ?? 0) * it.quantidade),
-  }));
+  const tableData = (cart?.itens ?? []).map(it => {
+    const valorUnitario = Number(it.valor_unitario ?? it.produto?.preco ?? 0);
+    const quantidade = Number(it.quantidade ?? 0);
+    return {
+      item_id: it.item_id,
+      nome: it.produto?.nome ?? String(it.produto_id),
+      codigo: it.produto?.codigo ?? "",
+      valor_unitario: valorUnitario,
+      quantidade: quantidade,
+      subtotal: it.subtotal ?? (valorUnitario * quantidade),
+    };
+  });
 
   return (
     <div className="conteudo-item">
@@ -153,8 +150,8 @@ export default function Entradas() {
 
       <div style={{ display: "flex", gap: 12, alignItems: "flex-end", marginBottom: 16 }}>
         <Input label="Produto" type="select" id="produto-select" placeholder="Selecione um produto"
-          value={selectedProductId as any}
-          onChange={(e: any) => setSelectedProductId(Number(e.target.value) || "")}
+          value={selectedProdutoId as any}
+          onChange={(e: any) => setSelectedProdutoId(Number(e.target.value) || "")}
         >
           {/* usa produtos (mesmo padrão do NovoProduto) */}
           {produtos.map(p => (
@@ -171,11 +168,11 @@ export default function Entradas() {
           inputClassName="small-input"
         />
 
-        <Button theme="green" onClick={addProductToCart} disabled={loading || !selectedProductId}>
+        <Button theme="green" onClick={addProdutoToCart} disabled={loading || !selectedProdutoId}>
           {loading ? "Carregando..." : "Adicionar"}
         </Button>
 
-        <Button theme="light" onClick={() => { setSelectedProductId(""); setSelectedQty(1); }}>
+        <Button theme="light" onClick={() => { setSelectedProdutoId(""); setSelectedQty(1); }}>
           Limpar
         </Button>
       </div>
