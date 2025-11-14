@@ -1,3 +1,4 @@
+// src/pages/.../Fornecedores.tsx  (ajuste o caminho conforme seu projeto)
 import "../geral.css";
 import Button from "../../../../../src/components/Button/button.tsx";
 import { Link, useParams } from "react-router";
@@ -7,12 +8,14 @@ import { COMERCIOS } from "src/api/enpoints.ts";
 import api from "src/api/axios.ts";
 import axios from "axios";
 import type { Fornecedor } from "src/types/fornecedor.ts"
+import { handleDelete } from "../../comercio";
 
 function Fornecedores() {
   const { comercioId } = useParams();
   const [isLoad, setLoading] = useState<boolean>(false);
   const [fornecedores, setFornecedores] = useState<Fornecedor[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const mountedRef = useRef(false);
 
   const fetchFornecedores = useCallback(async () => {
@@ -44,6 +47,25 @@ function Fornecedores() {
     return () => { mountedRef.current = false; };
   }, [fetchFornecedores]);
 
+  const onDelete = async (id: number) => {
+    if (!comercioId) {
+      alert("ID do comércio não encontrado.");
+      return;
+    }
+    setDeletingId(id);
+    try {
+      const result = await handleDelete("fornecedores", id, Number(comercioId));
+      if (result.success) {
+        setFornecedores((prev) => prev.filter((f) => f.fornecedor_id !== id));
+        console.log("Fornecedor excluído");
+      } else if (!result.cancelled) {
+        alert(result.error ?? "Erro ao excluir fornecedor.");
+      }
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
     <>
       <div className="conteudo-item produto-header">
@@ -51,9 +73,10 @@ function Fornecedores() {
       </div>
 
       <div className="conteudo-item">
+        {error && <div className="text-red-600">{error}</div>}
         <Table
           data={fornecedores}
-          keyField="codigo"
+          keyField="fornecedor_id"
           columns={[
             { key: "codigo", label: "Código" },
             { key: "nome", label: "Nome" },
@@ -65,7 +88,12 @@ function Fornecedores() {
           rowActions={(row: any) => (
             <div style={{ display: "flex", gap: 8 }}>
               <button onClick={() => {/* navegar para editar no futuro */}}>Editar</button>
-              <button onClick={() => {/* implementar exclusão se quiser */}}>Excluir</button>
+              <button
+                onClick={() => onDelete(Number(row.fornecedor_id ?? row.id))}
+                disabled={deletingId !== null && deletingId === Number(row.fornecedor_id ?? row.id)}
+              >
+                {deletingId !== null && deletingId === Number(row.fornecedor_id ?? row.id) ? "Excluindo..." : "Excluir"}
+              </button>
             </div>
           )}
           actionHeader="Opções"

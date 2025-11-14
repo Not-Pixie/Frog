@@ -3,14 +3,14 @@ import "../geral.css";
 import Button from "src/components/Button/button.tsx";
 import Table from "src/components/Table/Table.tsx";
 import { useCallback, useEffect, useState } from "react";
-import CategoriaPopUp from "./CategoriaPopUp"; // ajuste caminho se necessário
+import CategoriaPopUp from "./CategoriaPopUp";
 import api from "src/api/axios";
 import { COMERCIOS } from "src/api/enpoints";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router";
 import { FaArrowLeft } from "react-icons/fa";
 import type { Categoria } from "src/types/categoria";
-
+import { handleDelete } from "../../comercio";
 
 export default function Categorias() {
   const { comercioId } = useParams() as { comercioId?: string };
@@ -19,6 +19,7 @@ export default function Categorias() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const fetchCategorias = useCallback(async () => {
     if (!comercioId) return;
@@ -54,54 +55,37 @@ export default function Categorias() {
     });
   }
 
-async function handleDelete(id: number) {
-  if (!comercioId) {
-    alert("ID do comércio não encontrado.");
-    return;
-  }
-
-  const ok = window.confirm("Confirma excluir esta categoria? Esta ação não pode ser desfeita.");
-  if (!ok) return;
-
-  try {
-    const resp = await api.delete(`${COMERCIOS}/${comercioId}/categorias/${id}`);
-    if (resp.status === 204 || resp.status === 200) {
-      setCategorias((prev) => prev.filter((c) => c.categoria_id !== id));
-    } else {
-      const data = resp.data ?? {};
-      alert("Erro ao excluir categoria: " + (data.msg ?? JSON.stringify(data)));
+  const onDelete = async (id: number) => {
+    if (!comercioId) {
+      alert("ID do comércio não encontrado.");
+      return;
     }
-  } catch (err: any) {
-    console.error("Erro ao deletar categoria:", err);
-    if (axios.isAxiosError(err)) {
-      const status = err.response?.status;
-      const body = err.response?.data;
-      if (status === 400) {
-        alert("Não foi possível excluir: " + (body?.msg ?? body?.error ?? "Categoria em uso por produtos."));
-      } else if (status === 403) {
-        alert("Você não tem permissão para excluir esta categoria.");
-      } else if (status === 404) {
-        alert("Categoria não encontrada.");
-        // já remove localmente para sincronizar UI (opcional)
-        setCategorias((prev) => prev.filter((c) => c.categoria_id !== id));
-      } else {
-        alert("Erro ao comunicar com o servidor. Veja o console para detalhes.");
+    setDeletingId(id);
+    try {
+      const result = await handleDelete("categorias", id, Number(comercioId));
+      if (result.success) {
+        setCategorias((prev) =>
+          prev.filter((c) => {
+            const itemId = c.categoria_id ?? (c as any).id;
+            return itemId !== id && String(itemId) !== String(id);
+          })
+        );
+      } else if (!result.cancelled) {
+        // mensagens de erro detalhadas já vindas do handleDelete
+        alert(result.error ?? "Erro ao excluir categoria.");
       }
-    } else {
-      alert("Erro inesperado ao excluir categoria.");
+    } finally {
+      setDeletingId(null);
     }
-  }
-}
+  };
 
   return (
     <>
       <div className="conteudo-item produto-header">
         <div className="page-header">
-          {/* Botão de voltar com seta — comportamento: volta para a lista de produtos */}
           <button
             className="back-link"
             onClick={() => {
-              // opção 1: voltar para a página de produtos explicitamente
               if (comercioId) navigate(`/comercio/${comercioId}/produtos`);
               else navigate(-1);
             }}
@@ -119,7 +103,7 @@ async function handleDelete(id: number) {
 
         <Table
           data={categorias}
-          keyField="codigo"
+          keyField="categoria_id"
           columns={[
             { key: "codigo", label: "Codigo" },
             { key: "nome", label: "Nome" },
@@ -127,7 +111,12 @@ async function handleDelete(id: number) {
           rowActions={(row: any) => (
             <div style={{ display: "flex", gap: 8 }}>
               <button onClick={() => /* implementar edição */ null}>Editar</button>
-              <button onClick={() => handleDelete(row.id)}>Excluir</button>
+              <button
+                onClick={() => onDelete(Number(row.categoria_id ?? row.id))}
+                disabled={deletingId !== null && deletingId === Number(row.categoria_id ?? row.id)}
+              >
+                {deletingId !== null && deletingId === Number(row.categoria_id ?? row.id) ? "Excluindo..." : "Excluir"}
+              </button>
             </div>
           )}
           actionHeader="Opções"

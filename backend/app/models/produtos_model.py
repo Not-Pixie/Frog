@@ -12,10 +12,9 @@ class Produto(Base):
     quantidade_estoque = Column(Integer, nullable=False, default=0)
     tags = Column(String(100), nullable=True)
 
-    # nomes de coluna alinhados ao SQL: unimed_id, categoria_id, fornecedor_id, comercio_id
     unimed_id = Column(Integer, ForeignKey("unidade_medidas.unimed_id", ondelete="RESTRICT", onupdate="CASCADE"), nullable=False)
-    categoria_id = Column(Integer, ForeignKey("categorias.categoria_id", ondelete="RESTRICT", onupdate="CASCADE"), nullable=False)
-    fornecedor_id = Column(Integer, ForeignKey("fornecedores.fornecedor_id", ondelete="RESTRICT", onupdate="CASCADE"), nullable=False)
+    categoria_id = Column(Integer, ForeignKey("categorias.categoria_id", ondelete="SET NULL", onupdate="CASCADE"), nullable=True)
+    fornecedor_id = Column(Integer, ForeignKey("fornecedores.fornecedor_id", ondelete="SET NULL", onupdate="CASCADE"), nullable=True)
     comercio_id = Column(Integer, ForeignKey("comercios.comercio_id", ondelete="CASCADE"), nullable=False)
 
     criado_em = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

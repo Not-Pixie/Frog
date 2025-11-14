@@ -19,6 +19,8 @@ from app.services.comercio_service import get_produtos_de_comercio_por_id
 from app.utils.model_utils import model_to_dict
 from app.services.produto_service import create_produto 
 from app.services.produto_service import delete_produto
+from app.services.fornecedor_service import delete_fornecedor
+from app.services.categoria_service import delete_categoria
 
 
 bp = Blueprint("comercios", __name__, url_prefix="/comercios")
@@ -287,6 +289,55 @@ def rota_delete_produto(comercio_id, produto_id):
             db.close()
         except Exception:
             current_app.logger.exception("Erro ao fechar sessão do DB em rota_delete_produto")
+
+@bp.route('/<int:comercio_id>/categorias/<int:categoria_id>', methods=['DELETE'])
+@token_required
+def rota_delete_categoria(comercio_id, categoria_id):
+    db = SessionLocal()
+    try:
+        try:
+            delete_categoria(db, categoria_id, comercio_id)
+        except ValueError:
+            return jsonify({"error": "Categoria não encontrada"}), 404
+
+        return ("", 204)
+
+    except IntegrityError:
+        current_app.logger.exception("Integrity error ao deletar categoria")
+        return jsonify({"error": "Não foi possível deletar categoria por restrição de integridade"}), 400
+    except SQLAlchemyError:
+        current_app.logger.exception("Erro ao deletar categoria")
+        return jsonify({"error": "Erro interno ao deletar categoria"}), 500
+    finally:
+        try:
+            db.close()
+        except Exception:
+            current_app.logger.exception("Erro ao fechar sessão do DB em rota_delete_categoria")
+
+
+@bp.route('/<int:comercio_id>/fornecedores/<int:fornecedor_id>', methods=['DELETE'])
+@token_required
+def rota_delete_fornecedor(comercio_id, fornecedor_id):
+    db = SessionLocal()
+    try:
+        try:
+            delete_fornecedor(db, fornecedor_id, comercio_id)
+        except ValueError:
+            return jsonify({"error": "Fornecedor não encontrado"}), 404
+
+        return ("", 204)
+
+    except IntegrityError:
+        current_app.logger.exception("Integrity error ao deletar fornecedor")
+        return jsonify({"error": "Não foi possível deletar fornecedor por restrição de integridade"}), 400
+    except SQLAlchemyError:
+        current_app.logger.exception("Erro ao deletar fornecedor")
+        return jsonify({"error": "Erro interno ao deletar fornecedor"}), 500
+    finally:
+        try:
+            db.close()
+        except Exception:
+            current_app.logger.exception("Erro ao fechar sessão do DB em rota_delete_fornecedor")
 
 
 @bp.route('/<int:comercio_id>/fornecedores', methods=['GET'])

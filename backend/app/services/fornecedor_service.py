@@ -1,6 +1,7 @@
 # app/services/fornecedor_service.py
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy import or_
 from app.models.fornecedores_model import Fornecedor
 from app.models.enderecos_model import Endereco
 from app.utils.contador_utils import next_codigo
@@ -64,4 +65,35 @@ def create_fornecedor(db: Session,
             db.rollback()
         except Exception:
             pass
+        raise
+
+
+def delete_fornecedor(db, fornecedor_id: int, comercio_id: int) -> bool:
+    """
+    Deleta fornecedor garantindo que pertença ao comercio_id.
+    Com ON DELETE SET NULL no DB, os produtos terão fornecedor_id = NULL automaticamente.
+    """
+    conds = []
+    if hasattr(Fornecedor, "fornecedor_id"):
+        conds.append(Fornecedor.fornecedor_id == fornecedor_id)
+    if hasattr(Fornecedor, "id"):
+        conds.append(Fornecedor.id == fornecedor_id)
+
+    if not conds:
+        raise RuntimeError("Modelo Fornecedor não possui atributo 'fornecedor_id' nem 'id'")
+
+    try:
+        f = db.query(Fornecedor).filter(or_(*conds), Fornecedor.comercio_id == comercio_id).one_or_none()
+        if f is None:
+            raise ValueError("Fornecedor não encontrado para este comércio")
+
+        db.delete(f)
+        db.commit()
+        return True
+
+    except IntegrityError:
+        db.rollback()
+        raise
+    except SQLAlchemyError:
+        db.rollback()
         raise
