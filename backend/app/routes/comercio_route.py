@@ -216,27 +216,47 @@ def deletar_categoria_cascade_setnull(comercio_id: int, categoria_id: int):
 def listar_produtos(comercio_id):
     """
     GET /comercio/<comercio_id>/produtos
-    Args:
-      - comercio_id: id do comércio cujos produtos serão listados
-    Retorna (200):
-      JSON { "items": [ ... ], "total": <int> }
-      onde cada item é um dict do produto (campos da tabela) + categoriaNome, fornecedorNome, unidadeMedidaNome
-    Erros:
-      - 500 em caso de SQLAlchemyError (registro do erro no logger)
+    Retorna {"items": [...], "total": <int>}
+    Cada item: campos do produto + categoriaNome, fornecedorNome, unidadeMedidaNome
     """
     db = SessionLocal()
     try:
         produtos = get_produtos_de_comercio_por_id(db, comercio_id)
+
+        def rel_name(obj):
+            """Tenta extrair o melhor nome/label de uma relação (nome, name, label, sigla)."""
+            if obj is None:
+                return None
+            for attr in ("nome", "name", "label", "descricao", "sigla"):
+                v = getattr(obj, attr, None)
+                if v not in (None, ""):
+                    return v
+            return None
+
         items = []
         for p in produtos:
             pd = model_to_dict(p)
-            pd["categoriaNome"] = getattr(p.categoria, "nome", None) if getattr(p, "categoria", None) is not None else None
-            pd["fornecedorNome"] = getattr(p.fornecedor, "nome", None) if getattr(p, "fornecedor", None) is not None else None
-            pd["unidadeMedidaNome"] = getattr(p.unidade_medida, "nome", None) if getattr(p, "unidade_medida", None) is not None else None
+
+            # extrai nomes das relações de forma segura
+            pd["categoriaNome"] = rel_name(getattr(p, "categoria", None))
+            pd["fornecedorNome"] = rel_name(getattr(p, "fornecedor", None))
+
+            # unidade pode ter nome ou sigla — preferir nome, cair para sigla
+            unidade = getattr(p, "unidade_medida", None)
+            pd["unidadeMedidaNome"] = getattr(getattr(p, "unidade_medida", None), "nome", None)
+            pd["unidadeMedidaSigla"] = getattr(getattr(p, "unidade_medida", None), "sigla", None)
+
+            # opcional: remover as chaves de relação serializadas caso model_to_dict já as tenha
+            for k in ("categoria", "fornecedor", "unidade_medida"):
+                if k in pd:
+                    pd.pop(k, None)
+
             items.append(pd)
+
         return jsonify({"items": items, "total": len(items)}), 200
+
     except SQLAlchemyError:
-        current_app.logger.exception("Erro ao listar produtos com join")
+        current_app.logger.exception("Erro ao listar produtos com joined relations")
         return jsonify({"error": "Erro interno ao listar produtos"}), 500
     finally:
         try:

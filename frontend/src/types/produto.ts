@@ -14,4 +14,5 @@ export type Produto = {
   categoriaNome?: string | null;
   fornecedorNome?: string | null;
   unidadeMedidaNome?: string | null;
+  unidadeMedidaSigla?: string | null;
 };
