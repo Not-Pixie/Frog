@@ -337,7 +337,7 @@ export default function NovoProduto() {
             label="Categoria"
             id="categoria"
             type="select"
-            {...register("categoria", { required: "Selecione uma categoria" })}
+            {...register("categoria")}
             placeholder=""
           >
             {categorias.map((c) => (
@@ -366,7 +366,7 @@ export default function NovoProduto() {
             label="Fornecedor"
             id="fornecedor"
             type="select"
-            {...register("fornecedor", { required: "Selecione um fornecedor" })}
+            {...register("fornecedor")}
           >
             {fornecedores.map((f) => (
               <option key={String(f.id)} value={String(f.id)}>
