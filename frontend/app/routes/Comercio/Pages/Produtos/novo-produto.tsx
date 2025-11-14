@@ -47,6 +47,7 @@ export default function NovoProduto() {
     handleSubmit,
     formState: { errors, isSubmitting },
     setValue,
+    getValues, // ADICIONADO
   } = useForm<FormValues>({
     defaultValues: {
       nome: "",
@@ -124,64 +125,80 @@ export default function NovoProduto() {
           return [];
         };
 
-        // categorias
+        // --- CATEGORIAS ---
         if (catsResp.status === "fulfilled") {
           const arr: any[] = extractArray(catsResp.value);
-          setCategorias(
-            arr
-              .map((c: any) => ({
-                id: Number(c.categoria_id ?? c.id ?? c.pk ?? 0) || undefined,
-                nome: String(c.nome ?? c.name ?? c.label ?? ""),
-                raw: c,
-              }))
-              .filter((x) => x.id !== undefined)
-          );
+          const mappedCats = arr
+            .map((c: any) => ({
+              id: Number(c.categoria_id ?? c.id ?? c.pk ?? 0) || undefined,
+              nome: String(c.nome ?? c.name ?? c.label ?? ""),
+              raw: c,
+            }))
+            .filter((x) => x.id !== undefined);
+
+          setCategorias(mappedCats);
+
+          // se usuário ainda não escolheu, preenche com a primeira opção válida
+          if (mountedRef.current && mappedCats.length > 0 && !getValues("categoria")) {
+            setValue("categoria", String(mappedCats[0].id));
+          }
         } else {
           console.debug("Categorias fetch failed:", (catsResp as any).reason);
         }
 
-        // fornecedores
+        // --- FORNECEDORES ---
         if (fornResp.status === "fulfilled") {
           const arr: any[] = extractArray(fornResp.value);
-          setFornecedores(
-            arr
-              .map((f: any) => ({
-                id: Number(f.fornecedor_id ?? f.id ?? f.pk ?? 0) || undefined,
-                nome: String(f.nome ?? f.name ?? ""),
-                raw: f,
-              }))
-              .filter((x) => x.id !== undefined)
-          );
+          const mappedForn = arr
+            .map((f: any) => ({
+              id: Number(f.fornecedor_id ?? f.id ?? f.pk ?? 0) || undefined,
+              nome: String(f.nome ?? f.name ?? ""),
+              raw: f,
+            }))
+            .filter((x) => x.id !== undefined);
+
+          setFornecedores(mappedForn);
+
+          if (mountedRef.current && mappedForn.length > 0 && !getValues("fornecedor")) {
+            setValue("fornecedor", String(mappedForn[0].id));
+          }
         } else {
           console.debug("Fornecedores fetch failed:", (fornResp as any).reason);
         }
 
-        // unidades
+        // --- UNIDADES ---
         if (uniResp.status === "fulfilled") {
           const arr: any[] = extractArray(uniResp.value);
-          setUnidades(
-            arr
-              .map((u: any) => ({
-                id:
-                  Number(
-                    u.unidade_medida_id ?? u.unimed_id ?? u.id ?? u.pk ?? 0
-                  ) || undefined,
-                nome: u.nome ? String(u.nome) : undefined,
-                sigla: u.sigla
-                  ? String(u.sigla)
-                  : u.sig
-                    ? String(u.sig)
-                    : undefined,
-                raw: u,
-              }))
-              // permite unidades que tenham id ou uma sigla/nome
-              .filter(
-                (x) =>
-                  x.id !== undefined ||
-                  (x.sigla && x.sigla.length > 0) ||
-                  (x.nome && x.nome.length > 0)
-              )
-          );
+          const mappedUnidades = arr
+            .map((u: any) => ({
+              id:
+                Number(
+                  u.unidade_medida_id ?? u.unimed_id ?? u.id ?? u.pk ?? 0
+                ) || undefined,
+              nome: u.nome ? String(u.nome) : undefined,
+              sigla: u.sigla
+                ? String(u.sigla)
+                : u.sig
+                  ? String(u.sig)
+                  : undefined,
+              raw: u,
+            }))
+            // permite unidades que tenham id ou uma sigla/nome
+            .filter(
+              (x) =>
+                x.id !== undefined ||
+                (x.sigla && x.sigla.length > 0) ||
+                (x.nome && x.nome.length > 0)
+            );
+
+          setUnidades(mappedUnidades);
+
+          // calculamos o value da primeira opção (pode ser id ou sigla/nome)
+          if (mountedRef.current && mappedUnidades.length > 0 && !getValues("unimed")) {
+            const first = mappedUnidades[0];
+            const firstValue = first.id ? String(first.id) : String(first.sigla ?? first.nome ?? "");
+            setValue("unimed", firstValue);
+          }
         } else {
           console.debug("Unidades fetch failed:", (uniResp as any).reason);
         }
@@ -350,7 +367,6 @@ export default function NovoProduto() {
             id="fornecedor"
             type="select"
             {...register("fornecedor", { required: "Selecione um fornecedor" })}
-            placeholder=""
           >
             {fornecedores.map((f) => (
               <option key={String(f.id)} value={String(f.id)}>
@@ -385,8 +401,7 @@ export default function NovoProduto() {
             label="Unidade de medida"
             id="unimed"
             type="select"
-            {...register("unimed")}
-            placeholder=""
+            {...register("unimed", { required: "Selecione uma unidade de medida" })}
           >
             {unidades.map((u) => {
               const value = u.id
@@ -402,6 +417,9 @@ export default function NovoProduto() {
               );
             })}
           </Input>
+          {errors.unimed && (
+            <span className="err">{errors.unimed.message}</span>
+          )}
         </div>
 
         <div className="grid-item field-full">

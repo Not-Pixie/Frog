@@ -89,6 +89,9 @@ function Produto() {
             { key: "nome", label: "Produto" },
             { key: "preco", label: "Preço (R$)" },
             { key: "quantidade_estoque", label: "Qtd" },
+            { key: "unidadeMedidaNome", label: "Unidade" },
+            { key: "categoriaNome" , label: "Categoria" },
+            { key: "fornecedorNome", label: "Fornecedor" }
           ]}
           rowActions={(row: any) => (
             <div style={{ display: "flex", gap: 8 }}>
