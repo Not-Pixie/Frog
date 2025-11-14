@@ -18,6 +18,8 @@ from app.services.cadastro_comercio_service import criar_comercio
 from app.services.comercio_service import get_produtos_de_comercio_por_id
 from app.utils.model_utils import model_to_dict
 from app.services.produto_service import create_produto 
+from app.services.produto_service import delete_produto
+
 
 bp = Blueprint("comercios", __name__, url_prefix="/comercios")
 
@@ -263,6 +265,29 @@ def listar_produtos(comercio_id):
             db.close()
         except Exception:
             current_app.logger.exception("Erro ao fechar sessão do DB em listar_produtos")
+
+@bp.route('/<int:comercio_id>/produtos/<int:produto_id>', methods=['DELETE'])
+@token_required
+def rota_delete_produto(comercio_id, produto_id):
+    db = SessionLocal()
+    try:
+        try:
+            deleted = delete_produto(db, produto_id, comercio_id)
+        except ValueError:
+            return jsonify({"error": "Produto não encontrado"}), 404
+        return ("", 204)
+    except IntegrityError:
+        current_app.logger.exception("Integrity error ao deletar produto")
+        return jsonify({"error": "Não foi possível deletar produto por restrição de integridade"}), 400
+    except SQLAlchemyError:
+        current_app.logger.exception("Erro ao deletar produto")
+        return jsonify({"error": "Erro interno ao deletar produto"}), 500
+    finally:
+        try:
+            db.close()
+        except Exception:
+            current_app.logger.exception("Erro ao fechar sessão do DB em rota_delete_produto")
+
 
 @bp.route('/<int:comercio_id>/fornecedores', methods=['GET'])
 @token_required

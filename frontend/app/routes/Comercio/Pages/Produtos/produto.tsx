@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { COMERCIOS } from "src/api/enpoints.ts";
 import api from "src/api/axios.ts";
 import axios from "axios";
+import { handleDelete } from "../../comercio";
 
 import type { Produto } from "src/types/produto.ts";
 
@@ -20,6 +21,7 @@ function Produto() {
   const [isLoad, setLoading] = useState<boolean>(false);
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const mountedRef = useRef(false);
 
   const fetchProdutos = useCallback(async () => {
@@ -62,9 +64,38 @@ function Produto() {
     }
   }, [comercioId]);
 
-  const handleDelete = (id: number) => {
-    // implementar se quiser excluir produto daqui
+  const onDeleteClick = async (id: number) => {
+    if (!comercioId) {
+      alert("ID do comércio não encontrado");
+      return;
+    }
+    setDeletingId(id);
+    try {
+      const result = await handleDelete("produtos", id, Number(comercioId));
+      if (result.success) {
+        // atualiza lista local (remover por várias chaves possíveis)
+        setProdutos((prev) =>
+          prev.filter(
+            (it: any) =>
+              (it.produto_id ?? it.id ?? it.codigo) !== id &&
+              // em alguns casos row pode conter codigo string/number; tentamos cobrir:
+              String(it.produto_id ?? it.id ?? it.codigo) !== String(id)
+          )
+        );
+        // opcional: toast / console
+        console.log("Produto removido com sucesso");
+      } else if (!result.cancelled) {
+        // se não foi cancelado e deu erro, exibir mensagem
+        alert(result.error ?? "Não foi possível deletar o produto");
+      }
+    } catch (e) {
+      console.error("Erro inesperado ao deletar:", e);
+      alert("Erro inesperado ao deletar. Veja console.");
+    } finally {
+      setDeletingId(null);
+    }
   };
+
 
   useEffect(() => {
     if (!mountedRef.current) mountedRef.current = true;
@@ -98,8 +129,15 @@ function Produto() {
               <button aria-label={`Editar ${row.produto_id}`} onClick={() => /* navegar/editar */ null}>
                 Editar
               </button>
-              <button aria-label={`Excluir ${row.produto_id}`} onClick={() => handleDelete(row.produto_id)}>
-                Excluir
+              <button
+                aria-label={`Excluir ${row.produto_id ?? row.id ?? row.codigo}`}
+                onClick={() => onDeleteClick(Number(row.produto_id ?? row.id ?? row.codigo))}
+                className="btn-delete"
+                disabled={deletingId !== null && deletingId === Number(row.produto_id ?? row.id ?? row.codigo)}
+              >
+                {deletingId !== null && deletingId === Number(row.produto_id ?? row.id ?? row.codigo)
+                  ? "Excluindo..."
+                  : "Excluir"}
               </button>
             </div>
           )}

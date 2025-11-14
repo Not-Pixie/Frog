@@ -1,7 +1,8 @@
 # app/services/product_service.py
 from typing import Optional, Any
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from decimal import Decimal, InvalidOperation
 import secrets
 
@@ -224,4 +225,41 @@ def create_produto(db: Session,
         db.flush()
         return produto
     except Exception:
+        raise
+
+
+def delete_produto(db, produto_id: int, comercio_id: int) -> bool:
+    """
+    Deleta um produto garantindo que ele pertença ao comercio_id.
+    Retorna True se deletado; lança ValueError se não encontrado;
+    relança IntegrityError/SQLAlchemyError para o caller tratar.
+    """
+
+    # montar condições para PK flexível (id ou produto_id)
+    conds = []
+    if hasattr(Produto, "id"):
+        conds.append(Produto.id == produto_id)
+    if hasattr(Produto, "produto_id"):
+        conds.append(Produto.produto_id == produto_id)
+
+    if not conds:
+        # modelo inesperado — explícito para facilitar debug
+        raise RuntimeError("Modelo Produto não possui atributo 'id' nem 'produto_id'")
+
+    try:
+        prod = db.query(Produto).filter(or_(*conds), Produto.comercio_id == comercio_id).one_or_none()
+        if prod is None:
+            raise ValueError("Produto não encontrado para este comércio")
+
+        db.delete(prod)
+        db.commit()
+        return True
+
+    except IntegrityError:
+        db.rollback()
+        # relança para a rota decidir a resposta HTTP
+        raise
+    except SQLAlchemyError:
+        db.rollback()
+        # log no caller; relança para a rota retornar 500
         raise
