@@ -9,7 +9,11 @@ export function Sidebar({ baseUrl }: { baseUrl: string }) {
   return (
     <div className="sideBar">
       <NavLink to="/meus-comercios" className="logo">
-        <img src="/img/frog3.png" alt="Logo" />
+      <img
+        src="/img/frog4.png"
+        alt="Logo"
+        style={{ transform: "translateY(-18px) scale(1.75)", transformOrigin: "center", display: "block" }}
+      />
       </NavLink>
 
       <nav className="menu">
