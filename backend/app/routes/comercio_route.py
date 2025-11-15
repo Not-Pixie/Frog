@@ -17,7 +17,7 @@ from app.services.comercio_service import get_produtos_de_comercio_por_id
 from app.utils.model_utils import model_to_dict
 from app.services.produto_service import create_produto, get_produto_por_id, update_produto, delete_produto
 from app.services.fornecedor_service import create_fornecedor, get_fornecedor_por_id, update_fornecedor, delete_fornecedor
-from app.services.categoria_service import create_categoria, delete_categoria
+from app.services.categoria_service import create_categoria, delete_categoria, get_categoria_por_id, update_categoria
 
 
 bp = Blueprint("comercios", __name__, url_prefix="/comercios")
@@ -725,3 +725,49 @@ def rota_update_fornecedor(comercio_id, fornecedor_id):
             db.close()
         except Exception:
             current_app.logger.exception("Erro ao fechar sessão do DB em rota_update_fornecedor")
+
+@bp.route('/<int:comercio_id>/categorias/<int:categoria_id>', methods=['GET'])
+@token_required
+def rota_get_categoria(comercio_id, categoria_id):
+    db = SessionLocal()
+    try:
+        c = get_categoria_por_id(db, categoria_id, comercio_id)
+        if c is None:
+            return jsonify({"error": "Categoria não encontrada"}), 404
+        cd = model_to_dict(c)
+        return jsonify(cd), 200
+    except SQLAlchemyError:
+        current_app.logger.exception("Erro ao buscar categoria")
+        return jsonify({"error": "Erro interno"}), 500
+    finally:
+        try:
+            db.close()
+        except Exception:
+            current_app.logger.exception("Erro ao fechar sessão do DB em rota_get_categoria")
+
+
+@bp.route('/<int:comercio_id>/categorias/<int:categoria_id>', methods=['PUT', 'PATCH'])
+@token_required
+def rota_update_categoria(comercio_id, categoria_id):
+    db = SessionLocal()
+    try:
+        payload = request.get_json() or {}
+        try:
+            cat = update_categoria(db, categoria_id, comercio_id, payload)
+        except ValueError:
+            return jsonify({"error": "Categoria não encontrada"}), 404
+
+        cd = model_to_dict(cat)
+        return jsonify(cd), 200
+
+    except IntegrityError:
+        current_app.logger.exception("Integrity error ao atualizar categoria")
+        return jsonify({"error": "Não foi possível atualizar: conflito de integridade"}), 400
+    except SQLAlchemyError:
+        current_app.logger.exception("Erro ao atualizar categoria")
+        return jsonify({"error": "Erro interno ao atualizar categoria"}), 500
+    finally:
+        try:
+            db.close()
+        except Exception:
+            current_app.logger.exception("Erro ao fechar sessão do DB em rota_update_categoria")
