@@ -87,12 +87,15 @@ function Fornecedores() {
           ]}
           rowActions={(row: any) => (
             <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={() => {/* navegar para editar no futuro */}}>Editar</button>
+              <button onClick={() => {/* navegar para editar no futuro */}}>
+                <i className="fi fi-rr-pencil" style={{ fontSize: 20, color: "#35AC97" }}></i>
+                </button>
               <button
                 onClick={() => onDelete(Number(row.fornecedor_id ?? row.id))}
                 disabled={deletingId !== null && deletingId === Number(row.fornecedor_id ?? row.id)}
               >
-                {deletingId !== null && deletingId === Number(row.fornecedor_id ?? row.id) ? "Excluindo..." : "Excluir"}
+                 <i className="fi fi-rr-trash-xmark" style={{ fontSize: 20, color: "#F45959" }}></i>
+                {deletingId !== null && deletingId === Number(row.fornecedor_id ?? row.id) ? "Excluindo..." : ""}
               </button>
             </div>
           )}

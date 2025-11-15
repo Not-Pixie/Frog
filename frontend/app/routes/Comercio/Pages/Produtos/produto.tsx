@@ -127,17 +127,18 @@ function Produto() {
           rowActions={(row: any) => (
             <div style={{ display: "flex", gap: 8 }}>
               <button aria-label={`Editar ${row.produto_id}`} onClick={() => /* navegar/editar */ null}>
-                Editar
+                 <i className="fi fi-rr-pencil" style={{ fontSize: 20, color: "#35AC97" }}></i>
               </button>
               <button
                 aria-label={`Excluir ${row.produto_id ?? row.id ?? row.codigo}`}
                 onClick={() => onDeleteClick(Number(row.produto_id ?? row.id ?? row.codigo))}
                 className="btn-delete"
                 disabled={deletingId !== null && deletingId === Number(row.produto_id ?? row.id ?? row.codigo)}
-              >
+              > 
+              <i className="fi fi-rr-trash-xmark" style={{ fontSize: 20, color: "#F45959" }}></i>
                 {deletingId !== null && deletingId === Number(row.produto_id ?? row.id ?? row.codigo)
                   ? "Excluindo..."
-                  : "Excluir"}
+                  : ""}
               </button>
             </div>
           )}

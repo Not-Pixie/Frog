@@ -308,7 +308,7 @@ export default function NovoProduto() {
           onClick={() => navigate(-1)}
           aria-label="Voltar"
         >
-          <FaArrowLeft />
+          <FaArrowLeft color="#35AC97"/>
         </button>
         <h1>Produtos</h1>
       </div>

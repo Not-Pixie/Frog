@@ -60,7 +60,7 @@ export default function NovoFornecedor() {
     <div className="conteudo-item produto-cadastro">
       <div className="page-header">
         <button className="back-link" onClick={() => navigate(-1)} aria-label="Voltar">
-          <FaArrowLeft />
+          <FaArrowLeft color="#35AC97"/>
         </button>
         <h1>Fornecedores</h1>
       </div>
