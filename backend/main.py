@@ -1,4 +1,4 @@
-import importlib, pkgutil, os
+import importlib, pkgutil, os, traceback
 from flask import Flask, Blueprint
 from flask_cors import CORS
 
@@ -12,7 +12,6 @@ def register_blueprints(flask_app):
     except Exception as e:
         print("Erro registrando comercio_bp:", e)
 
-    # dinâmico (mais robusto)
     import app.routes as routes_pkg
     for finder, name, is_pkg in pkgutil.iter_modules(routes_pkg.__path__):
         if is_pkg:
@@ -23,8 +22,12 @@ def register_blueprints(flask_app):
                 if obj.name in flask_app.blueprints:
                     print(f"Pulando {name} -> bp.name='{obj.name}' (já registrado)")
                     continue
-                flask_app.register_blueprint(obj)
-                print(f"Registrado: módulo='{name}' bp.name='{obj.name}' url_prefix='{obj.url_prefix}'")
+                try:
+                    flask_app.register_blueprint(obj)
+                    print(f"Registrado: módulo='{name}' bp.name='{obj.name}' url_prefix='{obj.url_prefix}'")
+                except Exception as e:
+                    print(f"Erro registrando blueprint do módulo '{name}' (bp.name='{getattr(obj, 'name', None)}'):", e)
+                    traceback.print_exc()
 
 def create_app():
     flask_app = Flask(__name__)
