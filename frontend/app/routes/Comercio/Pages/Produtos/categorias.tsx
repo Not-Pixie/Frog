@@ -110,12 +110,14 @@ export default function Categorias() {
           ]}
           rowActions={(row: any) => (
             <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={() => /* implementar edição */ null}>Editar</button>
+              <button onClick={() => /* implementar edição */ null}>
+               <i className="fi fi-rr-pencil" style={{ fontSize: 20, color: "#35AC97" }}></i>
+              </button>
               <button
                 onClick={() => onDelete(Number(row.categoria_id ?? row.id))}
                 disabled={deletingId !== null && deletingId === Number(row.categoria_id ?? row.id)}
               >
-                {deletingId !== null && deletingId === Number(row.categoria_id ?? row.id) ? "Excluindo..." : "Excluir"}
+                <i className="fi fi-rr-trash-xmark" style={{ fontSize: 20, color: "#F45959" }}></i>
               </button>
             </div>
           )}
