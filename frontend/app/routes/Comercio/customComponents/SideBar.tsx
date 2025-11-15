@@ -8,9 +8,9 @@ export function Sidebar({ baseUrl }: { baseUrl: string }) {
 
   return (
     <div className="sideBar">
-      <div className="logo">
-        <img src="/img/frog.jpeg" alt="Logo" />
-      </div>
+      <NavLink to="/meus-comercios" className="logo">
+        <img src="/img/frog3.png" alt="Logo" />
+      </NavLink>
 
       <nav className="menu">
         <ul>
