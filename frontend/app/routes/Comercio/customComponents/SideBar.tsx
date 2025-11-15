@@ -8,9 +8,13 @@ export function Sidebar({ baseUrl }: { baseUrl: string }) {
 
   return (
     <div className="sideBar">
-      <div className="logo">
-        <img src="/img/frog.jpeg" alt="Logo" />
-      </div>
+      <NavLink to="/meus-comercios" className="logo">
+      <img
+        src="/img/frog4.png"
+        alt="Logo"
+        style={{ transform: "translateY(-18px) scale(1.75)", transformOrigin: "center", display: "block" }}
+      />
+      </NavLink>
 
       <nav className="menu">
         <ul>
@@ -77,7 +81,7 @@ export function Sidebar({ baseUrl }: { baseUrl: string }) {
 
             {/* Configurações */}
           <li className="opcao">
-            <NavLink to={`${baseUrl}/configurações`}>
+            <NavLink to={`${baseUrl}/configuracoes`}>
             <img src="/vectors/settings-sliders.png" alt="Configurações" />
             <span>Configurações</span>
             </NavLink>

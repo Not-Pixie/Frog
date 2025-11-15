@@ -11,6 +11,7 @@ import { useParams, useNavigate } from "react-router";
 import { FaArrowLeft } from "react-icons/fa";
 import type { Categoria } from "src/types/categoria";
 import { handleDelete } from "../../comercio";
+import CategoriaEditPopUp from "./CategoriaEditPopUp";
 
 export default function Categorias() {
   const { comercioId } = useParams() as { comercioId?: string };
@@ -18,8 +19,21 @@ export default function Categorias() {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [editingCategoria, setEditingCategoria] = useState<Categoria | null>(null);
+
+  const handleEditClick = (row: any) => {
+    console.log("Editando categoria:", row);
+    setEditingCategoria(row);
+    setIsEditOpen(true);
+  };
+
+  const handleCloseEdit = () => {
+    setEditingCategoria(null);
+    setIsEditOpen(false);
+  };
 
   const fetchCategorias = useCallback(async () => {
     if (!comercioId) return;
@@ -55,6 +69,18 @@ export default function Categorias() {
     });
   }
 
+  function handleUpdated(c: Categoria) {
+    setCategorias((prev) => prev.map((p) => {
+      const pid = p.categoria_id ?? (p as any).id;
+      const cid = c.categoria_id ?? (c as any).id;
+      if (String(pid) === String(cid)) {
+        return c;
+      }
+      return p;
+    }));
+    handleCloseEdit();
+  }
+
   const onDelete = async (id: number) => {
     if (!comercioId) {
       alert("ID do comércio não encontrado.");
@@ -71,7 +97,6 @@ export default function Categorias() {
           })
         );
       } else if (!result.cancelled) {
-        // mensagens de erro detalhadas já vindas do handleDelete
         alert(result.error ?? "Erro ao excluir categoria.");
       }
     } finally {
@@ -83,16 +108,16 @@ export default function Categorias() {
     <>
       <div className="conteudo-item produto-header">
         <div className="page-header">
-          <button
+            <button
             className="back-link"
             onClick={() => {
               if (comercioId) navigate(`/comercio/${comercioId}/produtos`);
               else navigate(-1);
             }}
             aria-label="Voltar"
-          >
-            <FaArrowLeft />
-          </button>
+            >
+            <FaArrowLeft style={{ fontSize: 20, color: "#35AC97" }} />
+            </button>
 
           <h1>Gerenciar Categorias</h1>
         </div>
@@ -110,8 +135,12 @@ export default function Categorias() {
           ]}
           rowActions={(row: any) => (
             <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={() => /* implementar edição */ null}>
-               <i className="fi fi-rr-pencil" style={{ fontSize: 20, color: "#35AC97" }}></i>
+              <button
+                onClick={() => handleEditClick(row)}
+                aria-label={`Editar ${row.categoria_id ?? row.id}`}
+                className="btn-edit"
+              >
+                <i className="fi fi-rr-pencil" style={{ fontSize: 20, color: "#35AC97" }}></i>
               </button>
               <button
                 onClick={() => onDelete(Number(row.categoria_id ?? row.id))}
@@ -124,21 +153,30 @@ export default function Categorias() {
           actionHeader="Opções"
           emptyMessage={loading ? "Carregando categorias..." : "Nenhuma categoria encontrada"}
         />
+
+        <div className="conteudo-item botoes" style={{ marginTop: 12 }}>
+          <Button theme="green" onClick={() => setIsCreateOpen(true)}>
+            Nova categoria
+          </Button>
+        </div>
       </div>
 
-      <div className="conteudo-item botoes" style={{ marginTop: 12 }}>
-        <Button theme="green" onClick={() => setIsOpen(true)}>
-          Nova categoria
-        </Button>
-      </div>
-
+      {/* Popup de Criação */}
       <CategoriaPopUp
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
         onCreated={(c) => {
           handleCreated(c);
-          setIsOpen(false);
+          setIsCreateOpen(false);
         }}
+      />
+
+      {/* Popup de Edição */}
+      <CategoriaEditPopUp
+        isOpen={isEditOpen}
+        categoria={editingCategoria}
+        onClose={handleCloseEdit}
+        onUpdated={handleUpdated}
       />
     </>
   );
