@@ -77,7 +77,7 @@ export function Sidebar({ baseUrl }: { baseUrl: string }) {
 
             {/* Configurações */}
           <li className="opcao">
-            <NavLink to={`${baseUrl}/configurações`}>
+            <NavLink to={`${baseUrl}/configuracoes`}>
             <img src="/vectors/settings-sliders.png" alt="Configurações" />
             <span>Configurações</span>
             </NavLink>
