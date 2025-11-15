@@ -1,11 +1,11 @@
 # app/services/product_service.py
 from typing import Optional, Any
 from sqlalchemy import or_
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from decimal import Decimal, InvalidOperation
+from app.models.produtos_model import Produto
 import secrets
-
 from app.models import Produto, Categoria, Fornecedor, UnidadeMedida
 from app.utils.contador_utils import next_codigo  # ajuste conforme seus módulos
 
@@ -263,3 +263,97 @@ def delete_produto(db, produto_id: int, comercio_id: int) -> bool:
         db.rollback()
         # log no caller; relança para a rota retornar 500
         raise
+
+def get_produto_por_id(db, produto_id: int, comercio_id: int):
+    """
+    Retorna instância Produto ou None (com relações carregadas).
+    """
+    q = (
+        db.query(Produto)
+        .options(
+            joinedload(Produto.categoria),
+            joinedload(Produto.fornecedor),
+            joinedload(Produto.unidade_medida),
+            joinedload(Produto.comercio),
+        )
+        .filter(Produto.produto_id == produto_id, Produto.comercio_id == comercio_id)
+    )
+    return q.one_or_none()
+
+def update_produto(db, produto_id: int, comercio_id: int, data: dict):
+    """
+    Atualiza os campos permitidos de um produto e retorna o produto atualizado.
+    Lança ValueError se produto não encontrado.
+    Lança SQLAlchemyError/IntegrityError para erros de BD.
+    """
+    prod = get_produto_por_id(db, produto_id, comercio_id)
+    if prod is None:
+        raise ValueError("Produto não encontrado para esse comércio")
+
+    # campos permitidos para update (filtrar qualquer campo externo)
+    allowed = {
+        "nome": str,
+        "preco": str,  # string decimal (ex: "12.50") — você já lida com decimal no frontend
+        "quantidade_estoque": int,
+        "categoria_id": (int, type(None)),
+        "fornecedor_id": (int, type(None)),
+        "unimed_id": (int, str, type(None)),
+        "tags": (str, type(None)),
+        "limiteEstoque": (int, type(None)),
+    }
+
+    # Função utilitária para conversão segura
+    def cast_value(key, val):
+        expected = allowed[key]
+        if val is None:
+            return None
+        if expected is int:
+            return int(val)
+        if expected is (int, type(None)):
+            return int(val) if val != "" else None
+        # preco: guardar como string/Decimal depende do model; o model tem Numeric -> cast para Decimal se quiser
+        return val
+
+    for k in allowed.keys():
+        if k in data:
+            newval = data[k]
+            # permitimos nulos (frontend pode mandar null/undefined)
+            try:
+                v = cast_value(k, newval)
+            except Exception:
+                # se conversão falhar, apenas pule (ou você pode raise ValueError para validar)
+                continue
+
+            # map nome do campo se necessário
+            if k == "unimed_id":
+                prod.unimed_id = v
+            elif k == "categoria_id":
+                prod.categoria_id = v
+            elif k == "fornecedor_id":
+                prod.fornecedor_id = v
+            elif k == "limiteEstoque":
+                # supondo que limiteEstoque é apenas para UI/serviços; se existir coluna em model substitua
+                try:
+                    prod.limiteEstoque = int(v) if v is not None else None
+                except Exception:
+                    pass
+            elif k == "preco":
+                # se seu model espera Decimal, converter com Decimal
+                from decimal import Decimal, InvalidOperation
+                try:
+                    prod.preco = Decimal(str(v))
+                except (InvalidOperation, TypeError):
+                    # se não converter, pule
+                    pass
+            else:
+                setattr(prod, k, v)
+
+    try:
+        db.add(prod)
+        db.commit()
+        db.refresh(prod)
+        return prod
+    except SQLAlchemyError:
+        db.rollback()
+        raise
+

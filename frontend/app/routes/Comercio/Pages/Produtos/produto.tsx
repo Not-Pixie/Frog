@@ -126,17 +126,21 @@ function Produto() {
           ]}
           rowActions={(row: any) => (
             <div style={{ display: "flex", gap: 8 }}>
-              <button aria-label={`Editar ${row.produto_id}`} onClick={() => /* navegar/editar */ null}>
-                 <i className="fi fi-rr-pencil" style={{ fontSize: 20, color: "#35AC97" }}></i>
-              </button>
+              <Link
+                to={`/comercio/${comercioId}/produtos/editar/${row.produto_id ?? row.codigo}`}
+                aria-label={`Editar ${row.produto_id ?? row.codigo}`}
+                className="btn-edit"
+              >
+                <i className="fi fi-rr-pencil" style={{ fontSize: 20, color: "#35AC97" }}></i>
+              </Link>
               <button
-                aria-label={`Excluir ${row.produto_id ?? row.id ?? row.codigo}`}
-                onClick={() => onDeleteClick(Number(row.produto_id ?? row.id ?? row.codigo))}
+                aria-label={`Excluir ${row.produto_id ?? row.codigo}`}
+                onClick={() => onDeleteClick(Number(row.produto_id ?? row.codigo))}
                 className="btn-delete"
-                disabled={deletingId !== null && deletingId === Number(row.produto_id ?? row.id ?? row.codigo)}
+                disabled={deletingId !== null && deletingId === Number(row.produto_id ?? row.codigo)}
               > 
               <i className="fi fi-rr-trash-xmark" style={{ fontSize: 20, color: "#F45959" }}></i>
-                {deletingId !== null && deletingId === Number(row.produto_id ?? row.id ?? row.codigo)
+                {deletingId !== null && deletingId === Number(row.produto_id ?? row.codigo)
                   ? "Excluindo..."
                   : ""}
               </button>

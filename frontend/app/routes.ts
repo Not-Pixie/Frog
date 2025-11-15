@@ -18,6 +18,7 @@ export default [
     route("saidas", "./routes/Comercio/Pages/Movimentaçao/saida.tsx"),        
     route("historico", "./routes/Comercio/Pages/Movimentaçao/historico.tsx"),
     route("produtos", "./routes/Comercio/Pages/Produtos/produto.tsx"),
+    route("produtos/editar/:produtoId", "./routes/Comercio/Pages/Produtos/editar-produto.tsx"),
     route("produtos/novo-produto", "./routes/Comercio/Pages/Produtos/novo-produto.tsx"),
     route("produtos/categorias", "./routes/Comercio/Pages/Produtos/categorias.tsx"),
     route("fornecedores", "./routes/Comercio/Pages/Fornecedores/fornecedores.tsx"),

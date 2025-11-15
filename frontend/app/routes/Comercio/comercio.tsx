@@ -35,3 +35,31 @@ export async function handleDelete(
     return { success: false, error: err?.message ?? "Erro desconhecido ao conectar com o servidor" };
   }
 }
+
+export async function handleUpdate(
+  itemType: "produtos" | "categorias" | "fornecedores",
+  id: number,
+  comercioId: number,
+  payload: any
+): Promise<{ success: boolean; data?: any; error?: string }> {
+  const nameMap: Record<string, string> = {
+    produtos: "produto",
+    categorias: "categoria",
+    fornecedores: "fornecedor",
+  };
+
+  try {
+    const resp = await api.put(`/comercios/${comercioId}/${itemType}/${id}`, payload);
+    if (resp.status === 200) {
+      return { success: true, data: resp.data };
+    }
+    return { success: false, error: resp.data?.error ?? "Resposta inesperada do servidor" };
+  } catch (err: any) {
+    if (err?.response) {
+      const body = err.response.data ?? {};
+      const serverMsg = body?.error ?? body?.message ?? JSON.stringify(body);
+      return { success: false, error: String(serverMsg) };
+    }
+    return { success: false, error: err?.message ?? "Erro desconhecido ao conectar com o servidor" };
+  }
+}

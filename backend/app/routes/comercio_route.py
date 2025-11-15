@@ -17,8 +17,7 @@ from app.api.auth import get_current_user
 from app.services.cadastro_comercio_service import criar_comercio
 from app.services.comercio_service import get_produtos_de_comercio_por_id
 from app.utils.model_utils import model_to_dict
-from app.services.produto_service import create_produto 
-from app.services.produto_service import delete_produto
+from app.services.produto_service import create_produto, get_produto_por_id, update_produto, delete_produto
 from app.services.fornecedor_service import delete_fornecedor
 from app.services.categoria_service import delete_categoria
 
@@ -245,10 +244,17 @@ def listar_produtos(comercio_id):
             pd["categoriaNome"] = rel_name(getattr(p, "categoria", None))
             pd["fornecedorNome"] = rel_name(getattr(p, "fornecedor", None))
 
-            # unidade pode ter nome ou sigla — preferir nome, cair para sigla
             unidade = getattr(p, "unidade_medida", None)
-            pd["unidadeMedidaNome"] = getattr(getattr(p, "unidade_medida", None), "nome", None)
-            pd["unidadeMedidaSigla"] = getattr(getattr(p, "unidade_medida", None), "sigla", None)
+            u_nome = None
+            u_sigla = None
+            if unidade is not None:
+                u_nome = getattr(unidade, "nome", None)
+                u_sigla = getattr(unidade, "sigla", None)
+            
+            if u_nome and u_sigla:
+                pd["unidadeMedidaNome"] = f"{u_nome} ({u_sigla})"
+            
+            pd["unidadeMedidaSigla"] = u_sigla
 
             # opcional: remover as chaves de relação serializadas caso model_to_dict já as tenha
             for k in ("categoria", "fornecedor", "unidade_medida"):
@@ -415,10 +421,11 @@ def listar_unidades_do_comercio(comercio_id: int):
 
         items = []
         for u in unidades:
+            sigla_val = getattr(u, "sigla", None)       
             items.append({
                 "unimed_id": getattr(u, "unimed_id", None) or getattr(u, "id", None),
                 "nome": getattr(u, "nome", None),
-                "sigla": getattr(u, "sigla", None),
+                "sigla": sigla_val,
                 "comercio_id": getattr(u, "comercio_id", None),
                 "criado_em": getattr(u, "criado_em", None).isoformat() if getattr(u, "criado_em", None) else None
             })
@@ -571,3 +578,62 @@ def create_produto_route(comercio_id):
         db.close()
 
     return jsonify(response_data), 201
+
+@bp.route('/<int:comercio_id>/produtos/<int:produto_id>', methods=['GET'])
+@token_required
+def rota_get_produto(comercio_id, produto_id):
+    db = SessionLocal()
+    try:
+        prod = get_produto_por_id(db, produto_id, comercio_id)
+        if prod is None:
+            return jsonify({"error": "Produto não encontrado"}), 404
+        pd = model_to_dict(prod)
+        # acrescentar nomes das relações (se quiser)
+        pd["categoriaNome"] = getattr(prod.categoria, "nome", None) if getattr(prod, "categoria", None) is not None else None
+        pd["fornecedorNome"] = getattr(prod.fornecedor, "nome", None) if getattr(prod, "fornecedor", None) is not None else None
+        pd["unidadeMedidaNome"] = (
+            getattr(prod.unidade_medida, "nome", None)
+            or getattr(prod.unidade_medida, "sigla", None)
+        ) if getattr(prod, "unidade_medida", None) is not None else None
+
+        return jsonify(pd), 200
+    except SQLAlchemyError:
+        current_app.logger.exception("Erro ao buscar produto")
+        return jsonify({"error": "Erro interno"}), 500
+    finally:
+        try:
+            db.close()
+        except Exception:
+            current_app.logger.exception("Erro ao fechar sessão do DB em rota_get_produto")
+
+@bp.route('/<int:comercio_id>/produtos/<int:produto_id>', methods=['PUT', 'PATCH'])
+@token_required
+def rota_update_produto(comercio_id, produto_id):
+    db = SessionLocal()
+    try:
+        payload = request.get_json() or {}
+        try:
+            prod = update_produto(db, produto_id, comercio_id, payload)
+        except ValueError:
+            return jsonify({"error": "Produto não encontrado"}), 404
+
+        pd = model_to_dict(prod)
+        pd["categoriaNome"] = getattr(prod.categoria, "nome", None) if getattr(prod, "categoria", None) is not None else None
+        pd["fornecedorNome"] = getattr(prod.fornecedor, "nome", None) if getattr(prod, "fornecedor", None) is not None else None
+        pd["unidadeMedidaNome"] = (
+            getattr(prod.unidade_medida, "nome", None)
+            or getattr(prod.unidade_medida, "sigla", None)
+        ) if getattr(prod, "unidade_medida", None) is not None else None
+
+        return jsonify(pd), 200
+    except IntegrityError:
+        current_app.logger.exception("Integrity error ao atualizar produto")
+        return jsonify({"error": "Não foi possível atualizar por restrição de integridade"}), 400
+    except SQLAlchemyError:
+        current_app.logger.exception("Erro ao atualizar produto")
+        return jsonify({"error": "Erro interno ao atualizar produto"}), 500
+    finally:
+        try:
+            db.close()
+        except Exception:
+            current_app.logger.exception("Erro ao fechar sessão do DB em rota_update_produto")
