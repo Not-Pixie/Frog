@@ -1,0 +1,89 @@
+*{
+    margin: 0;
+    box-sizing: border-box;
+}
+
+body{
+    height: 100vh;
+    width: 100vw;
+}
+
+.central{
+    height: 100%;
+    width: 100%;
+}
+
+.Acima{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 10%;
+    border-radius: 0 0 20px 20px;
+    background-color: var(--primaryColor);
+}
+
+.ListaHome ul {
+  display: flex;
+  gap: 35px;
+  padding: 0;
+  margin: 0;
+}
+
+.ListaHome li:hover{
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.ListaHome {
+    font-size: 1.2rem;
+    margin: 3%;
+    color: white;
+}
+
+.AcessarFrog {
+  font-size: 1.2rem;
+  font-family: var(--bodyFont);
+  position: absolute;
+  right: 4%;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.btnCadastrarHome {
+    font-family: var(--bodyFont);
+    background-color: white;
+    color: var(--primaryColor);
+    padding: 8px;
+    border-radius: 10px;
+}
+
+.btnEntrarHome{
+    font-family: var(--bodyFont);
+    color: white;
+}
+
+.btnCadastrarHome:hover, .btnEntrarHome:hover{
+    cursor: pointer;
+}
+
+.CorpoHome {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.CorpoHome h1{
+    text-align: center;
+    font-family: var(--titleFont);
+    color: var(--primaryColor);
+    font-size: 1.7rem;
+}
+
+.CorpoHome p{
+    margin-top: 3%;
+    text-align: center;
+    font-family: var(--bodyFont);
+    font-size: 1.3rem;
+}
