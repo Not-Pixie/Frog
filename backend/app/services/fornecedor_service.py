@@ -1,5 +1,5 @@
 # app/services/fornecedor_service.py
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy import or_
 from app.models.fornecedores_model import Fornecedor
@@ -94,6 +94,106 @@ def delete_fornecedor(db, fornecedor_id: int, comercio_id: int) -> bool:
     except IntegrityError:
         db.rollback()
         raise
+    except SQLAlchemyError:
+        db.rollback()
+        raise
+
+def get_fornecedor_por_id(db, fornecedor_id: int, comercio_id: int):
+    """
+    Retorna instância Fornecedor (ou None) com endereco carregado.
+    """
+    q = (
+        db.query(Fornecedor)
+        .options(joinedload(Fornecedor.endereco))
+        .filter(Fornecedor.fornecedor_id == fornecedor_id, Fornecedor.comercio_id == comercio_id)
+    )
+    return q.one_or_none()
+
+
+def _upsert_endereco(db, fornecedor, endereco_payload: dict):
+    """
+    Se fornecedor.endereco existir -> atualiza os campos passados.
+    Se não existir e houver dados significativos -> cria novo endereço e associa.
+    Retorna a instância Endereco (ou None se nada feito).
+    """
+    # campos válidos de endereço
+    addr_fields = ("cep", "logradouro", "numero", "complemento", "bairro", "cidade", "estado", "pais")
+
+    # verifica se payload tem qualquer campo utilizável
+    has_any = any(k in endereco_payload and endereco_payload.get(k) not in (None, "") for k in addr_fields)
+    if not has_any:
+        return None
+
+    if getattr(fornecedor, "endereco", None):
+        end = fornecedor.endereco
+        for k in addr_fields:
+            if k in endereco_payload:
+                v = endereco_payload.get(k)
+                setattr(end, k, v.strip() if isinstance(v, str) and v.strip() != "" else None)
+        db.add(end)
+        db.flush()  # garante que id existe
+        return end
+    else:
+        # criar novo endereco
+        new = Endereco(
+            cep=(endereco_payload.get("cep") or None),
+            logradouro=(endereco_payload.get("logradouro") or None),
+            numero=(endereco_payload.get("numero") or None),
+            complemento=(endereco_payload.get("complemento") or None),
+            bairro=(endereco_payload.get("bairro") or None),
+            cidade=(endereco_payload.get("cidade") or None),
+            estado=(endereco_payload.get("estado") or None),
+            pais=(endereco_payload.get("pais") or "BR"),  # default BR se vazio
+            status="partial",
+            source="user",
+        )
+        db.add(new)
+        db.flush()  # para popular new.endereco_id
+        fornecedor.endereco = new
+        return new
+
+
+def update_fornecedor(db, fornecedor_id: int, comercio_id: int, data: dict):
+    """
+    Atualiza campos permitidos de fornecedor. Se payload conter dados de endereco,
+    cria/atualiza o endereco e associa ao fornecedor.
+    Retorna a instância Fornecedor atualizada.
+    """
+    f = get_fornecedor_por_id(db, fornecedor_id, comercio_id)
+    if f is None:
+        raise ValueError("Fornecedor não encontrado para este comércio")
+
+    # campos permitidos do fornecedor
+    allowed = ("nome", "cnpj", "telefone", "email")
+
+    # separar dados de endereco (sevierem)
+    endereco_payload = {}
+    for k in ("cep", "logradouro", "numero", "complemento", "bairro", "cidade", "estado", "pais"):
+        if k in data:
+            endereco_payload[k] = data[k]
+
+    # atualizar campos simples
+    for k in allowed:
+        if k in data:
+            v = data[k]
+            if v is None:
+                setattr(f, k, None)
+            else:
+                if isinstance(v, str):
+                    vv = v.strip()
+                    setattr(f, k, vv if vv != "" else None)
+                else:
+                    setattr(f, k, v)
+
+    try:
+        # tratar endereco (criar/atualizar)
+        if endereco_payload:
+            _upsert_endereco(db, f, endereco_payload)
+
+        db.add(f)
+        db.commit()
+        db.refresh(f)
+        return f
     except SQLAlchemyError:
         db.rollback()
         raise

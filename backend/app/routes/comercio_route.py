@@ -4,8 +4,6 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.middleware.auth import token_required
 from app.database.database import SessionLocal
-from app.services.categoria_service import create_categoria 
-from app.services.fornecedor_service import create_fornecedor
 from app.models.categoria_model import Categoria
 from app.models.produtos_model import Produto
 from app.models.enderecos_model import Endereco
@@ -18,8 +16,8 @@ from app.services.cadastro_comercio_service import criar_comercio
 from app.services.comercio_service import get_produtos_de_comercio_por_id
 from app.utils.model_utils import model_to_dict
 from app.services.produto_service import create_produto, get_produto_por_id, update_produto, delete_produto
-from app.services.fornecedor_service import delete_fornecedor
-from app.services.categoria_service import delete_categoria
+from app.services.fornecedor_service import create_fornecedor, get_fornecedor_por_id, update_fornecedor, delete_fornecedor
+from app.services.categoria_service import create_categoria, delete_categoria
 
 
 bp = Blueprint("comercios", __name__, url_prefix="/comercios")
@@ -637,3 +635,93 @@ def rota_update_produto(comercio_id, produto_id):
             db.close()
         except Exception:
             current_app.logger.exception("Erro ao fechar sessão do DB em rota_update_produto")
+
+@bp.route('/<int:comercio_id>/fornecedores/<int:fornecedor_id>', methods=['GET'])
+@token_required
+def rota_get_fornecedor(comercio_id, fornecedor_id):
+    db = SessionLocal()
+    try:
+        f = get_fornecedor_por_id(db, fornecedor_id, comercio_id)
+        if f is None:
+            return jsonify({"error": "Fornecedor não encontrado"}), 404
+
+        fd = model_to_dict(f)
+
+        # injeta campos de endereco no topo para facilitar frontend
+        if getattr(f, "endereco", None):
+            fd["endereco"] = {
+                "endereco_id": getattr(f.endereco, "endereco_id", None),
+                "cep": getattr(f.endereco, "cep", None),
+                "logradouro": getattr(f.endereco, "logradouro", None),
+                "numero": getattr(f.endereco, "numero", None),
+                "complemento": getattr(f.endereco, "complemento", None),
+                "bairro": getattr(f.endereco, "bairro", None),
+                "cidade": getattr(f.endereco, "cidade", None),
+                "estado": getattr(f.endereco, "estado", None),
+                "pais": getattr(f.endereco, "pais", None),
+            }
+            # também mapear alguns campos no topo (compatibilidade com frontend atual)
+            fd["cep"] = fd["endereco"]["cep"]
+            fd["numero"] = fd["endereco"]["numero"]
+        else:
+            fd["endereco"] = None
+            fd["cep"] = None
+            fd["numero"] = None
+
+        return jsonify(fd), 200
+
+    except SQLAlchemyError:
+        current_app.logger.exception("Erro ao buscar fornecedor")
+        return jsonify({"error": "Erro interno"}), 500
+    finally:
+        try:
+            db.close()
+        except Exception:
+            current_app.logger.exception("Erro ao fechar sessão do DB em rota_get_fornecedor")
+
+
+@bp.route('/<int:comercio_id>/fornecedores/<int:fornecedor_id>', methods=['PUT', 'PATCH'])
+@token_required
+def rota_update_fornecedor(comercio_id, fornecedor_id):
+    db = SessionLocal()
+    try:
+        payload = request.get_json() or {}
+        try:
+            f = update_fornecedor(db, fornecedor_id, comercio_id, payload)
+        except ValueError:
+            return jsonify({"error": "Fornecedor não encontrado"}), 404
+
+        fd = model_to_dict(f)
+        # incluir endereco novamente para resposta
+        if getattr(f, "endereco", None):
+            fd["endereco"] = {
+                "endereco_id": getattr(f.endereco, "endereco_id", None),
+                "cep": getattr(f.endereco, "cep", None),
+                "logradouro": getattr(f.endereco, "logradouro", None),
+                "numero": getattr(f.endereco, "numero", None),
+                "complemento": getattr(f.endereco, "complemento", None),
+                "bairro": getattr(f.endereco, "bairro", None),
+                "cidade": getattr(f.endereco, "cidade", None),
+                "estado": getattr(f.endereco, "estado", None),
+                "pais": getattr(f.endereco, "pais", None),
+            }
+            fd["cep"] = fd["endereco"]["cep"]
+            fd["numero"] = fd["endereco"]["numero"]
+        else:
+            fd["endereco"] = None
+            fd["cep"] = None
+            fd["numero"] = None
+
+        return jsonify(fd), 200
+
+    except IntegrityError:
+        current_app.logger.exception("Integrity error ao atualizar fornecedor")
+        return jsonify({"error": "Não foi possível atualizar por restrição de integridade"}), 400
+    except SQLAlchemyError:
+        current_app.logger.exception("Erro ao atualizar fornecedor")
+        return jsonify({"error": "Erro interno ao atualizar fornecedor"}), 500
+    finally:
+        try:
+            db.close()
+        except Exception:
+            current_app.logger.exception("Erro ao fechar sessão do DB em rota_update_fornecedor")

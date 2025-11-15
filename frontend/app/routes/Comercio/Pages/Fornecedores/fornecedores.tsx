@@ -87,9 +87,9 @@ function Fornecedores() {
           ]}
           rowActions={(row: any) => (
             <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={() => {/* navegar para editar no futuro */}}>
+              <Link to={`/comercio/${comercioId}/fornecedores/editar/${row.fornecedor_id ?? row.id}`}>
                 <i className="fi fi-rr-pencil" style={{ fontSize: 20, color: "#35AC97" }}></i>
-                </button>
+              </Link>
               <button
                 onClick={() => onDelete(Number(row.fornecedor_id ?? row.id))}
                 disabled={deletingId !== null && deletingId === Number(row.fornecedor_id ?? row.id)}

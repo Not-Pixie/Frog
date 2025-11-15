@@ -22,6 +22,7 @@ export default [
     route("produtos/novo-produto", "./routes/Comercio/Pages/Produtos/novo-produto.tsx"),
     route("produtos/categorias", "./routes/Comercio/Pages/Produtos/categorias.tsx"),
     route("fornecedores", "./routes/Comercio/Pages/Fornecedores/fornecedores.tsx"),
+    route("fornecedores/editar/:fornecedorId", "./routes/Comercio/Pages/Fornecedores/editar-fornecedor.tsx"),
     route("configuracoes", "./routes/Comercio/Pages/Configuraçoes/configuraçao.tsx"),
     route("fornecedores/novo-fornecedor", "./routes/Comercio/Pages/Fornecedores/novo-fornecedor.tsx")
   ]),
