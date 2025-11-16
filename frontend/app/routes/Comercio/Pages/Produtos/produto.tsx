@@ -127,20 +127,20 @@ function Produto() {
           rowActions={(row: any) => (
             <div style={{ display: "flex", gap: 8 }}>
               <Link
-                to={`/comercio/${comercioId}/produtos/editar/${row.produto_id ?? row.codigo}`}
-                aria-label={`Editar ${row.produto_id ?? row.codigo}`}
+                to={`/comercio/${comercioId}/produtos/a/${row.produto_id}`}
+                aria-label={`Editar ${row.produto_id}`}
                 className="btn-edit"
               >
-                <i className="fi fi-rr-pencil" style={{ fontSize: 20, color: "#35AC97" }}></i>
+                <i className="fi fi-rr-pencil"></i>
               </Link>
               <button
                 aria-label={`Excluir ${row.produto_id ?? row.codigo}`}
                 onClick={() => onDeleteClick(Number(row.produto_id ?? row.codigo))}
                 className="btn-delete"
-                disabled={deletingId !== null && deletingId === Number(row.produto_id ?? row.codigo)}
+                disabled={deletingId !== null && deletingId === Number(row.produto_id)}
               > 
-              <i className="fi fi-rr-trash-xmark" style={{ fontSize: 20, color: "#F45959" }}></i>
-                {deletingId !== null && deletingId === Number(row.produto_id ?? row.codigo)
+              <i className="fi fi-rr-trash-xmark"></i>
+                {deletingId !== null && deletingId === Number(row.produto_id)
                   ? "Excluindo..."
                   : ""}
               </button>
@@ -151,13 +151,12 @@ function Produto() {
       </div>
 
       <div className="conteudo-item botoes">
-        <Link to={`/comercio/${comercioId}/produtos/novo-produto`}>
+        <Link to={`/comercio/${comercioId}/produtos/a`}>
           <Button theme="green" className="btn-cadastrar">
             Cadastrar produto
           </Button>
         </Link>
 
-        {/* NAVEGAÇÃO para nova página de categorias (substitui modal) */}
         <Link to={`/comercio/${comercioId}/produtos/categorias`}>
           <Button theme="green">Gerenciar categorias</Button>
         </Link>
