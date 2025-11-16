@@ -1,9 +1,12 @@
 import "./novo-produto.css";
-import "../geral.css"
+import "../geral.css";
 
-import { useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router";
 import { useForm } from "react-hook-form";
+import type { Resolver } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { FaArrowLeft } from "react-icons/fa";
 import { COMERCIOS } from "src/api/enpoints.ts";
 
@@ -11,15 +14,10 @@ import Button from "../../../../../src/components/Button/button.tsx";
 import Input from "../../../../../src/components/Input/Input.tsx";
 import api from "../../../../../src/api/axios";
 
-type FormValues = {
-  nome: string;
-  categoria: string; // id em string (valor do select)
-  preco: string | "";
-  fornecedor: string; // id em string
-  limiteEstoque: string;
-  tags: string;
-  unimed: string; // id ou sigla em string
-};
+import schema from "./schema.ts";
+import { handleUpdate } from "../../comercio";
+
+type FormValues = z.infer<typeof schema>;
 
 type OptionItem = {
   id?: number;
@@ -28,9 +26,23 @@ type OptionItem = {
   raw?: any;
 };
 
+const defaultFormValues: FormValues = {
+  nome: "",
+  categoria: "",
+  preco: "",
+  fornecedor: "",
+  limiteEstoque: "",
+  tags: "",
+  unimed: "",
+};
+
 export default function NovoProduto() {
   const navigate = useNavigate();
-  const { comercioId } = useParams() as { comercioId?: string };
+  const { comercioId, produtoId } = useParams() as {
+    comercioId?: string;
+    produtoId?: string;
+  };
+  const isEdit = Boolean(produtoId);
   const mountedRef = useRef(false);
 
   const [loadingDefaults, setLoadingDefaults] = useState(false);
@@ -41,6 +53,7 @@ export default function NovoProduto() {
   const [unidades, setUnidades] = useState<OptionItem[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
   const [optionsError, setOptionsError] = useState<string | null>(null);
+  const [loadingProduct, setLoadingProduct] = useState<boolean>(false);
 
   const {
     register,
@@ -49,15 +62,8 @@ export default function NovoProduto() {
     setValue,
     getValues, // ADICIONADO
   } = useForm<FormValues>({
-    defaultValues: {
-      nome: "",
-      categoria: "",
-      preco: "",
-      fornecedor: "",
-      limiteEstoque: "",
-      tags: "",
-      unimed: "",
-    },
+    resolver: zodResolver(schema) as Resolver<FormValues>,
+    defaultValues: defaultFormValues
   });
 
   // carrega limite padrão
@@ -139,7 +145,11 @@ export default function NovoProduto() {
           setCategorias(mappedCats);
 
           // se usuário ainda não escolheu, preenche com a primeira opção válida
-          if (mountedRef.current && mappedCats.length > 0 && !getValues("categoria")) {
+          if (
+            mountedRef.current &&
+            mappedCats.length > 0 &&
+            !getValues("categoria")
+          ) {
             setValue("categoria", String(mappedCats[0].id));
           }
         } else {
@@ -159,7 +169,11 @@ export default function NovoProduto() {
 
           setFornecedores(mappedForn);
 
-          if (mountedRef.current && mappedForn.length > 0 && !getValues("fornecedor")) {
+          if (
+            mountedRef.current &&
+            mappedForn.length > 0 &&
+            !getValues("fornecedor")
+          ) {
             setValue("fornecedor", String(mappedForn[0].id));
           }
         } else {
@@ -194,9 +208,15 @@ export default function NovoProduto() {
           setUnidades(mappedUnidades);
 
           // calculamos o value da primeira opção (pode ser id ou sigla/nome)
-          if (mountedRef.current && mappedUnidades.length > 0 && !getValues("unimed")) {
+          if (
+            mountedRef.current &&
+            mappedUnidades.length > 0 &&
+            !getValues("unimed")
+          ) {
             const first = mappedUnidades[0];
-            const firstValue = first.id ? String(first.id) : String(first.sigla ?? first.nome ?? "");
+            const firstValue = first.id
+              ? String(first.id)
+              : String(first.sigla ?? first.nome ?? "");
             setValue("unimed", firstValue);
           }
         } else {
@@ -221,35 +241,80 @@ export default function NovoProduto() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [comercioId]);
 
+  useEffect(() => {
+    if (!comercioId || !produtoId) return;
+    mountedRef.current = true;
+    setLoadingProduct(true);
+    (async function loadProduct() {
+      try {
+        const res = await api.get(
+          `${COMERCIOS}/${comercioId}/produtos/${produtoId}`
+        );
+        const p = res.data;
+        // preenche form (casts para string)
+        setValue("nome", p.nome ?? "");
+        setValue("preco", p.preco ? String(p.preco) : "");
+        setValue("tags", p.tags ?? "");
+        setValue(
+          "limiteEstoque",
+          p.limiteEstoque !== undefined ? String(p.limiteEstoque) : ""
+        );
+        setValue("categoria", p.categoria_id ? String(p.categoria_id) : "");
+        setValue("fornecedor", p.fornecedor_id ? String(p.fornecedor_id) : "");
+        setValue(
+          "unimed",
+          p.unimed_id ? String(p.unimed_id) : p.unimed ? String(p.unimed) : ""
+        );
+      } catch (err) {
+        console.error("Erro ao buscar produto:", err);
+        alert("Erro ao carregar produto. Veja console.");
+        navigate(-1);
+      } finally {
+        setLoadingProduct(false);
+      }
+    })();
+    return () => {
+      mountedRef.current = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [comercioId, produtoId, setValue]);
+
   // utilitários
-  const safeNumberFromInputString = (v: string, fallback: number) => {
-    if (v === null || v === undefined || v === "") return fallback;
-    const cleaned = String(v)
-      .replace(/[^\d\-,.]/g, "")
-      .replace(",", ".");
-    const n = Number(cleaned);
-    return Number.isNaN(n) ? fallback : n;
-  };
+  const safeNumberFromInputString = useCallback(
+    (v: string | undefined | null, fallback: number) => {
+      if (v === null || v === undefined || v === "") return fallback;
+      const cleaned = String(v)
+        .replace(/[^\d\-,.]/g, "")
+        .replace(",", ".");
+      const n = Number(cleaned);
+      return Number.isNaN(n) ? fallback : n;
+    },
+    []
+  );
 
-  const decimalString = (v: string | undefined | null): string | null => {
-    if (v === null || v === undefined) return null;
-    const cleaned = String(v)
-      .trim()
-      .replace(/[^\d\-,.]/g, "");
-    if (cleaned === "") return null;
-    const withDot = cleaned.replace(",", ".");
-    const m = withDot.match(/-?\d+(\.\d+)?/);
-    return m ? m[0] : null;
-  };
+  const decimalString = useCallback(
+    (v: string | undefined | null): string | null => {
+      if (v === null || v === undefined) return null;
+      const cleaned = String(v)
+        .trim()
+        .replace(/[^\d\-,.]/g, "");
+      if (cleaned === "") return null;
+      const withDot = cleaned.replace(",", ".");
+      const m = withDot.match(/-?\d+(\.\d+)?/);
+      return m ? m[0] : null;
+    },
+    []
+  );
 
-  const toIntOrUndefined = (
-    v: string | undefined | null
-  ): number | undefined => {
-    if (v === undefined || v === null || String(v).trim() === "")
-      return undefined;
-    const n = parseInt(String(v).trim(), 10);
-    return Number.isNaN(n) ? undefined : n;
-  };
+  const toIntOrUndefined = useCallback(
+    (v: string | undefined | null): number | undefined => {
+      if (v === undefined || v === null || String(v).trim() === "")
+        return undefined;
+      const n = parseInt(String(v).trim(), 10);
+      return Number.isNaN(n) ? undefined : n;
+    },
+    []
+  );
 
   async function onSubmit(values: FormValues) {
     if (!comercioId) {
@@ -263,32 +328,80 @@ export default function NovoProduto() {
       defaultLimite ?? 0
     );
 
-   const unimedInt = toIntOrUndefined(values.unimed);
+    const unimedInt = toIntOrUndefined(values.unimed);
     const categoriaId = toIntOrUndefined(values.categoria);
     const fornecedorId = toIntOrUndefined(values.fornecedor);
 
     const payload: any = {
       nome: values.nome,
       preco: precoNumber,
-      quantidade_estoque: 0,
+      // quantidade_estoque: 0, // se for criação set, se for edição prefira não incluir
       categoria_id: categoriaId,
       fornecedor_id: fornecedorId,
-      unimed_id: unimedInt ?? (values.unimed?.trim() ? values.unimed : undefined),
+      unimed_id:
+        unimedInt ?? (values.unimed?.trim() ? values.unimed : undefined),
       limiteEstoque: Number(limiteNumber),
       tags: values.tags || undefined,
     };
 
+    // limpa chaves undefined (mantém apenas as que querem enviar)
+    Object.keys(payload).forEach(
+      (k) => payload[k] === undefined && delete payload[k]
+    );
+
     try {
-      const resp = await api.post(`/comercios/${comercioId}/produtos`, payload);
-      if (resp.status === 201) {
-        alert("Produto criado com sucesso.");
-        navigate(`/comercio/${comercioId}/produtos`);
+      if (isEdit && produtoId) {
+        // edição — reaproveite handleUpdate se tiver
+        const res: any = await (handleUpdate
+          ? handleUpdate(
+              "produtos",
+              Number(produtoId),
+              Number(comercioId),
+              payload
+            )
+          : api.put(
+              `${COMERCIOS}/${comercioId}/produtos/${produtoId}`,
+              payload
+            ));
+
+        // suporte a dois tipos de retorno: objeto { success, error } ou AxiosResponse
+        if (res && typeof res === "object" && "success" in res) {
+          if (res.success === false) {
+            alert("Erro ao atualizar: " + (res.error ?? JSON.stringify(res)));
+          } else {
+            alert("Produto atualizado com sucesso.");
+            navigate(`/comercio/${comercioId}/produtos`);
+          }
+        } else {
+          // assume AxiosResponse
+          const status = res?.status;
+          const data = res?.data;
+          if (typeof status === "number" && status >= 200 && status < 300) {
+            alert("Produto atualizado com sucesso.");
+            navigate(`/comercio/${comercioId}/produtos`);
+          } else {
+            alert(
+              "Erro ao atualizar: " +
+                (data?.error ?? JSON.stringify(data ?? res))
+            );
+          }
+        }
       } else {
-        const err = resp.data || { error: "Erro desconhecido" };
-        alert("Erro: " + (err.error ?? JSON.stringify(err)));
+        // criação
+        const resp = await api.post(
+          `/comercios/${comercioId}/produtos`,
+          payload
+        );
+        if (resp.status === 201) {
+          alert("Produto criado com sucesso.");
+          navigate(`/comercio/${comercioId}/produtos`);
+        } else {
+          const err = resp.data || { error: "Erro desconhecido" };
+          alert("Erro: " + (err.error ?? JSON.stringify(err)));
+        }
       }
     } catch (err: any) {
-      console.error("Erro ao criar produto:", err);
+      console.error("Erro ao salvar produto:", err);
       if (err.response?.data) {
         alert(
           "Erro: " +
@@ -303,17 +416,20 @@ export default function NovoProduto() {
   return (
     <div className="conteudo-item produto-cadastro">
       <div className="page-header">
+        <Link to={`/comercio/${comercioId}/produtos`}>
         <button
           className="back-link"
-          onClick={() => navigate(-1)}
           aria-label="Voltar"
         >
-          <FaArrowLeft color="#35AC97"/>
+          <FaArrowLeft color="#35AC97" />
         </button>
+        </Link>
         <h1>Produtos</h1>
       </div>
 
-      <p className="subtitulo">Adicionar novo produto:</p>
+      <p className="subtitulo">
+        {isEdit ? "Editar produto:" : "Adicionar novo produto:"}
+      </p>
 
       <form
         className="cadastro-form"
@@ -341,7 +457,9 @@ export default function NovoProduto() {
             placeholder=""
           >
             {categorias.map((c) => (
-              <option key={String(c.id)} value={String(c.id)}>{c.nome}</option>
+              <option key={String(c.id)} value={String(c.id)}>
+                {c.nome}
+              </option>
             ))}
           </Input>
           {errors.categoria && (
@@ -401,7 +519,9 @@ export default function NovoProduto() {
             label="Unidade de medida"
             id="unimed"
             type="select"
-            {...register("unimed", { required: "Selecione uma unidade de medida" })}
+            {...register("unimed", {
+              required: "Selecione uma unidade de medida",
+            })}
           >
             {unidades.map((u) => {
               const value = u.id
@@ -443,9 +563,18 @@ export default function NovoProduto() {
           <Button
             theme="green"
             type="submit"
-            disabled={isSubmitting || loadingDefaults || loadingOptions}
+            disabled={
+              isSubmitting ||
+              loadingDefaults ||
+              loadingOptions ||
+              (isEdit ? loadingProduct : false)
+            }
           >
-            {isSubmitting ? "Salvando..." : "Adicionar produto"}
+            {isSubmitting
+              ? "Salvando..."
+              : isEdit
+                ? "Salvar alterações"
+                : "Adicionar produto"}
           </Button>
         </div>
       </form>

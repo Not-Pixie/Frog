@@ -14,12 +14,12 @@ export default [
 
   route("comercio/:comercioId", "./routes/Comercio/comercioLayout.tsx", [
     index("./routes/Comercio/Pages/Dashboard/dashboard.tsx"),        
-    route("entradas", "./routes/Comercio/Pages/Movimentaçao/entrada.tsx"),    
+    route("entradas", "./routes/Comercio/Pages/Movimentaçao/listar-entrada.tsx"), 
+    route("entradas/:mov_id", "./routes/Comercio/Pages/Movimentaçao/entrada.tsx"),      
     route("saidas", "./routes/Comercio/Pages/Movimentaçao/saida.tsx"),        
     route("historico", "./routes/Comercio/Pages/Movimentaçao/historico.tsx"),
     route("produtos", "./routes/Comercio/Pages/Produtos/produto.tsx"),
-    route("produtos/editar/:produtoId", "./routes/Comercio/Pages/Produtos/editar-produto.tsx"),
-    route("produtos/novo-produto", "./routes/Comercio/Pages/Produtos/novo-produto.tsx"),
+    route("produtos/a/:produtoId?", "./routes/Comercio/Pages/Produtos/novo-produto.tsx"),
     route("produtos/categorias", "./routes/Comercio/Pages/Produtos/categorias.tsx"),
     route("fornecedores", "./routes/Comercio/Pages/Fornecedores/fornecedores.tsx"),
     route("fornecedores/editar/:fornecedorId", "./routes/Comercio/Pages/Fornecedores/editar-fornecedor.tsx"),

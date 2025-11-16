@@ -72,6 +72,24 @@
   margin-top: 18px;
 }
 
+.btn-edit > i{
+  font-size: 1.5rem; 
+  color: var(--primary-500);
+}
+
+.btn-delete > i{
+  font-size: 1.5rem; 
+  color: rgb(244, 89, 89);
+}
+
+.btn-delete:hover {
+  cursor: pointer;
+}
+
+.btn-edit:hover {
+  cursor: pointer;
+}
+
 /* responsivo: uma coluna em telas pequenas */
 @media (max-width: 900px) {
   .product-form {
