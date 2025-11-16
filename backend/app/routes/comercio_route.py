@@ -18,6 +18,9 @@ from app.utils.model_utils import model_to_dict
 from app.services.produto_service import create_produto, get_produto_por_id, update_produto, delete_produto
 from app.services.fornecedor_service import create_fornecedor, get_fornecedor_por_id, update_fornecedor, delete_fornecedor
 from app.services.categoria_service import create_categoria, delete_categoria, get_categoria_por_id, update_categoria
+from app.models.movimentacao_model import Movimentacao
+from decimal import ROUND_HALF_UP, InvalidOperation
+from app.services.movimentacao_service import criar_movimentacao_vazia
 
 
 bp = Blueprint("comercios", __name__, url_prefix="/comercios")
@@ -408,7 +411,6 @@ def listar_unidades_do_comercio(comercio_id: int):
 
     db = SessionLocal()
     try:
-        # opcional: verificar se usuario tem acesso ao comercio (igual nas outras rotas)
         if not usuario_tem_acesso_ao_comercio(db, usuario_id, comercio_id):
             return jsonify({"msg": "Usuário não tem acesso a este comércio."}), 403
 
@@ -535,6 +537,17 @@ def create_produto_route(comercio_id):
         return jsonify({"error": "Campo 'nome' é obrigatório"}), 400
     if preco is None:
         return jsonify({"error": "Campo 'preco' é obrigatório"}), 400
+    try:
+        preco_q = preco.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    except (InvalidOperation, TypeError):
+        return jsonify({"error": "Campo 'preco' inválido"}), 400
+
+    # precision (10,2): valores >= 100000000.00 não cabem
+    if preco_q >= Decimal("100000000"):
+        return jsonify({"error": "Campo 'preco' excede a precisão permitida (máx 99999999.99)"}), 400
+
+    # use o valor quantizado (2 casas) a partir daqui
+    preco = preco_q
 
     db = SessionLocal()
     try:
@@ -771,3 +784,142 @@ def rota_update_categoria(comercio_id, categoria_id):
             db.close()
         except Exception:
             current_app.logger.exception("Erro ao fechar sessão do DB em rota_update_categoria")
+            
+@bp.route('/<int:comercio_id>/movimentacoes', methods=['GET'])
+@token_required
+def get_movimentacoes_de_comercio(comercio_id):
+    """
+    retorna todas movimentações em um comercio
+    GET /comercios/<comercio_id>/movimentacoes
+    Retorna: { "movs": [...]}
+    Cada mov: campos de Movimentação
+    """
+    usuario: dict = g.get("usuario")
+    usuario_id = usuario.get("usuario_id") if usuario else None
+    if usuario is None or usuario_id is None:
+        return jsonify({"msg": "erro de autenticação"}), 401
+
+    db = SessionLocal()
+    try:
+        if not usuario_tem_acesso_ao_comercio(db, usuario_id, comercio_id):
+            return jsonify({"msg": "Usuário não tem acesso a este comércio."}), 403
+
+        movimentacoes = db.query(Movimentacao).filter(
+            Movimentacao.comercio_id == comercio_id
+        ).order_by(Movimentacao.mov_id.asc()).all()
+        
+        itens = []
+        for m in movimentacoes:
+            item = model_to_dict(m)
+            itens.append(item)
+        
+        return jsonify({"movs": itens}), 200
+
+    except SQLAlchemyError:
+        current_app.logger.exception("Erro ao listar movimentacoes")
+        return jsonify({"error": "Erro interno ao listar movimentacoes"}), 500
+    except Exception:
+        current_app.logger.exception("Erro inesperado ao listar movimentacoes")
+        return jsonify({"error": "Erro interno"}), 500
+    finally:
+        try:
+            db.close()
+        except Exception:
+            current_app.logger.exception("Erro ao fechar sessão do DB em get_movimentacoes_de_comercio")
+    
+@bp.route('/<int:comercio_id>/movimentacoes/abertas', methods=['GET'])
+@token_required
+def get_movimentacoes_abertas_de_comercio(comercio_id):
+    """
+    retorna todas movimentações abertas em um comercio
+    GET /comercios/<comercio_id>/movimentacoes
+    Retorna: { "movs": [...]}
+    Cada mov: campos de Movimentação
+    """
+    usuario: dict = g.get("usuario")
+    usuario_id = usuario.get("usuario_id") if usuario else None
+    if usuario is None or usuario_id is None:
+        return jsonify({"msg": "erro de autenticação"}), 401
+
+    db = SessionLocal()
+    try:
+        if not usuario_tem_acesso_ao_comercio(db, usuario_id, comercio_id):
+            return jsonify({"msg": "Usuário não tem acesso a este comércio."}), 403
+
+        movimentacoes = (
+            db.query(Movimentacao)
+            .filter(
+                Movimentacao.comercio_id == comercio_id, 
+                Movimentacao.estado == "aberta"
+                )
+            .order_by(Movimentacao.mov_id.asc())
+            .all()
+            )
+
+        
+        itens = []
+        for m in movimentacoes:
+            item = model_to_dict(m)
+            itens.append(item)
+        
+        return jsonify({"movs": itens}), 200
+
+    except SQLAlchemyError:
+        current_app.logger.exception("Erro ao listar movimentacoes")
+        return jsonify({"error": "Erro interno ao listar movimentacoes"}), 500
+    except Exception:
+        current_app.logger.exception("Erro inesperado ao listar movimentacoes")
+        return jsonify({"error": "Erro interno"}), 500
+    finally:
+        try:
+            db.close()
+        except Exception:
+            current_app.logger.exception("Erro ao fechar sessão do DB em get_movimentacoes_de_comercio")
+            
+@bp.route('/<int:comercio_id>/movimentacoes/entrada', methods=['POST'])
+@token_required
+def criar_entrada_no_comercio(comercio_id: int):
+    usuario: dict = g.get("usuario")
+    usuario_id = usuario.get("usuario_id") if usuario else None
+    if usuario is None or usuario_id is None:
+        return jsonify({"msg": "erro de autenticação"}), 401
+
+    db = SessionLocal()
+    try:
+        if not usuario_tem_acesso_ao_comercio(db, usuario_id, comercio_id):
+            return jsonify({"msg": "Usuário não tem acesso a este comércio."}), 403
+
+
+        try:
+            mov: Movimentacao = criar_movimentacao_vazia(
+            db=db,
+            comercio_id=comercio_id,
+            tipo="entrada"
+            )
+            db.commit()
+            return jsonify(model_to_dict(mov)), 201
+
+        except ValueError as ve:
+            try:
+                db.rollback()
+            except Exception:
+                pass
+            return jsonify({"error": str(ve)}), 400
+
+    except IntegrityError:
+        db.rollback()
+        current_app.logger.exception("Integrity error ao criar entrada")
+        return jsonify({"error": "Não foi possível criar movimentação por restrição de integridade"}), 400
+    except SQLAlchemyError:
+        db.rollback()
+        current_app.logger.exception("Erro ao criar movimentação")
+        return jsonify({"error": "Erro interno ao criar movimentação"}), 500
+    except Exception:
+        db.rollback()
+        current_app.logger.exception("Erro inesperado ao criar movimentação")
+        return jsonify({"error": "Erro interno"}), 500
+    finally:
+        try:
+            db.close()
+        except Exception:
+            current_app.logger.exception("Erro ao fechar sessão do DB em criar_entrada_no_comercio")

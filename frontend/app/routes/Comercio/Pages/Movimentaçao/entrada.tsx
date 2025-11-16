@@ -60,7 +60,6 @@ export default function Entradas() {
     setLoadingOptions(true);
     setError(null);
     try {
-      // usa mesma rota que você usa no NovoProduto
       const resp = await api.get<APIResponse>(`${COMERCIOS}/${comercioId}/produtos`);
       if (resp.status !== 200) throw new Error("Erro ao buscar produtos");
 
@@ -147,14 +146,14 @@ export default function Entradas() {
     <div className="conteudo-item">
       <h1>Entradas</h1>
 
-      {error && <div style={{ color: "crimson", marginBottom: 12 }}>{error}</div>}
+      {error && <div className="err">{error}</div>}
 
       <div style={{ display: "flex", gap: 12, alignItems: "flex-end", marginBottom: 16 }}>
         <Input label="Produto" type="select" id="produto-select" placeholder="Selecione um produto"
           value={selectedProdutoId as any}
           onChange={(e: any) => setSelectedProdutoId(Number(e.target.value) || "")}
         >
-          {/* usa produtos (mesmo padrão do NovoProduto) */}
+          
           {produtos.map(p => (
             <option key={String(p.id)} value={String(p.id)}>{p.nome}</option>
           ))}
