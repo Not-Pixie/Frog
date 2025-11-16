@@ -9,7 +9,7 @@ class Fornecedor(Base):
     fornecedor_id = Column(Integer, primary_key=True, autoincrement=True)
     codigo = Column(Integer, nullable=False)
     nome = Column(String(150), nullable=False)
-    cnpj = Column(String(18), unique=True)
+    cnpj = Column(String(18))
     telefone = Column(String(20))
     email = Column(String(100))
 
