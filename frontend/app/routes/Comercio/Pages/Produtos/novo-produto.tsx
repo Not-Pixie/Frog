@@ -540,9 +540,7 @@ useEffect(() => {
               }
               id="limiteEstoque"
               type="text"
-              placeholder={
-                defaultLimite !== null ? String(defaultLimite) : "Ex: 5"
-              }
+              placeholder="0"
               inputWrapperClassName="input-wrapper"
               {...register("limiteEstoque")}
             />

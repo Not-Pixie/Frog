@@ -10,7 +10,7 @@ const precoPreprocess = (val: unknown) => {
 
 const schema = z.object({
   nome: z.string().min(1, "Nome do produto é obrigatório"),
-  categoria: z.string().min(1, "Categoria é obrigatória"),
+  categoria: z.string().optional(),
   fornecedor: z.string().optional(),
   limiteEstoque: z.string().optional(),
   unimed: z.string().min(1, "Unidade é obrigatória"),
