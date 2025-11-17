@@ -9,6 +9,8 @@ from app.models.produtos_model import Produto
 from app.models.enderecos_model import Endereco
 from app.models.fornecedores_model import Fornecedor
 from app.models.unimed_model import UnidadeMedida
+from app.models.comercios_model import Comercio
+from app.models.configs_comercio import ConfiguracaoComercio
 
 from app.services.usuarios_service import get_comercios_que_usuario_tem_acesso, usuario_tem_acesso_ao_comercio
 from app.api.auth import get_current_user
@@ -440,6 +442,44 @@ def listar_unidades_do_comercio(comercio_id: int):
             db.close()
         except Exception:
             current_app.logger.exception("Erro ao fechar sessão DB em listar_unidades")
+
+
+@bp.route("/unidades/globais", methods=["GET"])
+@token_required
+def listar_unidades_globais():
+    usuario: dict = g.get("usuario")
+    usuario_id = usuario.get("usuario_id") if usuario else None
+    if usuario is None or usuario_id is None:
+        return jsonify({"msg": "erro de autenticação"}), 401
+
+    db = SessionLocal()
+    try:
+        # Busca APENAS unidades globais (comercio_id IS NULL)
+        unidades = db.query(UnidadeMedida).filter(
+            UnidadeMedida.comercio_id == None
+        ).order_by(UnidadeMedida.unimed_id.asc()).all()
+
+        items = []
+        for u in unidades:
+            sigla_val = getattr(u, "sigla", None)       
+            items.append({
+                "unimed_id": getattr(u, "unimed_id", None) or getattr(u, "id", None),
+                "nome": getattr(u, "nome", None),
+                "sigla": sigla_val,
+                "comercio_id": getattr(u, "comercio_id", None),
+                "criado_em": getattr(u, "criado_em", None).isoformat() if getattr(u, "criado_em", None) else None
+            })
+
+        return jsonify({"items": items, "total": len(items)}), 200
+
+    except Exception:
+        current_app.logger.exception("Erro ao listar unidades globais")
+        return jsonify({"error": "Erro interno ao listar unidades globais"}), 500
+    finally:
+        try:
+            db.close()
+        except Exception:
+            current_app.logger.exception("Erro ao fechar sessão DB em listar_unidades_globais")
 
 
 @bp.route('/<int:comercio_id>/fornecedores', methods=['POST'])
@@ -923,3 +963,44 @@ def criar_entrada_no_comercio(comercio_id: int):
             db.close()
         except Exception:
             current_app.logger.exception("Erro ao fechar sessão do DB em criar_entrada_no_comercio")
+
+@bp.route("/<int:comercio_id>/config", methods=["GET"])
+@token_required
+def rota_get_configuracoes_comercio(comercio_id: int):
+    usuario: dict = g.get("usuario")
+    usuario_id = usuario.get("usuario_id") if usuario else None
+    if usuario is None or usuario_id is None:
+        return jsonify({"msg": "erro de autenticação"}), 401
+
+    db = SessionLocal()
+
+    try:
+        config = None
+
+        try:
+            comercio = db.query(Comercio).filter(Comercio.comercio_id == comercio_id).first()
+        except Exception:
+            comercio = None
+
+        if comercio is not None and getattr(comercio, "configuracao_id", None):
+            config = db.query(ConfiguracaoComercio).get(comercio.configuracao_id)
+
+        if config is None:
+            return jsonify({"limite_padrao": None, "unidade_padrao": None}), 200
+
+        limite = getattr(config, "nivel_alerta_minimo", None)
+        unidade = getattr(config, "unidade_padrao", None)
+
+        return jsonify({
+            "limite_padrao": float(limite) if limite is not None else None,
+            "unidade_padrao": unidade
+        }), 200
+
+    except Exception:
+        current_app.logger.exception("Erro ao buscar configuração do comércio")
+        return jsonify({"error": "Erro interno ao buscar configuração"}), 500
+    finally:
+        try:
+            db.close()
+        except Exception:
+            current_app.logger.exception("Erro ao fechar sessão do DB em rota_get_configuracoes_comercio")

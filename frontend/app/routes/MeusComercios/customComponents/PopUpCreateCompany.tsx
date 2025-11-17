@@ -1,11 +1,10 @@
 // src/components/PopUp/PopUpComercio.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import api from "../../../../src/api/axios"; // ajuste se necessário
 import axios from "axios";
 import Input from "../../../../src/components/Input"; 
 import PopUp from "../../../../src/components/PopUp";
-import { COMERCIOS } from "src/api/enpoints";
-
+import { COMERCIOS, UNIDADES_GLOBAIS } from "src/api/enpoints";
 
 import { useForm, type Resolver, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,11 +20,21 @@ interface Props {
   onCreated?: (c: Company) => void;
 }
 
+type OptionItem = {
+  id?: number;
+  nome?: string;
+  sigla?: string;
+  raw?: any;
+};
+
 export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props) {
   const [step, setStep] = useState<1 | 2>(1);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const {checkAuth} = useAuth();
+  const [unidades, setUnidades] = useState<OptionItem[]>([]);
+  const [loadingUnidades, setLoadingUnidades] = useState(false);
+  const mountedRef = useRef(false);
+  const { checkAuth } = useAuth();
 
   const resolver = zodResolver(companySchema) as unknown as Resolver<FormValues>;
 
@@ -34,6 +43,8 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
     handleSubmit,
     trigger,
     reset,
+    setValue,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver,
@@ -46,12 +57,57 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
     },
   });
 
+  // Carrega unidades de medida quando o popup abre
+useEffect(() => {
+  if (!isOpen) return;
+
+  mountedRef.current = true;
+  setLoadingUnidades(true);
+
+  async function fetchUnidades() {
+    try {
+      const response = await api.get(UNIDADES_GLOBAIS);
+
+      const items = response.data?.items || [];
+
+      const mappedUnidades = items
+        .map((u: any) => ({
+          id: Number(u.unimed_id || u.id) || undefined,
+          nome: u.nome ? String(u.nome) : undefined,
+          sigla: u.sigla ? String(u.sigla) : undefined,
+          raw: u,
+        }))
+        .filter((x: { id?: number; nome?: string; sigla?: string; raw: any }) => x.id !== undefined && (x.sigla || x.nome));
+      if (mountedRef.current) {
+        setUnidades(mappedUnidades);
+
+        if (mappedUnidades.length > 0 && !getValues("configs.campo1")) {
+          const first = mappedUnidades[0];
+          const firstValue = String(first.id);
+          setValue("configs.campo1", firstValue);
+        }
+      }
+    } catch (error: any) {
+      console.error("Erro ao carregar unidades globais:", error);
+    } finally {
+      if (mountedRef.current) setLoadingUnidades(false);
+    }
+  }
+
+  fetchUnidades();
+
+  return () => {
+    mountedRef.current = false;
+  };
+}, [isOpen, setValue, getValues]);
+
   if (!isOpen) return null;
 
   function resetAll() {
     setStep(1);
     setError(null);
     setLoading(false);
+    setUnidades([]);
     reset();
   }
 
@@ -200,22 +256,23 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
               id="company-campo1"
               type="select"
               {...register("configs.campo1" as const)}
+              disabled={loadingUnidades}
             >
-              <option value="un">Unidade(un)</option>
-              <option value="kg">Quilograma(kg)</option>
-              <option value="g">Grama(g)</option>
-              <option value="L">Litro(L)</option>
-              <option value="ml">Mililitro(ml)</option>
-              <option value="m">Metro(m)</option>
-              <option value="cm">Centímetro(cm)</option>
-              <option value="mm">Milímetro(mm)</option>
-              <option value="cx">Caixa(cx)</option>
-              <option value="pct">Pacote(pct)</option>
-              <option value="gal">Galão(gal)</option>
-              <option value="par">Par(par)</option>
-              <option value="dz">Dúzia(dz)</option>
-              <option value="sc">Saco(sc)</option>
+              {unidades.map((u) => {
+                const value = u.id
+                  ? String(u.id)
+                  : String(u.sigla ?? u.nome ?? "");
+                const label =
+                  (u.nome ? `${u.nome}` : u.sigla ? `${u.sigla}` : `#${value}`) +
+                  (u.sigla ? ` (${u.sigla})` : "");
+                return (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                );
+              })}
             </Input>
+            {loadingUnidades && <span>Carregando unidades...</span>}
             {errors.configs?.campo1?.message && (
               <p className="text-red-600 mt-2 text-sm">{String(errors.configs?.campo1?.message)}</p>
             )}
@@ -224,7 +281,7 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
               label="Limite mínimo de estoque padrão"
               id="company-campo4"
               type="number"
-              placeholder="50"
+              placeholder="0"
               {...register("configs.campo4" as const)}
             />
             {errors.configs?.campo4?.message && (
@@ -247,7 +304,7 @@ export default function PopupCreateCompany({ isOpen, onClose, onCreated }: Props
             <Button
               type="submit"
               theme="green"
-              disabled={loading || isSubmitting}
+              disabled={loading || isSubmitting || loadingUnidades}
             >
               {loading || isSubmitting ? "Criando..." : "Criar"}
             </Button>

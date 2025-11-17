@@ -6,3 +6,4 @@ export const LOGOUT = '/logout';
 export const REFRESH = '/refresh'
 export const COMERCIOS = '/comercios'
 export const CATEGORIAS = "/categorias"
+export const UNIDADES_GLOBAIS = '/comercios/unidades/globais';
