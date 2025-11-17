@@ -8,7 +8,7 @@ class Movimentacao(Base):
 
     mov_id = Column(Integer, primary_key=True, autoincrement=True)
     tipo = Column(String(7), nullable=False)  # 'entrada' = 7 chars, 'saida' = 5 chars
-    estado = Column(String(7), nullable=False) # 'aberta' ou 'fechada'
+    estado = Column(String(7), nullable=False, default="aberta") # 'aberta' ou 'fechada'
     link = Column(String(16), nullable=False, unique=True)
 
     carrinho_id = Column(Integer, ForeignKey("carrinhos.carrinho_id", ondelete="CASCADE", onupdate="CASCADE"), nullable=False)
