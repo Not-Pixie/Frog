@@ -261,7 +261,7 @@ body {
   --primary-700: #277D6E;
   --primary-900: #184E45;
 
-  --danger: #AC354A;
+  --danger: rgb(244, 89, 89);
   --success: #2BAF8F;
   --warning: #E2A800;
   --info: #2D8BF0;
