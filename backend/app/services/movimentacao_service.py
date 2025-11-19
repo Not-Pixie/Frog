@@ -1,22 +1,21 @@
-from psycopg2 import IntegrityError
+# service corrigido (trecho)
+from sqlalchemy.exc import IntegrityError  # trocar psycopg2 por sqlalchemy.exc
 from sqlalchemy.orm import Session
 from app.models.carrinho_model import Carrinho
 from app.models.movimentacao_model import Movimentacao
-from typing import Literal, Optional
+from typing import Optional
 
 from app.utils.link_utils import criar_link
 
 
 def criar_carrinho_vazio(db: Session, comercio_id: int) -> Carrinho:
-    car = Carrinho(
-        comercio_id=comercio_id
-    )
+    car = Carrinho(comercio_id=comercio_id)
     db.add(car)
     db.flush()
     return car
 
 
-def criar_movimentacao_vazia(db: Session, tipo: Literal["aberta", "fechada"], comercio_id: int, tentativas: Optional[int] = None) -> Movimentacao:
+def criar_movimentacao_vazia(db: Session, tipo: str, comercio_id: int, tentativas: Optional[int] = None) -> Movimentacao:
     MAX_TRIES = tentativas or 6
 
     for attempt in range(1, MAX_TRIES + 1):
@@ -35,11 +34,11 @@ def criar_movimentacao_vazia(db: Session, tipo: Literal["aberta", "fechada"], co
             )
             db.add(mov)
             db.flush()
-
             db.refresh(mov)
             return mov
 
         except IntegrityError as e:
+            # rollback para limpar a sessão e tentar gerar outro link
             try:
                 db.rollback()
             except Exception:
@@ -48,5 +47,5 @@ def criar_movimentacao_vazia(db: Session, tipo: Literal["aberta", "fechada"], co
             if attempt == MAX_TRIES:
                 raise RuntimeError("Não foi possível gerar um link único após várias tentativas") from e
 
-    # fallback, isso não deveria ocorrer '-'
+    # fallback — não deve ocorrer
     raise RuntimeError("Erro inesperado ao criar movimentação")

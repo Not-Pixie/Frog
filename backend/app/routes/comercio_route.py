@@ -873,12 +873,6 @@ def get_movimentacoes_de_comercio(comercio_id):
 @bp.route('/<int:comercio_id>/movimentacoes/abertas', methods=['GET'])
 @token_required
 def get_movimentacoes_abertas_de_comercio(comercio_id):
-    """
-    retorna todas movimentações abertas em um comercio
-    GET /comercios/<comercio_id>/movimentacoes
-    Retorna: { "movs": [...]}
-    Cada mov: campos de Movimentação
-    """
     usuario: dict = g.get("usuario")
     usuario_id = usuario.get("usuario_id") if usuario else None
     if usuario is None or usuario_id is None:
@@ -891,28 +885,17 @@ def get_movimentacoes_abertas_de_comercio(comercio_id):
 
         movimentacoes = (
             db.query(Movimentacao)
-            .filter(
-                Movimentacao.comercio_id == comercio_id, 
-                Movimentacao.estado == "aberta"
-                )
+            .filter(Movimentacao.comercio_id == comercio_id, Movimentacao.estado == "aberta")
             .order_by(Movimentacao.mov_id.asc())
             .all()
-            )
+        )
 
-        
-        itens = []
-        for m in movimentacoes:
-            item = model_to_dict(m)
-            itens.append(item)
-        
+        itens = [model_to_dict(m) for m in movimentacoes]
         return jsonify({"movs": itens}), 200
 
     except SQLAlchemyError:
         current_app.logger.exception("Erro ao listar movimentacoes")
         return jsonify({"error": "Erro interno ao listar movimentacoes"}), 500
-    except Exception:
-        current_app.logger.exception("Erro inesperado ao listar movimentacoes")
-        return jsonify({"error": "Erro interno"}), 500
     finally:
         try:
             db.close()
@@ -932,14 +915,10 @@ def criar_entrada_no_comercio(comercio_id: int):
         if not usuario_tem_acesso_ao_comercio(db, usuario_id, comercio_id):
             return jsonify({"msg": "Usuário não tem acesso a este comércio."}), 403
 
-
         try:
-            mov: Movimentacao = criar_movimentacao_vazia(
-            db=db,
-            comercio_id=comercio_id,
-            tipo="entrada"
-            )
+            mov: Movimentacao = criar_movimentacao_vazia(db=db, comercio_id=comercio_id, tipo="entrada")
             db.commit()
+            # opcional: db.refresh(mov) se quiser garantir campos atualizados
             return jsonify(model_to_dict(mov)), 201
 
         except ValueError as ve:
@@ -957,15 +936,45 @@ def criar_entrada_no_comercio(comercio_id: int):
         db.rollback()
         current_app.logger.exception("Erro ao criar movimentação")
         return jsonify({"error": "Erro interno ao criar movimentação"}), 500
-    except Exception:
-        db.rollback()
-        current_app.logger.exception("Erro inesperado ao criar movimentação")
-        return jsonify({"error": "Erro interno"}), 500
     finally:
         try:
             db.close()
         except Exception:
             current_app.logger.exception("Erro ao fechar sessão do DB em criar_entrada_no_comercio")
+
+@bp.route('/<int:comercio_id>/movimentacoes/link/<string:link>', methods=['GET'])
+@token_required
+def get_movimentacao_por_link(comercio_id: int, link: str):
+    usuario: dict = g.get("usuario")
+    usuario_id = usuario.get("usuario_id") if usuario else None
+    if usuario is None or usuario_id is None:
+        return jsonify({"msg": "erro de autenticação"}), 401
+
+    db = SessionLocal()
+    try:
+        if not usuario_tem_acesso_ao_comercio(db, usuario_id, comercio_id):
+            return jsonify({"msg": "Usuário não tem acesso a este comércio."}), 403
+
+        mov = db.query(Movimentacao).filter(
+            Movimentacao.comercio_id == comercio_id,
+            Movimentacao.link == link
+        ).first()
+
+        if mov is None:
+            return jsonify({"error": "Movimentação não encontrada"}), 404
+
+        # retorno consistente: objeto com 'mov' (em vez de um raw dict)
+        return jsonify({"mov": model_to_dict(mov)}), 200
+
+    except SQLAlchemyError:
+        current_app.logger.exception("Erro ao buscar movimentação por link")
+        return jsonify({"error": "Erro interno"}), 500
+    finally:
+        try:
+            db.close()
+        except Exception:
+            current_app.logger.exception("Erro ao fechar sessão do DB em get_movimentacao_por_link")
+
 
 @bp.route("/<int:comercio_id>/config", methods=["GET"])
 @token_required

@@ -15,8 +15,6 @@ def cadastrar_usuario_route():
         nome = data.get("nome")
         email = data.get("email")
         senha = data.get("senha")
-        
-        print("meu deus")
 
         if not nome or not email or not senha:
             return jsonify({"erro": "Nome, e-mail e senha são obrigatórios."}), 400
