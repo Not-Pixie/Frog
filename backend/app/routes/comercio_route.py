@@ -873,6 +873,12 @@ def get_movimentacoes_de_comercio(comercio_id):
 @bp.route('/<int:comercio_id>/movimentacoes/abertas', methods=['GET'])
 @token_required
 def get_movimentacoes_abertas_de_comercio(comercio_id):
+    """
+    retorna todas movimentações abertas em um comercio
+    GET /comercios/<comercio_id>/movimentacoes
+    Retorna: { "movs": [...]}
+    Cada mov: campos de Movimentação
+    """
     usuario: dict = g.get("usuario")
     usuario_id = usuario.get("usuario_id") if usuario else None
     if usuario is None or usuario_id is None:
@@ -885,7 +891,8 @@ def get_movimentacoes_abertas_de_comercio(comercio_id):
 
         movimentacoes = (
             db.query(Movimentacao)
-            .filter(Movimentacao.comercio_id == comercio_id, Movimentacao.estado == "aberta")
+            .filter(Movimentacao.comercio_id == comercio_id, 
+                    Movimentacao.estado == "aberta")
             .order_by(Movimentacao.mov_id.asc())
             .all()
         )
@@ -894,8 +901,11 @@ def get_movimentacoes_abertas_de_comercio(comercio_id):
         return jsonify({"movs": itens}), 200
 
     except SQLAlchemyError:
-        current_app.logger.exception("Erro ao listar movimentacoes")
+        current_app.logger.exception("Erro SQL ao listar movimentacoes")
         return jsonify({"error": "Erro interno ao listar movimentacoes"}), 500
+    except Exception:
+        current_app.logger.exception("Erro inesperado ao listar movimentacoes")
+        return jsonify({"error": "Erro interno"}), 500
     finally:
         try:
             db.close()
