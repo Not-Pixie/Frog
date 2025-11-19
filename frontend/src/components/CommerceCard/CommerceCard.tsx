@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import "./CommerceCard.css";
 import type { Comercio } from "src/types/comercio";
 import { Link } from "react-router"; // <- use react-router-dom
-import { dateFormatter } from "./formatter";
+import { dateFormatter } from "src/helpers";
 
 type CommerceCardProps = {
   onClick?: () => void;
