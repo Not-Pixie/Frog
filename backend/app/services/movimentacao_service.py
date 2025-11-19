@@ -3,7 +3,7 @@ from sqlalchemy.exc import IntegrityError  # trocar psycopg2 por sqlalchemy.exc
 from sqlalchemy.orm import Session
 from app.models.carrinho_model import Carrinho
 from app.models.movimentacao_model import Movimentacao
-from typing import Optional
+from typing import Literal, Optional
 
 from app.utils.link_utils import criar_link
 
@@ -15,7 +15,7 @@ def criar_carrinho_vazio(db: Session, comercio_id: int) -> Carrinho:
     return car
 
 
-def criar_movimentacao_vazia(db: Session, tipo: str, comercio_id: int, tentativas: Optional[int] = None) -> Movimentacao:
+def criar_movimentacao_vazia(db: Session, tipo: Literal["entrada", "saida"], comercio_id: int, tentativas: Optional[int] = None) -> Movimentacao:
     MAX_TRIES = tentativas or 6
 
     for attempt in range(1, MAX_TRIES + 1):
