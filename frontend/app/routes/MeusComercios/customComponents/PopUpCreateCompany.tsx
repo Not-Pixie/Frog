@@ -148,6 +148,16 @@ useEffect(() => {
       configs: {
         campo1: values.configs?.campo1,
         campo4: values.configs?.campo4,
+        unidade: (() => {
+          try {
+            const sel = values.configs?.campo1;
+            if (!sel) return undefined;
+            const found = unidades.find((u) => String(u.id) === String(sel) || u.sigla === sel || u.nome === sel);
+            return found?.sigla ?? undefined;
+          } catch (e) {
+            return undefined;
+          }
+        })(),
       },
     };
 
