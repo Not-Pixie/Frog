@@ -140,13 +140,14 @@ export default function Categorias() {
                 aria-label={`Editar ${row.categoria_id ?? row.id}`}
                 className="btn-edit"
               >
-                <i className="fi fi-rr-pencil" style={{ fontSize: 20, color: "#35AC97" }}></i>
+                <i className="fi fi-rr-pencil"></i>
               </button>
               <button
                 onClick={() => onDelete(Number(row.categoria_id ?? row.id))}
                 disabled={deletingId !== null && deletingId === Number(row.categoria_id ?? row.id)}
+                className="btn-delete"
               >
-                <i className="fi fi-rr-trash-xmark" style={{ fontSize: 20, color: "#F45959" }}></i>
+                <i className="fi fi-rr-trash-xmark" ></i>
               </button>
             </div>
           )}
