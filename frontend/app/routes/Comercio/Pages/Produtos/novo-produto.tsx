@@ -158,7 +158,17 @@ useEffect(() => {
             }))
             .filter((x) => x.id !== undefined);
 
-          setCategorias(mappedCats);
+          const Cats: OptionItem[] = [
+            { id: -1, nome: "Sem Categoria", raw: {
+              categoria_id: -1,
+              codigo: -1,
+              nome: "Sem categoria",
+              comercio_id: -1,
+            } },
+            ...mappedCats,
+          ];
+
+          setCategorias(Cats);
 
           if (mountedRef.current && mappedCats.length > 0 && !getValues("categoria")) {
             setValue("categoria", String(mappedCats[0].id));
@@ -511,6 +521,9 @@ useEffect(() => {
               inputWrapperClassName="input-wrapper"
               {...register("preco")}
             />
+            {errors.preco && (
+              <span className="err">{errors.preco.message}</span>
+            )}
           </div>
 
           <div className="grid-item">

@@ -572,6 +572,9 @@ def create_produto_route(comercio_id):
 
     if unimed_id in (None, ""):
         return jsonify({"error":"Campo 'unimed_id' é obrigatório"}), 400
+    
+    if categoria == -1:
+        categoria = None
 
     if not nome:
         return jsonify({"error": "Campo 'nome' é obrigatório"}), 400

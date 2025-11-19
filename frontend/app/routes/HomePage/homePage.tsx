@@ -13,7 +13,7 @@ export default function HomePage() {
     "Frog simplifica a gestão e aumenta sua produtividade."
   ];
 
-  const handleClick = (index) => {
+  const handleClick = (index: any) => {
     setTexto(textos[index]);
   };
 
