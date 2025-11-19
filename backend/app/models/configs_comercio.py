@@ -7,7 +7,7 @@ class ConfiguracaoComercio(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     unidade_padrao = Column(String(20), nullable=False, server_default='un')
-    unimed_id = Column(Integer, ForeignKey('unidade_medidas.id', ondelete="SET NULL"), nullable=False)
+    unimed_id = Column(Integer, ForeignKey('unidade_medidas.unimed_id', ondelete="SET NULL"), nullable=False)
     nivel_alerta_minimo = Column(Numeric(14,3), nullable=False, server_default="0.00")
     moeda_padrao = Column(CHAR(3), nullable=False, server_default='BRL')
     linguagem = Column(String(10), nullable=False, server_default='pt-BR')
