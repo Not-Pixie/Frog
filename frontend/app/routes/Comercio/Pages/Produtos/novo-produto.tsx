@@ -55,6 +55,7 @@
     const [optionsError, setOptionsError] = useState<string | null>(null);
     const [loadingProduct, setLoadingProduct] = useState<boolean>(false);
     const [defaultUnidade, setDefaultUnidade] = useState<string | null>(null);
+    const [configLoaded, setConfigLoaded] = useState<boolean>(false);
 
     const {
       register,
@@ -73,6 +74,7 @@ useEffect(() => {
   mountedRef.current = true;
   async function loadLimitAndConfig() {
     setLoadingDefaults(true);
+    setConfigLoaded(false)
     try {
       const resp = await api.get(`${COMERCIOS}/${comercioId}/config`);
       if (resp.status === 200 && resp.data) {
@@ -91,14 +93,10 @@ useEffect(() => {
         // tenta extrair unidade padrão de vários aliases possíveis
         const u =
           resp.data.unidade_padrao ??
-          resp.data.unidadePadrao ??
-          resp.data.unimed_padrao ??
-          resp.data.unimed ??
-          resp.data.unimedPadrao ??
           null;
 
         if (u !== null && mountedRef.current) {
-          setDefaultUnidade(String(u));
+          setDefaultUnidade(String(u.unimed_id));
         }
       }
     } catch (e) {
@@ -107,7 +105,7 @@ useEffect(() => {
         setDefaultUnidade(null);
       }
     } finally {
-      if (mountedRef.current) setLoadingDefaults(false);
+      if (mountedRef.current) {setLoadingDefaults(false); setConfigLoaded(true)}
     }
   }
   loadLimitAndConfig();
@@ -215,12 +213,6 @@ useEffect(() => {
             );
 
           setUnidades(mappedUnidades);
-
-          if (mountedRef.current && mappedUnidades.length > 0 && !getValues("unimed") && !defaultUnidade) {
-            const first = mappedUnidades[0];
-            const firstValue = first.id ? String(first.id) : String(first.sigla ?? first.nome ?? "");
-            setValue("unimed", firstValue);
-          }
         } else {
           console.debug("Unidades fetch failed:", (uniResp as any).reason);
         }
@@ -241,18 +233,21 @@ useEffect(() => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [comercioId]);
 
-  // sincroniza unidade selecionada com a unidade padrão da config (resolve race entre fetchOptions e loadConfig)
-  useEffect(() => {
-    // só se tivermos unidades carregadas
-    if (unidades.length === 0) return;
+  // remover setValue("unimed", ...) de dentro de fetchOptions
+// e use essa effect única para decidir o valor do select:
 
-    // se usuário já escolheu algo (ou estamos em edição que preencheu p.unimed), respeitamos
-    if (getValues("unimed")) return;
+useEffect(() => {
+  if (unidades.length === 0) return;
 
-    // se não veio unidade padrão, já tentamos setar fallback no fetchOptions (primeira)
-    if (!defaultUnidade) return;
+  const current = (getValues("unimed") ?? "").toString().trim();
+  // se o campo já tem valor (usuario/edição), respeite
+  if (current !== "") return;
 
-    // tenta casar por id (string compare)
+  // espere pela config (ou aceite defaultUnidade já carregado)
+  if (!configLoaded && !defaultUnidade) return;
+
+  // tenta casar por id
+  if (defaultUnidade) {
     const matchById = unidades.find((u) => u.id && String(u.id) === String(defaultUnidade));
     if (matchById) {
       setValue("unimed", String(matchById.id));
@@ -261,7 +256,6 @@ useEffect(() => {
 
     const defaultLower = String(defaultUnidade).toLowerCase();
 
-    // tenta casar por sigla
     const matchBySigla = unidades.find((u) => u.sigla && String(u.sigla).toLowerCase() === defaultLower);
     if (matchBySigla) {
       const val = matchBySigla.id ? String(matchBySigla.id) : String(matchBySigla.sigla ?? matchBySigla.nome ?? "");
@@ -269,21 +263,20 @@ useEffect(() => {
       return;
     }
 
-    // tenta casar por nome completo
     const matchByNome = unidades.find((u) => u.nome && String(u.nome).toLowerCase() === defaultLower);
     if (matchByNome) {
       const val = matchByNome.id ? String(matchByNome.id) : String(matchByNome.sigla ?? matchByNome.nome ?? "");
       setValue("unimed", val);
       return;
     }
+  }
 
-    // fallback: primeira unidade disponível (somente se campo ainda vazio)
-    if (!getValues("unimed") && unidades.length > 0) {
-      const first = unidades[0];
-      const firstValue = first.id ? String(first.id) : String(first.sigla ?? first.nome ?? "");
-      setValue("unimed", firstValue);
-    }
-  }, [unidades, defaultUnidade, getValues, setValue]);
+  // se não tiver defaultUnidade ou não casou, usa a primeira unidade
+  const first = unidades[0];
+  const firstValue = first.id ? String(first.id) : String(first.sigla ?? first.nome ?? "");
+  setValue("unimed", firstValue);
+}, [unidades, defaultUnidade, configLoaded, getValues, setValue]);
+
 
     useEffect(() => {
       if (!comercioId || !produtoId) return;

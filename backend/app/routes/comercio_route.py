@@ -995,33 +995,45 @@ def rota_get_configuracoes_comercio(comercio_id: int):
         return jsonify({"msg": "erro de autenticação"}), 401
 
     db = SessionLocal()
-
     try:
-        config = None
+        if not usuario_tem_acesso_ao_comercio(db, usuario_id, comercio_id):
+            return jsonify({"msg": "Usuário não tem acesso a este comércio."}), 403
 
-        try:
-            comercio = db.query(Comercio).filter(Comercio.comercio_id == comercio_id).first()
-        except Exception:
-            comercio = None
+        comercio = db.query(Comercio).filter(Comercio.comercio_id == comercio_id).first()
+        if comercio is None or not getattr(comercio, "configuracao_id", None):
+            return jsonify({"limite_padrao": None, "unidade_padrao": None}), 200
 
-        if comercio is not None and getattr(comercio, "configuracao_id", None):
-            config = db.query(ConfiguracaoComercio).get(comercio.configuracao_id)
+        config = db.query(ConfiguracaoComercio).filter(
+            ConfiguracaoComercio.id == comercio.configuracao_id
+        ).first()
 
         if config is None:
             return jsonify({"limite_padrao": None, "unidade_padrao": None}), 200
 
         limite = getattr(config, "nivel_alerta_minimo", None)
-        unidade = getattr(config, "unidade_padrao", None)
-        unidade_id = getattr(config, )
+        unidade_id = getattr(config, "unimed_id", None)
+
+        unidade_res = None
+        if unidade_id is not None:
+            unidade = db.query(UnidadeMedida).filter(UnidadeMedida.unimed_id == unidade_id).first()
+            if unidade is not None:
+                unidade_res = {
+                    "unimed_id": getattr(unidade, "unimed_id", None),
+                    "nome": getattr(unidade, "nome", None),
+                    "sigla": getattr(unidade, "sigla", None)
+                }
 
         return jsonify({
-            "limite_padrao": float(limite) if limite is not None else None,
-            "unidade_padrao": unidade
+            "limite_padrao": limite if limite is not None else None,
+            "unidade_padrao": unidade_res
         }), 200
 
-    except Exception:
+    except SQLAlchemyError:
         current_app.logger.exception("Erro ao buscar configuração do comércio")
         return jsonify({"error": "Erro interno ao buscar configuração"}), 500
+    except Exception:
+        current_app.logger.exception("Erro inesperado ao buscar configuração do comércio")
+        return jsonify({"error": "Erro interno"}), 500
     finally:
         try:
             db.close()

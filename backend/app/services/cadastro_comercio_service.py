@@ -18,7 +18,8 @@ def criar_comercio(proprietario_id: int, nome: str, configs: dict | None = None)
         configuracao_obj = None
         if configs:
             # mapeie campos do payload para os nomes da tabela, com coerção/validação mínima:
-            unidade = configs.get("campo1") or configs.get("unidade_padrao") or "un"
+            unidade_id = configs.get("campo1")
+            sigla = configs.get("unidade")
             nivel_alerta = configs.get("campo4")  # pode vir como string; tente converter
             try:
                 nivel_alerta_val = float(nivel_alerta) if nivel_alerta is not None else 0.0
@@ -26,18 +27,18 @@ def criar_comercio(proprietario_id: int, nome: str, configs: dict | None = None)
                 nivel_alerta_val = 0.0
 
             configuracao_obj = ConfiguracaoComercio(
-                unidade_padrao=unidade,
+                unidade_padrao=sigla,
+                unimed_id=unidade_id,
                 nivel_alerta_minimo=nivel_alerta_val,
-                # outros defaults já cobertos pelo model
             )
             session.add(configuracao_obj)
-            session.flush()  # grava temporariamente para obter configuracao_obj.id
+            session.flush()  
 
         # 2) cria comercio apontando para a configuracao (se houver)
         comercio = Comercio(
             proprietario_id=proprietario_id,
             nome=nome,
-            configuracao_id=(configuracao_obj.id if configuracao_obj else None)
+            configuracao_id=(configuracao_obj.id)
         )
         session.add(comercio)
         session.flush()  # garante comercio.comercio_id
