@@ -13,4 +13,8 @@ class UnidadeMedida(Base):
 
     produtos = relationship("Produto", back_populates="unidade_medida")
     comercio = relationship("Comercio", back_populates="unidade_medidas")
+    configuracoes_comercio = relationship(
+        "ConfiguracaoComercio",
+        back_populates="unidade_medida"
+    )
     

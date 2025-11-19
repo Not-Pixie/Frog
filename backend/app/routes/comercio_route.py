@@ -993,6 +993,7 @@ def rota_get_configuracoes_comercio(comercio_id: int):
 
         limite = getattr(config, "nivel_alerta_minimo", None)
         unidade = getattr(config, "unidade_padrao", None)
+        unidade_id = getattr(config, )
 
         return jsonify({
             "limite_padrao": float(limite) if limite is not None else None,
