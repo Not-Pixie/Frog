@@ -1039,3 +1039,125 @@ def rota_get_configuracoes_comercio(comercio_id: int):
             db.close()
         except Exception:
             current_app.logger.exception("Erro ao fechar sessão do DB em rota_get_configuracoes_comercio")
+
+@bp.route("/<int:comercio_id>/config", methods=["PATCH", "PUT"])
+@token_required
+def rota_update_configuracoes_comercio(comercio_id: int):
+    usuario = g.get("usuario")
+    usuario_id = usuario.get("usuario_id") if usuario else None
+    if usuario is None or usuario_id is None:
+        return jsonify({"msg": "erro de autenticação"}), 401
+
+    body = request.get_json() or {}
+    
+    # Extract values with fallback chain
+    unidade_raw = (
+        body.get("unidade_padrao") 
+        or (body.get("configs") or {}).get("unidade")
+        or (body.get("configs") or {}).get("campo1")
+    )
+    limite_raw = (
+        body.get("limite_padrao")
+        or body.get("limite")
+        or (body.get("configs") or {}).get("campo4")
+    )
+
+    db = SessionLocal()
+    try:
+        # Authorization
+        if not usuario_tem_acesso_ao_comercio(db, usuario_id, comercio_id):
+            return jsonify({"msg": "Usuário não tem acesso a este comércio."}), 403
+
+        comercio = db.query(Comercio).filter(Comercio.comercio_id == comercio_id).first()
+        if not comercio:
+            return jsonify({"msg": "Comércio não encontrado."}), 404
+
+        # Resolve unidade ID
+        unimed_id_to_set = _resolve_unidade_id(db, unidade_raw) if unidade_raw else None
+        
+        # Parse limit
+        limite_to_set = None
+        if limite_raw is not None and str(limite_raw).strip():
+            try:
+                limite_to_set = int(float(str(limite_raw).replace(",", ".")))
+            except (ValueError, TypeError):
+                return jsonify({"msg": "Formato inválido para limite_padrao"}), 400
+
+        # Get or create config
+        config = db.query(ConfiguracaoComercio).filter(
+            ConfiguracaoComercio.id == comercio.configuracao_id
+        ).first() if comercio.configuracao_id else None
+
+        if not config:
+            config = ConfiguracaoComercio()
+            if limite_to_set is not None:
+                config.nivel_alerta_minimo = limite_to_set
+            if unimed_id_to_set is not None:
+                config.unimed_id = unimed_id_to_set
+            db.add(config)
+            db.flush()
+            comercio.configuracao_id = config.id
+        else:
+            # Update only changed fields
+            if limite_to_set is not None:
+                config.nivel_alerta_minimo = limite_to_set
+            if unimed_id_to_set is not None:
+                config.unimed_id = unimed_id_to_set
+
+        db.add(comercio)
+        db.commit()
+
+        # Build response
+        unidade_res = _build_unidade_response(db, config.unimed_id) if config.unimed_id else None
+
+        return jsonify({
+            "limite_padrao": config.nivel_alerta_minimo,
+            "unidade_padrao": unidade_res
+        }), 200
+
+    except SQLAlchemyError:
+        db.rollback()
+        current_app.logger.exception("Erro ao criar/atualizar configuração")
+        return jsonify({"error": "Erro interno ao salvar configuração"}), 500
+    except Exception:
+        db.rollback()
+        current_app.logger.exception("Erro inesperado ao salvar configuração")
+        return jsonify({"error": "Erro interno"}), 500
+    finally:
+        db.close()
+
+
+def _resolve_unidade_id(db, unidade_raw):
+    """Resolve unidade ID from various input formats."""
+    if isinstance(unidade_raw, dict):
+        return unidade_raw.get("unimed_id") or unidade_raw.get("id")
+    
+    try:
+        return int(unidade_raw)
+    except (ValueError, TypeError):
+        pass
+    
+    sigla_str = str(unidade_raw).strip()
+    unidade = db.query(UnidadeMedida).filter(
+        UnidadeMedida.sigla.ilike(sigla_str)
+    ).first()
+    
+    if not unidade:
+        unidade = db.query(UnidadeMedida).filter(
+            UnidadeMedida.nome.ilike(sigla_str)
+        ).first()
+    
+    return getattr(unidade, "unimed_id", None) if unidade else None
+
+
+def _build_unidade_response(db, unimed_id):
+    """Build unidade response object."""
+    unidade = db.query(UnidadeMedida).filter(UnidadeMedida.unimed_id == unimed_id).first()
+    if not unidade:
+        return None
+    
+    return {
+        "unimed_id": unidade.unimed_id,
+        "nome": unidade.nome,
+        "sigla": unidade.sigla
+    }
