@@ -31,6 +31,7 @@ bp = Blueprint("comercios", __name__, url_prefix="/comercios")
 @bp.route("", methods=["POST"])
 @token_required
 def create_comercio():
+    """PENDENTE"""
     user = get_current_user()
     if not user:
         return jsonify({"msg": "Autenticação necessária."}), 401
@@ -67,6 +68,7 @@ def create_comercio():
 @bp.route('/<int:comercio_id>/categorias', methods=['POST'])
 @token_required
 def criar_categoria_no_comercio(comercio_id: int):
+    """PENDENTE"""
     usuario: dict = g.get("usuario")
     usuario_id = usuario.get("usuario_id") if usuario else None
     if usuario is None or usuario_id is None:
@@ -281,6 +283,7 @@ def listar_produtos(comercio_id):
 @bp.route('/<int:comercio_id>/produtos/<int:produto_id>', methods=['DELETE'])
 @token_required
 def rota_delete_produto(comercio_id, produto_id):
+    """PENDENTE"""
     db = SessionLocal()
     try:
         try:
@@ -303,6 +306,7 @@ def rota_delete_produto(comercio_id, produto_id):
 @bp.route('/<int:comercio_id>/categorias/<int:categoria_id>', methods=['DELETE'])
 @token_required
 def rota_delete_categoria(comercio_id, categoria_id):
+    """PENDENTE"""
     db = SessionLocal()
     try:
         try:
@@ -328,6 +332,7 @@ def rota_delete_categoria(comercio_id, categoria_id):
 @bp.route('/<int:comercio_id>/fornecedores/<int:fornecedor_id>', methods=['DELETE'])
 @token_required
 def rota_delete_fornecedor(comercio_id, fornecedor_id):
+    """PENDENTE"""
     db = SessionLocal()
     try:
         try:
@@ -353,6 +358,7 @@ def rota_delete_fornecedor(comercio_id, fornecedor_id):
 @bp.route('/<int:comercio_id>/fornecedores', methods=['GET'])
 @token_required
 def listar_fornecedores_do_comercio(comercio_id: int):
+    """PENDENTE"""
     usuario: dict = g.get("usuario")
     usuario_id = usuario.get("usuario_id") if usuario else None
     if usuario is None or usuario_id is None:
@@ -407,6 +413,7 @@ def listar_fornecedores_do_comercio(comercio_id: int):
 @bp.route("/<int:comercio_id>/unidades", methods=["GET"])
 @token_required
 def listar_unidades_do_comercio(comercio_id: int):
+    """PENDENTE"""
     usuario: dict = g.get("usuario")
     usuario_id = usuario.get("usuario_id") if usuario else None
     if usuario is None or usuario_id is None:
@@ -448,6 +455,7 @@ def listar_unidades_do_comercio(comercio_id: int):
 @bp.route("/unidades/globais", methods=["GET"])
 @token_required
 def listar_unidades_globais():
+    """PENDENTE"""
     usuario: dict = g.get("usuario")
     usuario_id = usuario.get("usuario_id") if usuario else None
     if usuario is None or usuario_id is None:
@@ -486,6 +494,7 @@ def listar_unidades_globais():
 @bp.route('/<int:comercio_id>/fornecedores', methods=['POST'])
 @token_required
 def criar_fornecedor_no_comercio(comercio_id: int):
+    """PENDENTE"""
     usuario: dict = g.get("usuario")
     usuario_id = usuario.get("usuario_id") if usuario else None
     if usuario is None or usuario_id is None:
@@ -556,6 +565,7 @@ def criar_fornecedor_no_comercio(comercio_id: int):
 @bp.route("/<int:comercio_id>/produtos", methods=["POST"])
 @token_required
 def create_produto_route(comercio_id):
+    """PENDENTE"""
     data = request.get_json(silent=True)
     if not data:
         return jsonify({"error": "JSON body obrigatório"}), 400
@@ -637,6 +647,7 @@ def create_produto_route(comercio_id):
 @bp.route('/<int:comercio_id>/produtos/<int:produto_id>', methods=['GET'])
 @token_required
 def rota_get_produto(comercio_id, produto_id):
+    """PENDENTE"""
     db = SessionLocal()
     try:
         prod = get_produto_por_id(db, produto_id, comercio_id)
@@ -664,6 +675,7 @@ def rota_get_produto(comercio_id, produto_id):
 @bp.route('/<int:comercio_id>/produtos/<int:produto_id>', methods=['PUT', 'PATCH'])
 @token_required
 def rota_update_produto(comercio_id, produto_id):
+    """PENDENTE"""
     db = SessionLocal()
     try:
         payload = request.get_json() or {}
@@ -696,6 +708,7 @@ def rota_update_produto(comercio_id, produto_id):
 @bp.route('/<int:comercio_id>/fornecedores/<int:fornecedor_id>', methods=['GET'])
 @token_required
 def rota_get_fornecedor(comercio_id, fornecedor_id):
+    """PENDENTE"""
     db = SessionLocal()
     try:
         f = get_fornecedor_por_id(db, fornecedor_id, comercio_id)
@@ -740,6 +753,7 @@ def rota_get_fornecedor(comercio_id, fornecedor_id):
 @bp.route('/<int:comercio_id>/fornecedores/<int:fornecedor_id>', methods=['PUT', 'PATCH'])
 @token_required
 def rota_update_fornecedor(comercio_id, fornecedor_id):
+    """PENDENTE"""
     db = SessionLocal()
     try:
         payload = request.get_json() or {}
@@ -786,6 +800,7 @@ def rota_update_fornecedor(comercio_id, fornecedor_id):
 @bp.route('/<int:comercio_id>/categorias/<int:categoria_id>', methods=['GET'])
 @token_required
 def rota_get_categoria(comercio_id, categoria_id):
+    """PENDENTE"""
     db = SessionLocal()
     try:
         c = get_categoria_por_id(db, categoria_id, comercio_id)
@@ -806,6 +821,7 @@ def rota_get_categoria(comercio_id, categoria_id):
 @bp.route('/<int:comercio_id>/categorias/<int:categoria_id>', methods=['PUT', 'PATCH'])
 @token_required
 def rota_update_categoria(comercio_id, categoria_id):
+    """PENDENTE"""
     db = SessionLocal()
     try:
         payload = request.get_json() or {}
@@ -916,6 +932,7 @@ def get_movimentacoes_abertas_de_comercio(comercio_id):
 @bp.route('/<int:comercio_id>/movimentacoes/entrada', methods=['POST'])
 @token_required
 def criar_entrada_no_comercio(comercio_id: int):
+    """PENDENTE"""
     usuario: dict = g.get("usuario")
     usuario_id = usuario.get("usuario_id") if usuario else None
     if usuario is None or usuario_id is None:
@@ -956,6 +973,7 @@ def criar_entrada_no_comercio(comercio_id: int):
 @bp.route('/<int:comercio_id>/movimentacoes/link/<string:link>', methods=['GET'])
 @token_required
 def get_movimentacao_por_link(comercio_id: int, link: str):
+    """PENDENTE"""
     usuario: dict = g.get("usuario")
     usuario_id = usuario.get("usuario_id") if usuario else None
     if usuario is None or usuario_id is None:
@@ -990,6 +1008,7 @@ def get_movimentacao_por_link(comercio_id: int, link: str):
 @bp.route("/<int:comercio_id>/config", methods=["GET"])
 @token_required
 def rota_get_configuracoes_comercio(comercio_id: int):
+    """PENDENTE"""
     usuario: dict = g.get("usuario")
     usuario_id = usuario.get("usuario_id") if usuario else None
     if usuario is None or usuario_id is None:
@@ -1044,6 +1063,7 @@ def rota_get_configuracoes_comercio(comercio_id: int):
 @bp.route("/<int:comercio_id>/config", methods=["PATCH", "PUT"])
 @token_required
 def rota_update_configuracoes_comercio(comercio_id: int):
+    """PENDENTE"""
     usuario = g.get("usuario")
     usuario_id = usuario.get("usuario_id") if usuario else None
     if usuario is None or usuario_id is None:
@@ -1169,6 +1189,7 @@ def _build_unidade_response(db, unimed_id):
 @bp.route("/<int:comercio_id>", methods=["DELETE"])
 @token_required
 def rota_delete_comercio(comercio_id: int):
+    """PENDENTE"""
     usuario = g.get("usuario")
     usuario_id = usuario.get("usuario_id") if usuario else None
     if usuario is None or usuario_id is None:
@@ -1208,6 +1229,7 @@ def rota_delete_comercio(comercio_id: int):
 @bp.route("/<int:comercio_id>/movimentacoes/<int:mov_id>", methods=["DELETE"])
 @token_required
 def rota_delete_movimentacao(comercio_id: int, mov_id: int):
+    """PENDENTE"""
     usuario = g.get("usuario")
     usuario_id = usuario.get("usuario_id") if usuario else None
     if usuario is None or usuario_id is None:
@@ -1250,7 +1272,7 @@ def rota_delete_movimentacao(comercio_id: int, mov_id: int):
 @bp.route("/<int:comercio_id>/movimentacoes/<int:mov_id>/carrinho", methods=["GET"])
 @token_required
 def get_carrinho_de_mov(comercio_id, mov_id):
-    """"""
+    """PENDENTE"""
     usuario = g.get("usuario")
     usuario_id = usuario.get("usuario_id") if usuario else None
     if usuario is None or usuario_id is None:
