@@ -7,7 +7,8 @@ import Input from "../../../../../src/components/Input/Input.tsx";
 import api from "../../../../../src/api/axios";
 import { COMERCIOS } from "src/api/enpoints";
 import type { Produto } from "src/types/produto.ts";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
+import { FaArrowLeft } from "react-icons/fa";
 
 type OptionItem = {
   id?: number;
@@ -19,7 +20,7 @@ type OptionItem = {
 interface APIResponse {
   items: Produto[];
   total: number;
-};
+}
 
 type CartItem = {
   item_id: number;
@@ -40,7 +41,8 @@ type Cart = {
 
 export default function Entradas() {
   const mountedRef = React.useRef(false);
-  const {comercioId} = useParams();
+  const { comercioId } = useParams();
+  const navigate = useNavigate();
 
   const [produtos, setProdutos] = React.useState<OptionItem[]>([]);
   const [cart, setCart] = React.useState<Cart | null>(null);
@@ -54,7 +56,7 @@ export default function Entradas() {
     mountedRef.current = true;
     if (comercioId) fetchProdutos();
     return () => { mountedRef.current = false; };
-  }, []);
+  }, [comercioId]);
 
   async function fetchProdutos() {
     setLoadingOptions(true);
@@ -107,16 +109,15 @@ export default function Entradas() {
     try {
       setLoading(true);
       const c = await ensureCart();
-      const res = await fetch(`/api/carrinhos/${c.carrinho_id}/itens`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ produto_id: selectedProdutoId, quantidade: selectedQty }),
+      // use API axios para manter consistência com o app
+      const res = await api.post(`/carrinhos/${c.carrinho_id}/itens`, {
+        produto_id: selectedProdutoId,
+        quantidade: selectedQty
       });
-      if (!res.ok) {
-        const txt = await res.text();
-        throw new Error(txt || "Erro ao adicionar item");
+      if (res.status < 200 || res.status >= 300) {
+        throw new Error("Erro ao adicionar item");
       }
-      const updatedCart: Cart = await res.json();
+      const updatedCart: Cart = res.data;
       setCart(updatedCart);
       setSelectedProdutoId("");
       setSelectedQty(1);
@@ -144,7 +145,19 @@ export default function Entradas() {
 
   return (
     <div className="conteudo-item">
-      <h1>Entradas</h1>
+      <div className="page-header">
+        <button
+          className="back-link"
+          onClick={() => {
+            if (comercioId) navigate(`/comercio/${comercioId}/produtos`);
+            else navigate(-1);
+          }}
+          aria-label="Voltar"
+        >
+          <FaArrowLeft style={{ fontSize: 20, color: "#35AC97" }} />
+        </button>
+        <h1>Entradas</h1>
+      </div>
 
       {error && <div className="err">{error}</div>}
 
@@ -153,7 +166,7 @@ export default function Entradas() {
           value={selectedProdutoId as any}
           onChange={(e: any) => setSelectedProdutoId(Number(e.target.value) || "")}
         >
-          
+          <option value="">Selecione...</option>
           {produtos.map(p => (
             <option key={String(p.id)} value={String(p.id)}>{p.nome}</option>
           ))}
