@@ -149,8 +149,7 @@ export default function Entradas() {
         <button
           className="back-link"
           onClick={() => {
-            if (comercioId) navigate(`/comercio/${comercioId}/produtos`);
-            else navigate(-1);
+            navigate(-1);
           }}
           aria-label="Voltar"
         >

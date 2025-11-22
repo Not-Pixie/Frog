@@ -126,7 +126,7 @@ export default function ListarEntradas() {
                 className="btn-edit"
                 title="Abrir entrada"
               >
-                <i className="fi fi-rr-pencil"></i>
+                <i className="fi fi-rr-eye"></i>
               </Link>
 
               {/* Delete */}
