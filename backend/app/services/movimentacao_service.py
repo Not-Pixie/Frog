@@ -6,6 +6,7 @@ from app.models.movimentacao_model import Movimentacao
 from typing import Literal, Optional
 
 from app.utils.link_utils import criar_link
+from app.utils.contador_utils import next_codigo
 
 
 def criar_carrinho_vazio(db: Session, comercio_id: int) -> Carrinho:
@@ -15,15 +16,21 @@ def criar_carrinho_vazio(db: Session, comercio_id: int) -> Carrinho:
     return car
 
 
-def criar_movimentacao_vazia(db: Session, tipo: Literal["entrada", "saida"], comercio_id: int, tentativas: Optional[int] = None) -> Movimentacao:
+def criar_movimentacao_vazia(db: Session,
+                             #Não mude tipo para outros valores sem antes alterar contadores_locais 
+                             tipo: Literal["entrada", "saida"], comercio_id: int, tentativas: Optional[int] = None) -> Movimentacao:
     MAX_TRIES = tentativas or 6
 
     for attempt in range(1, MAX_TRIES + 1):
         try:
             carrinho = criar_carrinho_vazio(db, comercio_id)
             link = criar_link()
+            
+            codigo = next_codigo(db, comercio_id, f"mov_{tipo}")
+            #Se seu erro é na linha superior, ver cq em contadores_locais :)
 
             mov = Movimentacao(
+                codigo=codigo,
                 tipo=tipo,
                 carrinho_id=carrinho.carrinho_id,
                 comercio_id=comercio_id,
