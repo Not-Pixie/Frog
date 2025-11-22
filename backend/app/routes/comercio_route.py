@@ -1204,3 +1204,44 @@ def rota_delete_comercio(comercio_id: int):
     finally:
         db.close()
 
+@bp.route("/<int:comercio_id>/movimentacoes/<int:mov_id>", methods=["DELETE"])
+@token_required
+def rota_delete_movimentacao(comercio_id: int, mov_id: int):
+    usuario = g.get("usuario")
+    usuario_id = usuario.get("usuario_id") if usuario else None
+    if usuario is None or usuario_id is None:
+        return jsonify({"msg": "erro de autenticação"}), 401
+
+    db = SessionLocal()
+    try:
+        # checar se usuário tem acesso ao comércio (mesma função que você já usa)
+        if not usuario_tem_acesso_ao_comercio(db, usuario_id, comercio_id):
+            return jsonify({"msg": "Usuário não tem acesso a este comércio."}), 403
+
+        mov = db.query(Movimentacao).filter(
+            Movimentacao.mov_id == mov_id,
+            Movimentacao.comercio_id == comercio_id
+        ).first()
+
+        if mov is None:
+            return jsonify({"msg": "Movimentação não encontrada."}), 404
+
+        # opcional: checar estado (ex.: só permitir deletar se 'aberta')
+        # if mov.estado != 'aberta':
+        #     return jsonify({"msg":"Só é possível excluir movimentações abertas."}), 400
+
+        db.delete(mov)
+        db.commit()
+        # 204 no REST indica sucesso sem corpo — 200 com msg também OK
+        return jsonify({"msg": "Movimentação excluída com sucesso."}), 200
+
+    except SQLAlchemyError:
+        db.rollback()
+        current_app.logger.exception("Erro ao deletar movimentação")
+        return jsonify({"error": "Erro interno ao deletar movimentação."}), 500
+    except Exception:
+        db.rollback()
+        current_app.logger.exception("Erro inesperado ao deletar movimentação")
+        return jsonify({"error": "Erro interno."}), 500
+    finally:
+        db.close()

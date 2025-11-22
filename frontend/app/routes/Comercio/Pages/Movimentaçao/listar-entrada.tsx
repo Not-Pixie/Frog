@@ -7,6 +7,7 @@ import Button from "src/components/Button";
 import Table from "src/components/Table";
 import { formatMovimentacaoDate } from "src/helpers";
 import type { Movimentacoes } from "src/types/movimentacoes";
+import { handleDelete } from "../../comercio.tsx";
 
 interface APIResponse {
   movs: Movimentacoes[];
@@ -119,13 +120,36 @@ export default function ListarEntradas() {
           ]}
           rowActions={(row: any) => (
             <div style={{ display: "flex", gap: 8 }}>
-              <Link to={""} className="btn-edit">
+              {/* Link para a página da entrada usando o link gerado */}
+              <Link
+                to={`/comercio/${comercioId}/entradas/${encodeURIComponent(String(row.link))}`}
+                className="btn-edit"
+                title="Abrir entrada"
+              >
                 <i className="fi fi-rr-pencil"></i>
               </Link>
+
+              {/* Delete */}
               <button
-              className="btn-delete"
+                className="btn-delete"
+                title="Excluir entrada"
+                onClick={async () => {
+                  if (!comercioId) return;
+                  try {
+                    const res = await handleDelete("movimentacoes", row.mov_id, comercioId);
+                    if (res.cancelled) return;
+                    if (res.success) {
+                      setMovimentacoes((prev) => prev.filter((m) => m.mov_id !== row.mov_id));
+                    } else {
+                      alert("Erro ao excluir: " + (res.error ?? "Resposta inesperada"));
+                    }
+                  } catch (e) {
+                    console.error(e);
+                    alert("Erro ao excluir movimentação. Veja console.");
+                  }
+                }}
               >
-                 <i className="fi fi-rr-trash-xmark btn-delete" ></i>
+                <i className="fi fi-rr-trash-xmark"></i>
               </button>
             </div>
           )}

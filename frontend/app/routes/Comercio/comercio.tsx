@@ -7,16 +7,20 @@ import api from "src/api/axios";
  * - não altera estado global; só retorna sucesso/erro para o caller decidir.
  */
 export async function handleDelete(
-  itemType: "produtos" | "categorias" | "fornecedores",
-  id: number,
-  comercioId: number
+  itemType: "produtos" | "categorias" | "fornecedores" | "movimentacoes",
+  id: number | string,
+  comercioId: number | string
 ): Promise<{ success: boolean; error?: string; cancelled?: boolean }> {
   const nameMap: Record<string, string> = {
     produtos: "produto",
-    categorias: "categoria",
+    categorias: "categoria", 
     fornecedores: "fornecedor",
+    movimentacoes: "movimentação",
   };
+  
   const label = nameMap[itemType] ?? "item";
+  
+  // Pede confirmação para todos os tipos, incluindo movimentações
   const ok = window.confirm(`Excluir ${label}?`);
   if (!ok) return { success: false, cancelled: true };
 
@@ -29,7 +33,8 @@ export async function handleDelete(
   } catch (err: any) {
     if (err?.response) {
       const body = err.response.data ?? {};
-      const serverMsg = body?.error ?? body?.message ?? JSON.stringify(body);
+      // Combina todas as possíveis chaves de erro
+      const serverMsg = body?.error ?? body?.msg ?? body?.message ?? JSON.stringify(body);
       return { success: false, error: String(serverMsg) };
     }
     return { success: false, error: err?.message ?? "Erro desconhecido ao conectar com o servidor" };
