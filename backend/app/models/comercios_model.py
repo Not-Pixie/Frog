@@ -10,7 +10,6 @@ class Comercio(Base):
     proprietario_id = Column(Integer, ForeignKey("usuarios.usuario_id", ondelete="RESTRICT"), nullable=False)
     nome = Column(String(50), nullable=False, unique=True)
 
-    # Nova coluna: FK para configuracao
     configuracao_id = Column(Integer, ForeignKey("configuracoes_comercio.id", ondelete="SET NULL"), nullable=True)
 
     criado_em = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -25,11 +24,11 @@ class Comercio(Base):
     # Relacionamento N:N através da tabela associativa
     membros = relationship("ComercioUsuario", back_populates="comercio", cascade="all, delete-orphan")
 
-    produtos = relationship("Produto", back_populates="comercio")
-    categorias = relationship("Categoria", back_populates="comercio")
-    unidade_medidas = relationship("UnidadeMedida", back_populates="comercio")
-    fornecedores = relationship("Fornecedor", back_populates="comercio")
-    convites = relationship("Convite", back_populates="comercio")
-    movimentacoes = relationship("Movimentacao", back_populates="comercio")
-    carrinhos = relationship("Carrinho", back_populates="comercio")
-    carrinhoitens = relationship("CarrinhoItem", back_populates="comercio")
+    produtos = relationship("Produto", back_populates="comercio", cascade="all, delete-orphan", passive_deletes=True)
+    categorias = relationship("Categoria", back_populates="comercio", cascade="all, delete-orphan", passive_deletes=True)
+    unidade_medidas = relationship("UnidadeMedida", back_populates="comercio", cascade="all, delete-orphan", passive_deletes=True)
+    fornecedores = relationship("Fornecedor", back_populates="comercio", cascade="all, delete-orphan", passive_deletes=True)
+    convites = relationship("Convite", back_populates="comercio", cascade="all, delete-orphan", passive_deletes=True)
+    movimentacoes = relationship("Movimentacao", back_populates="comercio", cascade="all, delete-orphan", passive_deletes=True)
+    carrinhos = relationship("Carrinho", back_populates="comercio", cascade="all, delete-orphan", passive_deletes=True)
+    carrinhoitens = relationship("CarrinhoItem", back_populates="comercio", cascade="all, delete-orphan", passive_deletes=True)

@@ -1050,15 +1050,16 @@ def rota_update_configuracoes_comercio(comercio_id: int):
 
     body = request.get_json() or {}
     
-    # Extract values with fallback chain
+    # Extract unidade with priority order matching frontend
     unidade_raw = (
         body.get("unidade_padrao") 
-        or (body.get("configs") or {}).get("unidade")
         or (body.get("configs") or {}).get("campo1")
+        or (body.get("configs") or {}).get("unidade")
     )
+    
+    # Extract limite with priority order matching frontend
     limite_raw = (
         body.get("limite_padrao")
-        or body.get("limite")
         or (body.get("configs") or {}).get("campo4")
     )
 
@@ -1072,16 +1073,18 @@ def rota_update_configuracoes_comercio(comercio_id: int):
         if not comercio:
             return jsonify({"msg": "Comércio não encontrado."}), 404
 
-        # Resolve unidade ID
+        # Resolve unidade ID from various formats
         unimed_id_to_set = _resolve_unidade_id(db, unidade_raw) if unidade_raw else None
         
-        # Parse limit
+        # Parse limit as integer
         limite_to_set = None
         if limite_raw is not None and str(limite_raw).strip():
             try:
                 limite_to_set = int(float(str(limite_raw).replace(",", ".")))
+                if limite_to_set < 0:
+                    return jsonify({"msg": "Limite não pode ser negativo."}), 400
             except (ValueError, TypeError):
-                return jsonify({"msg": "Formato inválido para limite_padrao"}), 400
+                return jsonify({"msg": "Formato inválido para limite_padrao."}), 400
 
         # Get or create config
         config = db.query(ConfiguracaoComercio).filter(
@@ -1098,7 +1101,7 @@ def rota_update_configuracoes_comercio(comercio_id: int):
             db.flush()
             comercio.configuracao_id = config.id
         else:
-            # Update only changed fields
+            # Update only non-None fields
             if limite_to_set is not None:
                 config.nivel_alerta_minimo = limite_to_set
             if unimed_id_to_set is not None:
@@ -1107,7 +1110,7 @@ def rota_update_configuracoes_comercio(comercio_id: int):
         db.add(comercio)
         db.commit()
 
-        # Build response
+        # Build response matching GET endpoint format
         unidade_res = _build_unidade_response(db, config.unimed_id) if config.unimed_id else None
 
         return jsonify({
@@ -1118,11 +1121,11 @@ def rota_update_configuracoes_comercio(comercio_id: int):
     except SQLAlchemyError:
         db.rollback()
         current_app.logger.exception("Erro ao criar/atualizar configuração")
-        return jsonify({"error": "Erro interno ao salvar configuração"}), 500
-    except Exception:
+        return jsonify({"error": "Erro interno ao salvar configuração."}), 500
+    except Exception as e:
         db.rollback()
         current_app.logger.exception("Erro inesperado ao salvar configuração")
-        return jsonify({"error": "Erro interno"}), 500
+        return jsonify({"error": "Erro interno ao salvar configuração."}), 500
     finally:
         db.close()
 
@@ -1161,3 +1164,43 @@ def _build_unidade_response(db, unimed_id):
         "nome": unidade.nome,
         "sigla": unidade.sigla
     }
+
+@bp.route("/<int:comercio_id>", methods=["DELETE"])
+@token_required
+def rota_delete_comercio(comercio_id: int):
+    usuario = g.get("usuario")
+    usuario_id = usuario.get("usuario_id") if usuario else None
+    if usuario is None or usuario_id is None:
+        return jsonify({"msg": "erro de autenticação"}), 401
+
+    db = SessionLocal()
+    try:
+        comercio = db.query(Comercio).filter(Comercio.comercio_id == comercio_id).first()
+        if not comercio:
+            return jsonify({"msg": "Comércio não encontrado."}), 404
+
+        # Só o proprietário pode deletar (altera se quiser permitir admins)
+        if getattr(comercio, "proprietario_id", None) != usuario_id:
+            return jsonify({"msg": "Somente o proprietário pode excluir o comércio."}), 403
+
+        # opcional: checar se existe dependência que impeça a remoção
+        # (se quiser bloquear exclusão quando há pagamentos/assinaturas ativas)
+        # if existe_assinatura_ativa(comercio_id): return jsonify(...), 400
+
+        # Deleta o comércio — se as FKs estiverem com ON DELETE CASCADE, o DB cuidará
+        db.delete(comercio)
+        db.commit()
+
+        return jsonify({"msg": "Comércio excluído com sucesso."}), 200
+
+    except SQLAlchemyError:
+        db.rollback()
+        current_app.logger.exception("Erro ao deletar comércio")
+        return jsonify({"error": "Erro interno ao deletar comércio."}), 500
+    except Exception:
+        db.rollback()
+        current_app.logger.exception("Erro inesperado ao deletar comércio")
+        return jsonify({"error": "Erro interno."}), 500
+    finally:
+        db.close()
+

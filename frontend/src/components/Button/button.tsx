@@ -4,7 +4,7 @@ import "./button.css"
 type customProps =
 {
     onClick?: ButtonHTMLAttributes<HTMLButtonElement>["onClick"];
-    theme: "green" | "light"; // expanda conforme necessário
+    theme: "green" | "light" | "red" // expanda conforme necessário
 }
 
 type Props = Omit<
@@ -17,6 +17,7 @@ export default function Button({onClick, theme, children, className, ...rest}: P
     const THEME_CLASS_MAP: Record<customProps["theme"], string> = {
         green: 'btn-primary',
         light: 'btn-secondary',
+        red: 'btn-danger'
     }
 
     const themeClass = THEME_CLASS_MAP[theme] ?? "";

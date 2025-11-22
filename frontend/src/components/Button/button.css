@@ -32,3 +32,8 @@
   background: #f0f0f0;
   color: #222;
 }
+
+.btn-danger {
+  background: #e74c3c;
+  color: #fff;
+}

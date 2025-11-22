@@ -37,8 +37,9 @@ def create_app():
         flask_app,
         resources={r"/*": {"origins": ["http://localhost:5173"]}},
         supports_credentials=True,
-        methods=["GET","POST","PUT","DELETE","OPTIONS"],
-        allow_headers=["Content-Type", "Authorization", "X-Requested-With"]
+        methods=["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
+        allow_headers=["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+        expose_headers=["Content-Type", "Authorization"]
     )
     
     import app.database.session_listeners
