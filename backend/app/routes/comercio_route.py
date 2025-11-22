@@ -1268,39 +1268,3 @@ def rota_delete_movimentacao(comercio_id: int, mov_id: int):
         return jsonify({"error": "Erro interno."}), 500
     finally:
         db.close()
-    
-@bp.route("/<int:comercio_id>/movimentacoes/<int:mov_id>/carrinho", methods=["GET"])
-@token_required
-def get_carrinho_de_mov(comercio_id, mov_id):
-    """PENDENTE"""
-    usuario = g.get("usuario")
-    usuario_id = usuario.get("usuario_id") if usuario else None
-    if usuario is None or usuario_id is None:
-        return jsonify({"msg": "erro de autenticação"}), 401
-
-    db = SessionLocal()
-    try:
-        if not usuario_tem_acesso_ao_comercio(db, usuario_id, comercio_id):
-            return jsonify({"msg": "erro de autenticação"}), 401
-        
-        mov = db.query(Movimentacao).filter(Movimentacao.mov_id == mov_id).first()
-        
-        cart = db.query(Carrinho).filter(
-            Carrinho.carrinho_id == mov.carrinho_id
-        ).first()
-        
-        if cart is None:
-            return jsonify({"msg": "carrinho não encontrado(como isso é possível?)"}), 400
-        
-        return jsonify({"carrinho": cart}), 200
-    
-    except SQLAlchemyError:
-        db.rollback()
-        current_app.logger.exception("Erro ao pegar carrinho")
-        return jsonify({"error": "Erro interno ao pegar carrinho."}), 500
-    except Exception:
-        db.rollback()
-        current_app.logger.exception("Erro inesperado ao pegar carrinho")
-        return jsonify({"error": "Erro interno."}), 500
-    finally:
-        db.close()
