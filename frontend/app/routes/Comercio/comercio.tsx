@@ -19,8 +19,6 @@ export async function handleDelete(
   };
   
   const label = nameMap[itemType] ?? "item";
-  
-  // Pede confirmação para todos os tipos, incluindo movimentações
   const ok = window.confirm(`Excluir ${label}?`);
   if (!ok) return { success: false, cancelled: true };
 
@@ -33,7 +31,6 @@ export async function handleDelete(
   } catch (err: any) {
     if (err?.response) {
       const body = err.response.data ?? {};
-      // Combina todas as possíveis chaves de erro
       const serverMsg = body?.error ?? body?.msg ?? body?.message ?? JSON.stringify(body);
       return { success: false, error: String(serverMsg) };
     }

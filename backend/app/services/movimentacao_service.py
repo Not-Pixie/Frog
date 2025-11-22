@@ -38,7 +38,6 @@ def criar_movimentacao_vazia(db: Session, tipo: Literal["entrada", "saida"], com
             return mov
 
         except IntegrityError as e:
-            # rollback para limpar a sessão e tentar gerar outro link
             try:
                 db.rollback()
             except Exception:
@@ -47,5 +46,4 @@ def criar_movimentacao_vazia(db: Session, tipo: Literal["entrada", "saida"], com
             if attempt == MAX_TRIES:
                 raise RuntimeError("Não foi possível gerar um link único após várias tentativas") from e
 
-    # fallback — não deve ocorrer
     raise RuntimeError("Erro inesperado ao criar movimentação")
