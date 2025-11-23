@@ -262,53 +262,59 @@ export default function Configuracao() {
     <div className="conteudo-item">
       <div className="page-header"><h1>Configurações</h1></div>
 
-      <form className="cadastro-form" onSubmit={handleSubmit(onSubmit)} noValidate>
-        <div className="grid-item">
-          <Input
-            label="Unidade de medida padrão"
-            id="config-unimed"
-            type="select"
-            {...register("configs.campo1")}
-            disabled={loadingUnidades || loadingConfig}
-          >
-            {unidades.map((u) => {
-              const value = u.id ? String(u.id) : String(u.sigla ?? u.nome ?? "");
-              const label = (u.nome ? `${u.nome}` : u.sigla ? `${u.sigla}` : `#${value}`) + (u.sigla ? ` (${u.sigla})` : "");
-              return <option key={value} value={value}>{label}</option>;
-            })}
-          </Input>
-          {loadingUnidades && <small>Carregando unidades...</small>}
-        </div>
+      <h2 style={{ marginTop: 30, marginBottom: 8, color: "#35AC97", fontSize: "1.3rem", fontWeight: 600 }}>
+        Parâmetros de estoque
+      </h2>
 
+      <form className="cadastro-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+      <div className="grid-item">
+      <Input
+      label="Unidade de medida padrão"
+      id="config-unimed"
+      type="select"
+      {...register("configs.campo1")}
+      disabled={loadingUnidades || loadingConfig}
+      >
+      {unidades.map((u) => {
+      const value = u.id ? String(u.id) : String(u.sigla ?? u.nome ?? "");
+      const label = (u.nome ? `${u.nome}` : u.sigla ? `${u.sigla}` : `#${value}`) + (u.sigla ? ` (${u.sigla})` : "");
+      return <option key={value} value={value}>{label}</option>;
+      })}
+      </Input>
+      {loadingUnidades && <small>Carregando unidades...</small>}
+      </div>
         <div className="grid-item">
           <Input
-            label="Limite mínimo de estoque padrão"
-            id="config-limite"
-            type="number"
-            placeholder="0"
-            {...register("configs.campo4")}
-            disabled={loadingConfig}
+        label="Limite mínimo de estoque padrão"
+        id="config-limite"
+        type="number"
+        placeholder="0"
+        {...register("configs.campo4")}
+        disabled={loadingConfig}
           />
         </div>
 
-        <div style={{ marginTop: 8 }}>
+        <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
           <Button
-            theme="green"
-            type="submit"
-            disabled={saving || loadingUnidades || loadingConfig || isSubmitting}
-            style={{ marginLeft: 8 }}
+        theme="green"
+        type="submit"
+        disabled={saving || loadingUnidades || loadingConfig || isSubmitting}
           >
-            {saving ? "Salvando..." : "Salvar configurações"}
+        {saving ? "Salvando..." : "Salvar configurações"}
           </Button>
 
+      <h2 style={{ marginTop: 100, marginBottom: 8, color: "#35AC97", fontSize: "1.3rem", fontWeight: 600 }}>
+        Opções do comércio
+      </h2>
+
           <Button
-            theme="red"
-            type="button"
-            onClick={handleDeleteComercio}
-            disabled={deleting}
-            style={{ marginLeft: 12 }}
+        theme="red"
+        type="button"
+        onClick={handleDeleteComercio}
+        disabled={deleting}
+        style={{ marginTop: 8 }} // Add margin to separate the buttons
           >
-            {deleting ? "Excluindo..." : "Excluir comércio"}
+        {deleting ? "Excluindo..." : "Excluir comércio"}
           </Button>
         </div>
       </form>
