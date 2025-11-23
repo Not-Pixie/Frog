@@ -113,6 +113,7 @@ export default function ListarEntradas() {
         <Table
           data={tableData}
           columns={[
+            { key: "codigo", label:"código"},
             { key: "criado_em", label: "Data de Criação" },
             { key: "estado", label: "Status" },
             { key: "total_itens", label: "Total de Itens" },

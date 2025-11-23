@@ -12,6 +12,6 @@ class ContadorLocal(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     __table_args__ = (
-        CheckConstraint("scope IN ('produtos','fornecedores','categorias','unidade_medidas')", name="ck_contadores_scope_allowed"),
+        CheckConstraint("scope IN ('produtos','fornecedores','categorias','unidade_medidas', 'mov_entrada', 'mov_saida')", name="ck_contadores_scope_allowed"),
     )
 
