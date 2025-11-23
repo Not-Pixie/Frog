@@ -929,14 +929,26 @@ def get_movimentacoes_abertas_de_comercio(comercio_id):
         except Exception:
             current_app.logger.exception("Erro ao fechar sessão do DB em get_movimentacoes_de_comercio")
             
-@bp.route('/<int:comercio_id>/movimentacoes/entrada', methods=['POST'])
+@bp.route('/<int:comercio_id>/movimentacoes', methods=['POST'])
 @token_required
-def criar_entrada_no_comercio(comercio_id: int):
-    """PENDENTE"""
+def criar_movimentacao_no_comercio(comercio_id: int):
+    """
+    Cria uma movimentação vazia no comércio.
+    POST /comercios/<comercio_id>/movimentacoes
+    Body (opcional): { "tipo": "entrada" | "saida", "link_param": "<string opcional>" }
+    Se 'tipo' não for fornecido, assume 'entrada' (compatibilidade).
+    """
     usuario: dict = g.get("usuario")
     usuario_id = usuario.get("usuario_id") if usuario else None
     if usuario is None or usuario_id is None:
         return jsonify({"msg": "erro de autenticação"}), 401
+
+    data = request.get_json() or {}
+    tipo = (data.get("tipo") or "entrada").strip().lower()
+    link_param = data.get("link_param", None)
+
+    if tipo not in ("entrada", "saida"):
+        return jsonify({"error": "Tipo inválido. Use 'entrada' ou 'saida'."}), 400
 
     db = SessionLocal()
     try:
@@ -944,9 +956,14 @@ def criar_entrada_no_comercio(comercio_id: int):
             return jsonify({"msg": "Usuário não tem acesso a este comércio."}), 403
 
         try:
-            mov: Movimentacao = criar_movimentacao_vazia(db=db, comercio_id=comercio_id, tipo="entrada")
+            mov: Movimentacao = criar_movimentacao_vazia(
+                db=db,
+                comercio_id=comercio_id,
+                tipo=tipo,
+                link_param=link_param
+            )
             db.commit()
-            # opcional: db.refresh(mov) se quiser garantir campos atualizados
+            db.refresh(mov)
             return jsonify(model_to_dict(mov)), 201
 
         except ValueError as ve:
@@ -958,7 +975,7 @@ def criar_entrada_no_comercio(comercio_id: int):
 
     except IntegrityError:
         db.rollback()
-        current_app.logger.exception("Integrity error ao criar entrada")
+        current_app.logger.exception("Integrity error ao criar movimentação")
         return jsonify({"error": "Não foi possível criar movimentação por restrição de integridade"}), 400
     except SQLAlchemyError:
         db.rollback()
@@ -968,7 +985,7 @@ def criar_entrada_no_comercio(comercio_id: int):
         try:
             db.close()
         except Exception:
-            current_app.logger.exception("Erro ao fechar sessão do DB em criar_entrada_no_comercio")
+            current_app.logger.exception("Erro ao fechar sessão do DB em criar_movimentacao_no_comercio")
 
 @bp.route('/<int:comercio_id>/movimentacoes/link/<string:link>', methods=['GET'])
 @token_required

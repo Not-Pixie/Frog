@@ -65,6 +65,7 @@ export default function Historico() {
         <Table
           data={tableData}
           columns={[
+            { key: "codigo", label:"Código"},
             { key: "criado_em", label: "Data de Criação" },
             { key: "tipo", label: "Tipo" },
             { key: "estado", label: "Status" },

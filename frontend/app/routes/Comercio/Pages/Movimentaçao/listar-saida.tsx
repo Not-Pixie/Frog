@@ -1,3 +1,4 @@
+// src/pages/listar-saidas.tsx
 import "../geral.css";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -13,7 +14,7 @@ interface APIResponse {
   movs: Movimentacoes[];
 }
 
-export default function ListarEntradas() {
+export default function ListarSaidas() {
   const { comercioId } = useParams();
   const [movimentacoes, setMovimentacoes] = useState<Movimentacoes[]>([]);
   const [loading, setLoading] = useState(false);
@@ -27,11 +28,14 @@ export default function ListarEntradas() {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.get<APIResponse>(
-        `/comercios/${comercioId}/movimentacoes/abertas`
-      );
+      // usa rota existente que retorna movimentações abertas
+      const res = await api.get<APIResponse>(`/comercios/${comercioId}/movimentacoes/abertas`);
       if (!mountedRef.current) return;
-      setMovimentacoes(res.data?.movs ?? []);
+      const all = res.data?.movs ?? [];
+
+      // garante: mostra APENAS saídas
+      const onlySaidas = Array.isArray(all) ? all.filter((m) => m.tipo === "saida") : [];
+      setMovimentacoes(onlySaidas);
     } catch (err: any) {
       if (!mountedRef.current) return;
       setError(
@@ -45,14 +49,17 @@ export default function ListarEntradas() {
   }, [comercioId]);
 
   const tableData = useMemo(() => {
-    return movimentacoes.slice().sort((a, b) => {
-      const dateA = a.criado_em ? new Date(a.criado_em).getTime() : 0;
-      const dateB = b.criado_em ? new Date(b.criado_em).getTime() : 0;
-      return dateB - dateA;
-    }).map(m => ({
-      ...m, 
-      criado_em: formatMovimentacaoDate(m.criado_em)
-    }));
+    return movimentacoes
+      .slice()
+      .sort((a, b) => {
+        const dateA = a.criado_em ? new Date(a.criado_em).getTime() : 0;
+        const dateB = b.criado_em ? new Date(b.criado_em).getTime() : 0;
+        return dateB - dateA;
+      })
+      .map((m) => ({
+        ...m,
+        criado_em: formatMovimentacaoDate(m.criado_em),
+      }));
   }, [movimentacoes]);
 
   useEffect(() => {
@@ -68,20 +75,19 @@ export default function ListarEntradas() {
     setCreating(true);
     setError(null);
     try {
-      const res = await api.post<any>(`/comercios/${comercioId}/movimentacoes`, { tipo: "entrada" });
+      // usa a rota que você já tem para criar saída
+      const res = await api.post<any>(`/comercios/${comercioId}/movimentacoes`, { tipo: "saida" });
       const newMov = res.data;
       const newLink = newMov?.link;
       if (!newLink)
-        throw new Error(
-          "Resposta do servidor não retornou link da movimentação"
-        );
+        throw new Error("Resposta do servidor não retornou link da movimentação");
 
-      // atualizar lista local (opcional)
+      // atualiza lista local opcionalmente
       setMovimentacoes((prev) => [newMov, ...prev]);
 
-      // navegar para a rota baseada em link (encode para segurança)
+      // navega para a tela de edição/visualização da saída
       navigate(
-        `/comercio/${comercioId}/entradas/${encodeURIComponent(String(newLink))}`
+        `/comercio/${comercioId}/saidas/${encodeURIComponent(String(newLink))}`
       );
     } catch (err: any) {
       const serverError =
@@ -99,11 +105,11 @@ export default function ListarEntradas() {
   return (
     <>
       <div className="conteudo-item page-header">
-        <h1>Entradas</h1>
+        <h1>Saídas</h1>
       </div>
       <div className="conteudo-item criar-mov">
-        <Button theme="green" onClick={handleCreate} disabled={creating}>
-          {creating ? "Criando..." : "Criar nova entrada"}
+        <Button theme="red" onClick={handleCreate} disabled={creating}>
+          {creating ? "Criando..." : "Criar nova saída"}
         </Button>
         {error && <div className="error">{error}</div>}
       </div>
@@ -119,11 +125,11 @@ export default function ListarEntradas() {
           ]}
           rowActions={(row: any) => (
             <div style={{ display: "flex", gap: 8 }}>
-              {/* Link para a página da entrada usando o link gerado */}
+              {/* Link para a página da saída usando o link gerado */}
               <Link
-                to={`/comercio/${comercioId}/entradas/${encodeURIComponent(String(row.link))}`}
+                to={`/comercio/${comercioId}/saidas/${encodeURIComponent(String(row.link))}`}
                 className="btn-edit"
-                title="Abrir entrada"
+                title="Abrir saída"
               >
                 <i className="fi fi-rr-eye"></i>
               </Link>
@@ -131,7 +137,7 @@ export default function ListarEntradas() {
               {/* Delete */}
               <button
                 className="btn-delete"
-                title="Excluir entrada"
+                title="Excluir saída"
                 onClick={async () => {
                   if (!comercioId) return;
                   try {

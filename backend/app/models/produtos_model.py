@@ -20,10 +20,10 @@ class Produto(Base):
     criado_em = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     atualizado_em = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
-    unidade_medida = relationship("UnidadeMedida", back_populates="produtos", lazy="joined")
-    categoria = relationship("Categoria", back_populates="produtos", lazy="joined")
-    fornecedor = relationship("Fornecedor", back_populates="produtos", lazy="joined")
-    comercio = relationship("Comercio", back_populates="produtos", lazy="joined")
+    unidade_medida = relationship("UnidadeMedida", back_populates="produtos", lazy="select")
+    categoria = relationship("Categoria", back_populates="produtos", lazy="select")
+    fornecedor = relationship("Fornecedor", back_populates="produtos", lazy="select")
+    comercio = relationship("Comercio", back_populates="produtos", lazy="select")
 
     __table_args__ = (
         UniqueConstraint("comercio_id", "codigo", name="produtos_comercio_key"),

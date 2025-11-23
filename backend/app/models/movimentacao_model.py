@@ -29,5 +29,5 @@ class Movimentacao(Base):
     )
 
     # relacionamentos (opcionais)
-    carrinho = relationship("Carrinho", lazy="joined")
+    carrinho = relationship("Carrinho", lazy="select")
     comercio = relationship("Comercio", back_populates="movimentacoes")
