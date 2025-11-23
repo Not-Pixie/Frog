@@ -1,9 +1,9 @@
-// src/pages/.../Fornecedores.tsx  (ajuste o caminho conforme seu projeto)
+// src/pages/.../Fornecedores.tsx
 import "../geral.css";
 import Button from "../../../../../src/components/Button/button.tsx";
 import { Link, useParams } from "react-router";
 import Table from "src/components/Table/Table.tsx";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { COMERCIOS } from "src/api/enpoints.ts";
 import api from "src/api/axios.ts";
 import axios from "axios";
@@ -17,6 +17,17 @@ function Fornecedores() {
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const mountedRef = useRef(false);
+
+  const tableData = useMemo(() => {
+    return fornecedores.map(fornecedor => ({
+      ...fornecedor,
+      // Acessa os campos aninhados do endereço
+      cep: fornecedor.endereco?.cep || '-',
+      numero: fornecedor.endereco?.numero || '-',
+      // Mantém o endereco completo se precisar depois
+      endereco_completo: fornecedor.endereco
+    }));
+  }, [fornecedores]);
 
   const fetchFornecedores = useCallback(async () => {
     if (!comercioId) return;
@@ -74,33 +85,38 @@ function Fornecedores() {
 
       <div className="conteudo-item">
         {error && <div className="text-red-600">{error}</div>}
-        <Table
-          data={fornecedores}
-          keyField="fornecedor_id"
-          columns={[
-            { key: "codigo", label: "Código" },
-            { key: "nome", label: "Nome" },
-            { key: "cnpj", label: "CNPJ" },
-            { key: "endereco.cep", label: "CEP" },
-            { key: "endereco.numero", label: "Número" },
-            { key: "telefone", label: "Telefone" },
-          ]}
-          rowActions={(row: any) => (
-            <div style={{ display: "flex", gap: 8 }}>
-              <Link to={`/comercio/${comercioId}/fornecedores/editar/${row.fornecedor_id ?? row.id}`}>
-                <i className="fi fi-rr-pencil" style={{ fontSize: 20, color: "#35AC97" }}></i>
-              </Link>
-              <button
-                onClick={() => onDelete(Number(row.fornecedor_id ?? row.id))}
-                disabled={deletingId !== null && deletingId === Number(row.fornecedor_id ?? row.id)}
-              >
-                 <i className="fi fi-rr-trash-xmark" style={{ fontSize: 20, color: "#F45959" }}></i>
-                {deletingId !== null && deletingId === Number(row.fornecedor_id ?? row.id) ? "Excluindo..." : ""}
-              </button>
-            </div>
-          )}
-          actionHeader="Opções"
-        />
+        
+        {isLoad ? (
+          <div>Carregando fornecedores...</div>
+        ) : (
+          <Table
+            data={tableData}  
+            keyField="fornecedor_id"
+            columns={[
+              { key: "codigo", label: "Código" },
+              { key: "nome", label: "Nome" },
+              { key: "cnpj", label: "CNPJ" },
+              { key: "cep", label: "CEP" },           
+              { key: "numero", label: "Número" },     
+              { key: "telefone", label: "Telefone" },
+            ]}
+            rowActions={(row: any) => (
+              <div style={{ display: "flex", gap: 8 }}>
+                <Link to={`/comercio/${comercioId}/fornecedores/editar/${row.fornecedor_id ?? row.id}`}>
+                  <i className="fi fi-rr-pencil" style={{ fontSize: 20, color: "#35AC97" }}></i>
+                </Link>
+                <button
+                  onClick={() => onDelete(Number(row.fornecedor_id ?? row.id))}
+                  disabled={deletingId !== null && deletingId === Number(row.fornecedor_id ?? row.id)}
+                >
+                  <i className="fi fi-rr-trash-xmark" style={{ fontSize: 20, color: "#F45959" }}></i>
+                  {deletingId !== null && deletingId === Number(row.fornecedor_id ?? row.id) ? "Excluindo..." : ""}
+                </button>
+              </div>
+            )}
+            actionHeader="Opções"
+          />
+        )}
       </div>
 
       <div className="conteudo-item botoes">
