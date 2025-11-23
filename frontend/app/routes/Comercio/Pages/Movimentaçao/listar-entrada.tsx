@@ -1,3 +1,4 @@
+// src/pages/listar-entradas.tsx
 import "../geral.css";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -31,7 +32,12 @@ export default function ListarEntradas() {
         `/comercios/${comercioId}/movimentacoes/abertas`
       );
       if (!mountedRef.current) return;
-      setMovimentacoes(res.data?.movs ?? []);
+      
+      // 🔥 FILTRO: mostra APENAS entradas
+      const all = res.data?.movs ?? [];
+      const onlyEntradas = Array.isArray(all) ? all.filter((m) => m.tipo === "entrada") : [];
+      setMovimentacoes(onlyEntradas);
+      
     } catch (err: any) {
       if (!mountedRef.current) return;
       setError(
