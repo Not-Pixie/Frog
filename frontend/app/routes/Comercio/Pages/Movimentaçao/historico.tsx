@@ -6,7 +6,7 @@ import { useParams, Link } from "react-router";
 import api from "src/api/axios";
 import Button from "src/components/Button";
 import Table from "src/components/Table";
-import { formatMovimentacaoDate } from "src/helpers";
+import { formatCurrencyBRLRoundedDown, formatMovimentacaoDate } from "src/helpers";
 import type { Movimentacoes } from "src/types/movimentacoes";
 import { handleDelete } from "../../comercio";
 
@@ -51,7 +51,8 @@ export default function Historico() {
       return dateB - dateA;
     }).map(m => ({
       ...m,
-      criado_em: formatMovimentacaoDate(m.criado_em)
+      criado_em: formatMovimentacaoDate(m.criado_em),
+      valor_total: formatCurrencyBRLRoundedDown(m.valor_total)
     }));
   }, [movimentacoes]);
 
