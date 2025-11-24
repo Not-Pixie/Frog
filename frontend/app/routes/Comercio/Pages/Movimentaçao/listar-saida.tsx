@@ -6,7 +6,7 @@ import { useParams, useNavigate, Link } from "react-router";
 import api from "src/api/axios";
 import Button from "src/components/Button";
 import Table from "src/components/Table";
-import { formatMovimentacaoDate } from "src/helpers";
+import { formatCurrencyBRLRoundedDown, formatMovimentacaoDate } from "src/helpers";
 import type { Movimentacoes } from "src/types/movimentacoes";
 import { handleDelete } from "../../comercio.tsx";
 
@@ -22,6 +22,8 @@ export default function ListarSaidas() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const mountedRef = useRef(false);
+
+
 
   const fetchMovs = useCallback(async () => {
     if (!comercioId) return setMovimentacoes([]);
@@ -59,6 +61,7 @@ export default function ListarSaidas() {
       .map((m) => ({
         ...m,
         criado_em: formatMovimentacaoDate(m.criado_em),
+        valor_total: formatCurrencyBRLRoundedDown(m.valor_total),
       }));
   }, [movimentacoes]);
 

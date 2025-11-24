@@ -5,7 +5,7 @@ import { useParams, useNavigate, Link } from "react-router";
 import api from "src/api/axios";
 import Button from "src/components/Button";
 import Table from "src/components/Table";
-import { formatMovimentacaoDate } from "src/helpers";
+import { formatCurrencyBRLRoundedDown, formatMovimentacaoDate } from "src/helpers";
 import type { Movimentacoes } from "src/types/movimentacoes";
 import { handleDelete } from "../../comercio.tsx";
 
@@ -21,20 +21,6 @@ export default function ListarEntradas() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const mountedRef = useRef(false);
-
-  const formatCurrencyBRLRoundedUp = useCallback(
-    (value: number | string): string => {
-      let rounded = null;
-      const n = Number(value ?? 0);
-      if (!isFinite(n)) rounded = 0;
-      else rounded = Math.floor((n + Number.EPSILON) * 100) / 100;
-      return rounded.toLocaleString("pt-BR", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      });
-    },
-    []
-  );
 
   const fetchMovs = useCallback(async () => {
     if (!comercioId) return setMovimentacoes([]);
@@ -69,7 +55,7 @@ export default function ListarEntradas() {
       .map((m) => ({
         ...m,
         criado_em: formatMovimentacaoDate(m.criado_em),
-        valor_total: formatCurrencyBRLRoundedUp(m.valor_total),
+        valor_total: formatCurrencyBRLRoundedDown(m.valor_total),
       }));
   }, [movimentacoes]);
 
