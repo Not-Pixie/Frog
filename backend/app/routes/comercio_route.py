@@ -1,5 +1,6 @@
 from decimal import Decimal
 from flask import Blueprint, current_app, request, jsonify, g
+from sqlalchemy import and_, func, or_
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.middleware.auth import token_required
@@ -730,7 +731,7 @@ def rota_update_produto(comercio_id, produto_id):
             db.close()
         except Exception:
             current_app.logger.exception("Erro ao fechar sessão do DB em rota_update_produto")
-            
+
 @bp.route('/<int:comercio_id>/fornecedores/<int:fornecedor_id>', methods=['GET'])
 @token_required
 def rota_get_fornecedor(comercio_id, fornecedor_id):
@@ -1311,3 +1312,91 @@ def rota_delete_movimentacao(comercio_id: int, mov_id: int):
         return jsonify({"error": "Erro interno."}), 500
     finally:
         db.close()
+
+@bp.route("/<int:comercio_id>/dashboard/cards", methods=["GET"])
+@token_required
+def rota_dashboard_cards(comercio_id: int):
+    usuario = g.get("usuario")
+    usuario_id = usuario.get("usuario_id") if usuario else None
+    if usuario is None or usuario_id is None:
+        return jsonify({"msg": "erro de autenticação"}), 401
+
+    db = SessionLocal()
+    try:
+        # autorização
+        if not usuario_tem_acesso_ao_comercio(db, usuario_id, comercio_id):
+            return jsonify({"msg": "Usuário não tem acesso a este comércio."}), 403
+
+        # Recupera limite global do comércio (se existir)
+        limite_num = None
+        comercio = db.query(Comercio).filter(Comercio.comercio_id == comercio_id).first()
+        if comercio and getattr(comercio, "configuracao_id", None):
+            config = db.query(ConfiguracaoComercio).filter(ConfiguracaoComercio.id == comercio.configuracao_id).first()
+            if config is not None:
+                # nome do campo que você já usava: nivel_alerta_minimo
+                try:
+                    lv = getattr(config, "nivel_alerta_minimo", None)
+                    limite_num = int(lv) if lv is not None else None
+                except Exception:
+                    limite_num = None
+
+        # conto produtos com estoque exatamente zero
+        zero_count = db.query(func.count(Produto.produto_id)).filter(
+            Produto.comercio_id == comercio_id,
+            Produto.quantidade_estoque == 0
+        ).scalar() or 0
+
+        # conto produtos com estoque baixo:
+        # regra: produto.Quantidade > 0 E (
+        #   (produto.limite_estoque IS NOT NULL and produto.limite_estoque > 0 and quantidade < produto.limite_estoque)
+        #   OR
+        #   (produto.limite_estoque IS NULL and limite_num > 0 and quantidade < limite_num)
+        # )
+        low_count = 0
+        # só avalia se há algum critério (produto.limite_estoque ou limite_num > 0)
+        if True:
+            cond_prod_limite = and_(
+                Produto.limite_estoque != None,
+                Produto.limite_estoque > 0,
+                Produto.quantidade_estoque > 0,
+                Produto.quantidade_estoque < Produto.limite_estoque
+            )
+            cond_global_limite = None
+            if limite_num is not None and limite_num > 0:
+                cond_global_limite = and_(
+                    Produto.limite_estoque == None,
+                    Produto.quantidade_estoque > 0,
+                    Produto.quantidade_estoque < limite_num
+                )
+
+            if cond_global_limite is not None:
+                low_count = db.query(func.count(Produto.produto_id)).filter(
+                    Produto.comercio_id == comercio_id,
+                    or_(cond_prod_limite, cond_global_limite)
+                ).scalar() or 0
+            else:
+                # não há limite global, conta apenas os produtos que têm limite_estoque definido
+                low_count = db.query(func.count(Produto.produto_id)).filter(
+                    Produto.comercio_id == comercio_id,
+                    cond_prod_limite
+                ).scalar() or 0
+
+        return jsonify({
+            "zero_count": int(zero_count),
+            "low_count": int(low_count),
+            "limite_global": int(limite_num) if limite_num is not None else None
+        }), 200
+
+    except SQLAlchemyError:
+        db.rollback()
+        current_app.logger.exception("Erro ao gerar cards do dashboard")
+        return jsonify({"error": "Erro interno ao gerar dados do dashboard"}), 500
+    except Exception:
+        db.rollback()
+        current_app.logger.exception("Erro inesperado ao gerar dados do dashboard")
+        return jsonify({"error": "Erro interno"}), 500
+    finally:
+        try:
+            db.close()
+        except Exception:
+            current_app.logger.exception("Erro ao fechar sessão do DB em rota_dashboard_cards")
