@@ -11,6 +11,7 @@ class Produto(Base):
     preco = Column(Numeric(10, 2), nullable=False)
     quantidade_estoque = Column(Integer, nullable=False, default=0)
     tags = Column(String(100), nullable=True)
+    limite_estoque = Column(Integer, nullable=True)
 
     unimed_id = Column(Integer, ForeignKey("unidade_medidas.unimed_id", ondelete="RESTRICT", onupdate="CASCADE"), nullable=False)
     categoria_id = Column(Integer, ForeignKey("categorias.categoria_id", ondelete="SET NULL", onupdate="CASCADE"), nullable=True)
