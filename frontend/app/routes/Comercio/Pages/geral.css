@@ -45,8 +45,9 @@
 
 .subtitulo {
   font-weight: 600;
-  margin: 18px 0;
-  color: var(--primaryColor); 
+  margin-bottom: 6px;
+  color: var(--primaryColor);
+  text-align: left;
 }
 
 .cadastro-form {

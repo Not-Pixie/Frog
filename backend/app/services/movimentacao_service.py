@@ -14,6 +14,7 @@ from app.models.produtos_model import Produto
 from app.utils.link_utils import criar_link
 from app.utils.contador_utils import next_codigo
 from app.utils.model_utils import model_to_dict
+from app.models.unimed_model import UnidadeMedida
 
 
 def criar_carrinho_vazio(db: Session, comercio_id: int) -> Carrinho:
@@ -267,9 +268,11 @@ def _format_cart_with_items(db: Session, cart: Carrinho):
     total_carrinho = Decimal("0.00")
 
     for item in itens_objs:
-        produto = item.produto
+        produto: Produto = item.produto
         if not produto:
             continue
+
+        unidade: UnidadeMedida = db.query(UnidadeMedida).get(produto.unimed_id)
 
         preco = Decimal(produto.preco) if produto.preco is not None else Decimal("0.00")
         quantidade = Decimal(item.quantidade)
@@ -285,6 +288,7 @@ def _format_cart_with_items(db: Session, cart: Carrinho):
             "item_id": item.item_id,
             "carrinho_id": item.carrinho_id,
             "produto_id": produto.produto_id,
+            "unidade": unidade.nome,
             "nome_produto": produto.nome,
             "preco_unitario": str(preco.quantize(Decimal("0.01"))),
             "quantidade": int(item.quantidade),
