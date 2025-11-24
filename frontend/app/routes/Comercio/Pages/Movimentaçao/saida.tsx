@@ -303,11 +303,11 @@ export default function Saidas() {
 
       <div className="form-actions" style={{ marginTop: 16, display: "flex", gap: 8 }}>
         <Button theme="green" onClick={onSave} disabled={loading || !cart}>
-          {loading ? "Salvando..." : "Salvar saída"}
+          {loading ? "Efetuando..." : "Efetuar saída"}
         </Button>
 
         <Button theme="light" onClick={() => navigate(`/comercio/${comercioId}/saidas`)} disabled={loading}>
-          Fechar saída
+          Salvar saída
         </Button>
       </div>
     </div>
