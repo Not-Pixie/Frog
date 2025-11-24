@@ -22,6 +22,20 @@ export default function ListarEntradas() {
   const [error, setError] = useState<string | null>(null);
   const mountedRef = useRef(false);
 
+  const formatCurrencyBRLRoundedUp = useCallback(
+    (value: number | string): string => {
+      let rounded = null;
+      const n = Number(value ?? 0);
+      if (!isFinite(n)) rounded = 0;
+      else rounded = Math.ceil((n + Number.EPSILON) * 100) / 100;
+      return rounded.toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+    },
+    []
+  );
+
   const fetchMovs = useCallback(async () => {
     if (!comercioId) return setMovimentacoes([]);
     setLoading(true);
@@ -45,14 +59,18 @@ export default function ListarEntradas() {
   }, [comercioId]);
 
   const tableData = useMemo(() => {
-    return movimentacoes.slice().sort((a, b) => {
-      const dateA = a.criado_em ? new Date(a.criado_em).getTime() : 0;
-      const dateB = b.criado_em ? new Date(b.criado_em).getTime() : 0;
-      return dateB - dateA;
-    }).map(m => ({
-      ...m, 
-      criado_em: formatMovimentacaoDate(m.criado_em)
-    }));
+    return movimentacoes
+      .slice()
+      .sort((a, b) => {
+        const dateA = a.criado_em ? new Date(a.criado_em).getTime() : 0;
+        const dateB = b.criado_em ? new Date(b.criado_em).getTime() : 0;
+        return dateB - dateA;
+      })
+      .map((m) => ({
+        ...m,
+        criado_em: formatMovimentacaoDate(m.criado_em),
+        valor_total: formatCurrencyBRLRoundedUp(m.valor_total),
+      }));
   }, [movimentacoes]);
 
   useEffect(() => {
@@ -68,7 +86,10 @@ export default function ListarEntradas() {
     setCreating(true);
     setError(null);
     try {
-      const res = await api.post<any>(`/comercios/${comercioId}/movimentacoes`, { tipo: "entrada" });
+      const res = await api.post<any>(
+        `/comercios/${comercioId}/movimentacoes`,
+        { tipo: "entrada" }
+      );
       const newMov = res.data;
       const newLink = newMov?.link;
       if (!newLink)
@@ -111,11 +132,11 @@ export default function ListarEntradas() {
         <Table
           data={tableData}
           columns={[
-            { key: "codigo", label:"Código"},
+            { key: "codigo", label: "Código" },
             { key: "criado_em", label: "Data de Criação" },
             { key: "estado", label: "Status" },
             { key: "total_itens", label: "Total de Itens" },
-            { key: "valor_total", label: "Valor Total (R$)" }
+            { key: "valor_total", label: "Valor Total (R$)" },
           ]}
           rowActions={(row: any) => (
             <div style={{ display: "flex", gap: 8 }}>
@@ -135,12 +156,21 @@ export default function ListarEntradas() {
                 onClick={async () => {
                   if (!comercioId) return;
                   try {
-                    const res = await handleDelete("movimentacoes", row.mov_id, comercioId);
+                    const res = await handleDelete(
+                      "movimentacoes",
+                      row.mov_id,
+                      comercioId
+                    );
                     if (res.cancelled) return;
                     if (res.success) {
-                      setMovimentacoes((prev) => prev.filter((m) => m.mov_id !== row.mov_id));
+                      setMovimentacoes((prev) =>
+                        prev.filter((m) => m.mov_id !== row.mov_id)
+                      );
                     } else {
-                      alert("Erro ao excluir: " + (res.error ?? "Resposta inesperada"));
+                      alert(
+                        "Erro ao excluir: " +
+                          (res.error ?? "Resposta inesperada")
+                      );
                     }
                   } catch (e) {
                     console.error(e);
