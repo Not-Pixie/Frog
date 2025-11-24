@@ -2,7 +2,7 @@ from decimal import Decimal
 from typing import Literal, Optional
 from datetime import datetime, timezone
 
-from sqlalchemy import func
+from sqlalchemy import case, func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, load_only, noload
 
@@ -34,7 +34,6 @@ def criar_movimentacao_vazia(db: Session,
             carrinho = criar_carrinho_vazio(db, comercio_id)
             link = link_param or criar_link()
             
-            # 🔥 SOLUÇÃO: Busca o último código manualmente
             ultimo_codigo = db.query(func.max(Movimentacao.codigo)).filter(
                 Movimentacao.comercio_id == comercio_id
             ).scalar() or 0
@@ -47,6 +46,7 @@ def criar_movimentacao_vazia(db: Session,
                 carrinho_id=carrinho.carrinho_id,
                 comercio_id=comercio_id,
                 valor_total=0,
+                total_itens=0,
                 forma_pagamento="",
                 link=link,
                 estado="aberta"
@@ -76,12 +76,10 @@ def adicionar_produto_em_carrinho(db: Session,
     if desconto_percentual is not None and not (Decimal('0.00') <= desconto_percentual < Decimal('100.00')):
         raise ValueError("Desconto deve ser entre 0 e 99.9999%.")
 
-    # valida carrinho
     carrinho = db.query(Carrinho).filter_by(carrinho_id=carrinho_id).first()
     if not carrinho or int(carrinho.comercio_id) != int(comercio_id):
         raise ValueError("Carrinho inválido.")
 
-    # busca produto com load_only (evita joins desnecessários)
     produto = (
         db.query(Produto)
           .options(load_only(Produto.produto_id, Produto.preco, Produto.quantidade_estoque, Produto.comercio_id))
@@ -102,9 +100,8 @@ def adicionar_produto_em_carrinho(db: Session,
         item_existente.quantidade += quantidade
         if desconto_percentual is not None:
             item_existente.desconto_percentual = desconto_percentual
-        if hasattr(item_existente, "preco_unitario"):
-            item_existente.preco_unitario = preco_unitario
-            item_existente.subtotal = (preco_unitario * item_existente.quantidade) * (Decimal(1) - (item_existente.desconto_percentual or Decimal(0)) / 100)
+        item_existente.preco_unitario = preco_unitario
+        item_existente.subtotal = (preco_unitario * item_existente.quantidade) * (Decimal(1) - (item_existente.desconto_percentual or Decimal(0)) / 100)
         item = item_existente
     else:
         item = CarrinhoItem(
@@ -127,13 +124,10 @@ def get_itens_carrinho(db: Session, carrinho_id: int) -> list[CarrinhoItem]:
     return db.query(CarrinhoItem).filter(CarrinhoItem.carrinho_id == carrinho_id).all()
 
 
-def finalizar_movimentacao(db: Session, mov_id: int, comercio_id: int, tipo: str) -> Movimentacao:
+def finalizar_movimentacao(db: Session, mov_id: int, comercio_id: int, tipo: Literal["entrada", "saida"]) -> Movimentacao:
     """
-    Finaliza a movimentação SEM gerenciar transação.
-    Apenas a lógica de negócio - transação é gerenciada pela route.
+    Finaliza a movimentação SEM gerenciar transação
     """
-    if tipo not in ("entrada", "saida"):
-        raise ValueError("Tipo inválido")
 
     # Busca movimentação com lock
     mov = (
@@ -156,7 +150,6 @@ def finalizar_movimentacao(db: Session, mov_id: int, comercio_id: int, tipo: str
 
     produto_ids = [item.produto_id for item in itens]
 
-    # Busca produtos com lock
     produtos = (
         db.query(Produto)
           .filter(Produto.produto_id.in_(produto_ids), Produto.comercio_id == comercio_id)
@@ -166,6 +159,7 @@ def finalizar_movimentacao(db: Session, mov_id: int, comercio_id: int, tipo: str
     produtos_map = {p.produto_id: p for p in produtos}
 
     total = Decimal("0.00")
+    quantidade_total = 0
 
     for item in itens:
         prod = produtos_map.get(item.produto_id)
@@ -173,27 +167,65 @@ def finalizar_movimentacao(db: Session, mov_id: int, comercio_id: int, tipo: str
             raise ValueError(f"Produto {item.produto_id} não encontrado.")
 
         quantidade = item.quantidade
+        quantidade_total += quantidade
 
         if tipo == "saida":
             if prod.quantidade_estoque < quantidade:
                 raise ValueError(f"Estoque insuficiente para {prod.nome}")
             prod.quantidade_estoque -= quantidade
         else:
+            #entrada
             prod.quantidade_estoque += quantidade
 
-        # Calcula total
         if item.subtotal is not None:
             total += item.subtotal
         else:
             total += (item.preco_unitario or prod.preco) * quantidade
 
     mov.valor_total = total
+    mov.total_itens = quantidade_total
     mov.estado = "fechada"
     mov.fechado_em = datetime.now(timezone.utc)
 
     return mov
 
-def _format_cart_with_items(db, cart: Carrinho):
+def deletar_item_de_carrinho(db: Session, item_id: int) -> bool:
+    """
+    Remove item e atualiza totais.
+    Retorna True se sucesso, lança exceção se falhar.
+    """
+    item: CarrinhoItem = db.query(CarrinhoItem).get(item_id)
+    if not item:
+        return False
+
+    mov: Movimentacao = db.query(Movimentacao).get(item.carrinho_id)
+    if not mov:
+        return False
+
+    novo_total_itens = Movimentacao.total_itens - item.quantidade
+    novo_valor_total = Movimentacao.valor_total - (item.quantidade * item.preco_unitario)
+
+    # Lógica sql demoníaca
+    mov.total_itens = case(
+        (novo_total_itens < 0, 0),  
+        else_=novo_total_itens      
+    )
+
+    mov.valor_total = case(
+        (novo_valor_total < 0, 0),
+        else_=novo_valor_total
+    )
+
+    db.delete(item)
+    db.commit() 
+    return True
+
+    
+    
+    
+    
+
+def _format_cart_with_items(db: Session, cart: Carrinho):
     itens_objs = get_itens_carrinho(db=db, carrinho_id=cart.carrinho_id)
     itens_formatados = []
     total_carrinho = Decimal("0.00")
