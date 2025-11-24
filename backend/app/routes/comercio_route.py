@@ -571,13 +571,19 @@ def create_produto_route(comercio_id):
         return jsonify({"error": "JSON body obrigatório"}), 400
 
     nome = data.get("nome")
-    preco: Decimal = Decimal(data.get("preco"))
+    preco_raw = data.get("preco")
+    try:
+        preco: Decimal = Decimal(preco_raw)
+    except Exception:
+        return jsonify({"error": "Campo 'preco' inválido"}), 400
+
     quantidade_estoque = data.get("quantidade_estoque", 0)
-    categoria = data.get("categoria_id")       
-    fornecedor = data.get("fornecedor_id")     
+    categoria = data.get("categoria_id")
+    fornecedor = data.get("fornecedor_id")
+    # aceitar ambas formas:
+    limiteEstoque = data.get("limiteEstoque", data.get("limite_estoque"))
     unimed_id = data.get("unimed_id")
-    limiteEstoque = data.get("limiteEstoque")
-    tags = data.get("tags")  # backend campo singular
+    tags = data.get("tags")
     
     current_app.logger.debug(categoria)
 
@@ -618,7 +624,6 @@ def create_produto_route(comercio_id):
                 limiteEstoque=limiteEstoque,
                 tags=tags
             )
-            
             response_data = {
                 "produto_id": produto.produto_id,
                 "codigo": produto.codigo,
@@ -628,9 +633,10 @@ def create_produto_route(comercio_id):
                 "categoria_id": produto.categoria_id,
                 "fornecedor_id": produto.fornecedor_id,
                 "unimed_id": produto.unimed_id,
+                "limite_estoque": produto.limite_estoque,   # <<< incluir para confirmação
                 "tags": produto.tags,
                 "criado_em": produto.criado_em.isoformat() if produto.criado_em else None
-            }
+        }
         
     except ValueError as ve:
         db.rollback()
@@ -675,24 +681,41 @@ def rota_get_produto(comercio_id, produto_id):
 @bp.route('/<int:comercio_id>/produtos/<int:produto_id>', methods=['PUT', 'PATCH'])
 @token_required
 def rota_update_produto(comercio_id, produto_id):
-    """PENDENTE"""
     db = SessionLocal()
     try:
-        payload = request.get_json() or {}
+        payload = request.get_json(silent=True) or {}
         try:
             prod = update_produto(db, produto_id, comercio_id, payload)
-        except ValueError:
-            return jsonify({"error": "Produto não encontrado"}), 404
+        except ValueError as ve:
+            msg = str(ve)
+            if msg == "Produto não encontrado":
+                return jsonify({"error": "Produto não encontrado"}), 404
+            # erro de validação do payload
+            return jsonify({"error": msg}), 400
 
         pd = model_to_dict(prod)
-        pd["categoriaNome"] = getattr(prod.categoria, "nome", None) if getattr(prod, "categoria", None) is not None else None
-        pd["fornecedorNome"] = getattr(prod.fornecedor, "nome", None) if getattr(prod, "fornecedor", None) is not None else None
+        pd["categoriaNome"] = (
+            getattr(prod.categoria, "nome", None)
+            if getattr(prod, "categoria", None) is not None
+            else None
+        )
+        pd["fornecedorNome"] = (
+            getattr(prod.fornecedor, "nome", None)
+            if getattr(prod, "fornecedor", None) is not None
+            else None
+        )
         pd["unidadeMedidaNome"] = (
-            getattr(prod.unidade_medida, "nome", None)
-            or getattr(prod.unidade_medida, "sigla", None)
-        ) if getattr(prod, "unidade_medida", None) is not None else None
+            (getattr(prod.unidade_medida, "nome", None)
+             or getattr(prod.unidade_medida, "sigla", None))
+            if getattr(prod, "unidade_medida", None) is not None
+            else None
+        )
+
+        # incluí limite_estoque na resposta (útil para frontend)
+        pd["limite_estoque"] = getattr(prod, "limite_estoque", None)
 
         return jsonify(pd), 200
+
     except IntegrityError:
         current_app.logger.exception("Integrity error ao atualizar produto")
         return jsonify({"error": "Não foi possível atualizar por restrição de integridade"}), 400
@@ -704,7 +727,7 @@ def rota_update_produto(comercio_id, produto_id):
             db.close()
         except Exception:
             current_app.logger.exception("Erro ao fechar sessão do DB em rota_update_produto")
-
+            
 @bp.route('/<int:comercio_id>/fornecedores/<int:fornecedor_id>', methods=['GET'])
 @token_required
 def rota_get_fornecedor(comercio_id, fornecedor_id):
