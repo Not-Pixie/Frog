@@ -38,9 +38,13 @@
 .back-link {
   background: transparent;
   border: none;
-  font-size: 20px;
   cursor: pointer;
   padding: 4px 8px;
+  color: var(--primary-500);
+}
+
+.back-link svg {
+  font-size: 22px;
 }
 
 .subtitulo {
@@ -106,25 +110,22 @@
 .btn-movs {
   display: flex;
   flex-direction: row;
-  width: 40%;
+  justify-content: space-between;
   gap: 12px
 }
 
 .fields-movs{
   display: flex;
   flex-direction: row;
-  width: 50%;
+  width: 70%;
   gap: 10px;
 }
 
 .quantidade {
-  width: 50% !important;
+  width: 25% !important;
+  min-width: 80px !important;
 }
 
-.btn-adicionar {
-  width: 50%;
-  padding: 1rem;
-}
 
 /* responsivo: uma coluna em telas pequenas */
 @media (max-width: 900px) {

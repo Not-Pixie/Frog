@@ -482,9 +482,8 @@ useEffect(() => {
     }
   }
 
-  // helper para saber se só temos a opção "Sem Categoria"
-  const hasRealCategories = categorias.filter((c) => c.id !== -1).length > 0;
-  const hasFornecedores = fornecedores.length > 0;
+  const hasCategories = categorias.filter((c) => c.id !== -1).length > 0;
+  const hasFornecedores = fornecedores.filter((f) => f.id !== -1).length > 0;
 
   return (
     <div className="conteudo-item produto-cadastro">
@@ -494,7 +493,7 @@ useEffect(() => {
           className="back-link"
           aria-label="Voltar"
         >
-          <FaArrowLeft color="#35AC97" />
+          <FaArrowLeft />
         </button>
         </Link>
         <h1>Produtos</h1>
@@ -539,7 +538,7 @@ useEffect(() => {
             <span className="err">{errors.categoria.message}</span>
           )}
 
-          {!hasRealCategories && (
+          {!hasCategories && (
             <div className="mid-err" style={{ marginTop: 8 }}>
               Nenhuma categoria encontrada. {" "}
               <Link

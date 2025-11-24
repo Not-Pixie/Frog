@@ -280,7 +280,7 @@ export default function Saidas() {
           onClick={() => navigate(-1)}
           aria-label="Voltar"
         >
-          <FaArrowLeft style={{ fontSize: 20, color: "#35AC97" }} />
+          <FaArrowLeft />
         </button>
         <h1>Saídas</h1>
       </div>
