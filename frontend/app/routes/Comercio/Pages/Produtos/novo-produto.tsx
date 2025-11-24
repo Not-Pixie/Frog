@@ -194,7 +194,17 @@ useEffect(() => {
             }))
             .filter((x) => x.id !== undefined);
 
-          setFornecedores(mappedForn);
+            const Forn: OptionItem[] = [
+            { id: -1, nome: "Sem fornecedor", raw: {
+              categoria_id: -1,
+              codigo: -1,
+              nome: "Sem fornecedor",
+              comercio_id: -1,
+            } },
+            ...mappedForn,
+          ];
+
+          setFornecedores(Forn);
 
           if (mountedRef.current && mappedForn.length > 0 && !getValues("fornecedor")) {
             setValue("fornecedor", String(mappedForn[0].id));

@@ -580,7 +580,7 @@ def create_produto_route(comercio_id):
     quantidade_estoque = data.get("quantidade_estoque", 0)
     categoria = data.get("categoria_id")
     fornecedor = data.get("fornecedor_id")
-    # aceitar ambas formas:
+
     limiteEstoque = data.get("limiteEstoque", data.get("limite_estoque"))
     unimed_id = data.get("unimed_id")
     tags = data.get("tags")
@@ -592,6 +592,9 @@ def create_produto_route(comercio_id):
     
     if categoria == -1:
         categoria = None
+        
+    if fornecedor == -1:
+        fornecedor = None
 
     if not nome:
         return jsonify({"error": "Campo 'nome' é obrigatório"}), 400
