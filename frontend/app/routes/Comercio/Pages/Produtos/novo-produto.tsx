@@ -529,13 +529,11 @@ useEffect(() => {
             <span className="err">{errors.categoria.message}</span>
           )}
 
-          {/* Aviso se não houver categorias reais */}
           {!hasRealCategories && (
-            <div className="err" style={{ marginTop: 8 }}>
+            <div className="mid-err" style={{ marginTop: 8 }}>
               Nenhuma categoria encontrada. {" "}
               <Link
               to={`/comercio/${comercioId}/produtos/categorias`}
-              style={{ color: "#8B0000", textDecoration: "underline" }}
               >
               Cadastre uma categoria
               </Link>.
@@ -577,11 +575,10 @@ useEffect(() => {
 
           {/* Aviso se não houver fornecedores */}
           {!hasFornecedores && (
-            <div className="err" style={{ marginTop: 8 }}>
+            <div className="mid-err" style={{ marginTop: 8 }}>
               Nenhum fornecedor encontrado.{" "}
                 <Link
                 to={`/comercio/${comercioId}/fornecedores`}
-                style={{ color: "#8B0000", textDecoration: "underline" }}
                 >
                 Cadastre um fornecedor
                 </Link>.
