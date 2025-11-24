@@ -27,7 +27,7 @@ export default function ListarEntradas() {
       let rounded = null;
       const n = Number(value ?? 0);
       if (!isFinite(n)) rounded = 0;
-      else rounded = Math.ceil((n + Number.EPSILON) * 100) / 100;
+      else rounded = Math.floor((n + Number.EPSILON) * 100) / 100;
       return rounded.toLocaleString("pt-BR", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
