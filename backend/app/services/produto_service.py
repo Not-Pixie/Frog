@@ -219,7 +219,8 @@ def create_produto(db: Session,
             comercio_id=comercio_id,
             fornecedor_id=fornecedor_id,
             unimed_id=unimed_id,
-            categoria_id=categoria_id
+            categoria_id=categoria_id,
+            limite_estoque=limite_int
         )
         db.add(produto)
         db.flush()
@@ -282,71 +283,72 @@ def get_produto_por_id(db, produto_id: int, comercio_id: int):
 
 def update_produto(db, produto_id: int, comercio_id: int, data: dict):
     """
-    Atualiza os campos permitidos de um produto e retorna o produto atualizado.
-    Lança ValueError se produto não encontrado.
-    Lança SQLAlchemyError/IntegrityError para erros de BD.
+    Atualiza campos permitidos de um produto e retorna o produto atualizado.
+    Lança ValueError("Produto não encontrado") se não existir.
+    Lança ValueError(...) para erros de validação do payload (será traduzido como 400).
+    Pode lançar SQLAlchemyError/IntegrityError para erros do BD.
     """
     prod = get_produto_por_id(db, produto_id, comercio_id)
     if prod is None:
-        raise ValueError("Produto não encontrado para esse comércio")
+        raise ValueError("Produto não encontrado")
 
-    # campos permitidos para update (filtrar qualquer campo externo)
-    allowed = {
-        "nome": str,
-        "preco": str,  # string decimal (ex: "12.50") — você já lida com decimal no frontend
-        "quantidade_estoque": int,
-        "categoria_id": (int, type(None)),
-        "fornecedor_id": (int, type(None)),
-        "unimed_id": (int, str, type(None)),
-        "tags": (str, type(None)),
-        "limiteEstoque": (int, type(None)),
+    # helpers de parsing
+    def parse_int_or_none(v):
+        if v is None or (isinstance(v, str) and v.strip() == ""):
+            return None
+        try:
+            return int(v)
+        except (TypeError, ValueError):
+            raise ValueError(f"valor inteiro inválido: {v}")
+
+    def parse_int_required(v):
+        try:
+            return int(v)
+        except (TypeError, ValueError):
+            raise ValueError(f"valor inteiro inválido: {v}")
+
+    def parse_preco(v):
+        if v is None or (isinstance(v, str) and v.strip() == ""):
+            return None
+        try:
+            return Decimal(str(v))
+        except (InvalidOperation, TypeError, ValueError):
+            raise ValueError(f"preço inválido: {v}")
+
+    def parse_unimed(v):
+        if v is None or (isinstance(v, str) and v.strip() == ""):
+            return None
+        # se numérico -> id
+        if isinstance(v, int) or (isinstance(v, str) and v.strip().isdigit()):
+            return int(v)
+        return str(v).strip()  # sigla/nome
+
+    # mapeamento payload_key -> (attr_no_model, parser)
+    field_map = {
+        "nome": ("nome", lambda x: str(x).strip() if x is not None else None),
+        "preco": ("preco", parse_preco),
+        "quantidade_estoque": ("quantidade_estoque", parse_int_required),
+        "categoria_id": ("categoria_id", parse_int_or_none),
+        "fornecedor_id": ("fornecedor_id", parse_int_or_none),
+        "unimed_id": ("unimed_id", parse_unimed),
+        "unimed": ("unimed_id", parse_unimed),  # aceitar 'unimed' também
+        "tags": ("tags", lambda x: (str(x).strip() if x is not None and x != "" else None)),
+        # aceitar camelCase e snake_case, e mapear para atributo do model (limite_estoque)
+        "limiteEstoque": ("limite_estoque", parse_int_or_none),
+        "limite_estoque": ("limite_estoque", parse_int_or_none),
     }
 
-    # Função utilitária para conversão segura
-    def cast_value(key, val):
-        expected = allowed[key]
-        if val is None:
-            return None
-        if expected is int:
-            return int(val)
-        if expected is (int, type(None)):
-            return int(val) if val != "" else None
-        # preco: guardar como string/Decimal depende do model; o model tem Numeric -> cast para Decimal se quiser
-        return val
-
-    for k in allowed.keys():
-        if k in data:
-            newval = data[k]
-            # permitimos nulos (frontend pode mandar null/undefined)
+    # percorre os campos permitidos e atualiza
+    for key, (attr, parser) in field_map.items():
+        if key in data:
+            raw_val = data[key]
             try:
-                v = cast_value(k, newval)
-            except Exception:
-                # se conversão falhar, apenas pule (ou você pode raise ValueError para validar)
-                continue
-
-            # map nome do campo se necessário
-            if k == "unimed_id":
-                prod.unimed_id = v
-            elif k == "categoria_id":
-                prod.categoria_id = v
-            elif k == "fornecedor_id":
-                prod.fornecedor_id = v
-            elif k == "limiteEstoque":
-                # supondo que limiteEstoque é apenas para UI/serviços; se existir coluna em model substitua
-                try:
-                    prod.limiteEstoque = int(v) if v is not None else None
-                except Exception:
-                    pass
-            elif k == "preco":
-                # se seu model espera Decimal, converter com Decimal
-                from decimal import Decimal, InvalidOperation
-                try:
-                    prod.preco = Decimal(str(v))
-                except (InvalidOperation, TypeError):
-                    # se não converter, pule
-                    pass
-            else:
-                setattr(prod, k, v)
+                parsed = parser(raw_val)
+            except ValueError as ve:
+                # propaga mensagem clara para o caller (rota tratará como 400)
+                raise ValueError(f"Campo '{key}' inválido: {ve}")
+            # atribuição segura
+            setattr(prod, attr, parsed)
 
     try:
         db.add(prod)

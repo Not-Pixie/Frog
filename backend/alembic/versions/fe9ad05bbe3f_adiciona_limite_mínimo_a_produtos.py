@@ -19,10 +19,17 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    """Upgrade schema."""
-    pass
+    """Upgrade schema: add limite_estoque column to produtos."""
+    op.add_column(
+        'produtos',
+        sa.Column('limite_estoque', sa.Integer(), nullable=True),
+    )
 
 
 def downgrade() -> None:
-    """Downgrade schema."""
-    pass
+    """Downgrade schema: remove limite_estoque column from produtos if it exists."""
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+    columns = [col['name'] for col in inspector.get_columns('produtos')]
+    if 'limite_estoque' in columns:
+        op.drop_column('produtos', 'limite_estoque')
