@@ -13,6 +13,7 @@ from app.models.produtos_model import Produto
 
 from app.utils.link_utils import criar_link
 from app.utils.contador_utils import next_codigo
+from app.utils.model_utils import model_to_dict
 
 
 def criar_carrinho_vazio(db: Session, comercio_id: int) -> Carrinho:
@@ -191,3 +192,42 @@ def finalizar_movimentacao(db: Session, mov_id: int, comercio_id: int, tipo: str
     mov.fechado_em = datetime.now(timezone.utc)
 
     return mov
+
+def _format_cart_with_items(db, cart: Carrinho):
+    itens_objs = get_itens_carrinho(db=db, carrinho_id=cart.carrinho_id)
+    itens_formatados = []
+    total_carrinho = Decimal("0.00")
+
+    for item in itens_objs:
+        produto = item.produto
+        if not produto:
+            continue
+
+        preco = Decimal(produto.preco) if produto.preco is not None else Decimal("0.00")
+        quantidade = Decimal(item.quantidade)
+        subtotal = preco * quantidade
+
+        if item.desconto_percentual:
+            fator = Decimal(item.desconto_percentual) / Decimal("100")
+            subtotal = subtotal * (Decimal("1") - fator)
+
+        total_carrinho += subtotal
+
+        itens_formatados.append({
+            "item_id": item.item_id,
+            "carrinho_id": item.carrinho_id,
+            "produto_id": produto.produto_id,
+            "nome_produto": produto.nome,
+            "imagem": getattr(produto, "imagem", None),
+            "preco_unitario": str(preco.quantize(Decimal("0.01"))),
+            "quantidade": int(item.quantidade),
+            "desconto_percentual": (str(item.desconto_percentual)
+                                    if item.desconto_percentual is not None else None),
+            "subtotal": str(subtotal.quantize(Decimal("0.01")))
+        })
+
+    cart_dict = model_to_dict(cart)
+    cart_dict["itens"] = itens_formatados
+    cart_dict["valor_total"] = str(total_carrinho.quantize(Decimal("0.01")))
+    cart_dict["total_itens"] = len(itens_formatados)
+    return cart_dict
