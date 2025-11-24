@@ -44,7 +44,7 @@ export const formatCurrencyBRLRoundedDown =
       const n = Number(value ?? 0);
       if (!isFinite(n)) rounded = 0;
       else rounded = Math.floor((n + Number.EPSILON) * 100) / 100;
-      return rounded.toLocaleString("pt-BR", {
+      return rounded.toLocaleString("en-US", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       });
