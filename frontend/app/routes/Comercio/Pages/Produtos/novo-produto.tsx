@@ -70,50 +70,57 @@ export default function NovoProduto() {
   });
 
   // carrega limite padrão
-  useEffect(() => {
-    if (!comercioId) return;
-    mountedRef.current = true;
-    async function loadLimitAndConfig() {
-      setLoadingDefaults(true);
-      setConfigLoaded(false)
-      try {
-        const resp = await api.get(`${COMERCIOS}/${comercioId}/config`);
-        if (resp.status === 200 && resp.data) {
-          const l = Number(
-            resp.data.limite_padrao ??
-              resp.data.limitePadrao ??
-              resp.data.limite ??
-              resp.data.nivel_alerta_minimo ??
-              0
-          );
-          if (!Number.isNaN(l) && mountedRef.current) {
-            setDefaultLimite(l);
+// useEffect: carrega limite padrão e config do comércio
+useEffect(() => {
+  if (!comercioId) return;
+  mountedRef.current = true;
+  async function loadLimitAndConfig() {
+    setLoadingDefaults(true);
+    setConfigLoaded(false);
+    try {
+      const resp = await api.get(`${COMERCIOS}/${comercioId}/config`);
+      if (resp.status === 200 && resp.data) {
+        const l = Number(
+          resp.data.limite_padrao ??
+            resp.data.limitePadrao ??
+            resp.data.limite ??
+            resp.data.nivel_alerta_minimo ??
+            0
+        );
+        if (!Number.isNaN(l) && mountedRef.current) {
+          setDefaultLimite(l);
+
+          // só setar no formulário se o campo estiver realmente vazio
+          // (evita sobrescrever valor do produto que pode ter sido carregado)
+          const currentVal = (getValues("limiteEstoque") ?? "").toString().trim();
+          if (currentVal === "") {
             setValue("limiteEstoque", String(l));
           }
-
-          // tenta extrair unidade padrão de vários aliases possíveis
-          const u =
-            resp.data.unidade_padrao ??
-            null;
-
-          if (u !== null && mountedRef.current) {
-            setDefaultUnidade(String(u.unimed_id));
-          }
         }
-      } catch (e) {
-        if (mountedRef.current) {
-          setDefaultLimite(0);
-          setDefaultUnidade(null);
+
+        // tenta extrair unidade padrão de vários aliases possíveis
+        const u = resp.data.unidade_padrao ?? null;
+        if (u !== null && mountedRef.current) {
+          setDefaultUnidade(String(u.unimed_id));
         }
-      } finally {
-        if (mountedRef.current) {setLoadingDefaults(false); setConfigLoaded(true)}
+      }
+    } catch (e) {
+      if (mountedRef.current) {
+        setDefaultLimite(0);
+        setDefaultUnidade(null);
+      }
+    } finally {
+      if (mountedRef.current) {
+        setLoadingDefaults(false);
+        setConfigLoaded(true);
       }
     }
-    loadLimitAndConfig();
-    return () => {
-      mountedRef.current = false;
-    };
-  }, [comercioId, setValue]);
+  }
+  loadLimitAndConfig();
+  return () => {
+    mountedRef.current = false;
+  };
+}, [comercioId, getValues, setValue]);
 
   // busca categorias, fornecedores e unidades de medida (mantive o pattern Promise.allSettled)
   useEffect(() => {
@@ -277,44 +284,59 @@ export default function NovoProduto() {
     setValue("unimed", firstValue);
   }, [unidades, defaultUnidade, configLoaded, getValues, setValue]);
 
+// useEffect: carrega produto (prioriza e aceita aliases para 'limite')
+useEffect(() => {
+  if (!comercioId || !produtoId) return;
+  mountedRef.current = true;
+  setLoadingProduct(true);
+  (async function loadProduct() {
+    try {
+      const res = await api.get(
+        `${COMERCIOS}/${comercioId}/produtos/${produtoId}`
+      );
+      const p = res.data;
 
-  useEffect(() => {
-    if (!comercioId || !produtoId) return;
-    mountedRef.current = true;
-    setLoadingProduct(true);
-    (async function loadProduct() {
-      try {
-        const res = await api.get(
-          `${COMERCIOS}/${comercioId}/produtos/${produtoId}`
-        );
-        const p = res.data;
-        // preenche form (casts para string)
-        setValue("nome", p.nome ?? "");
-        setValue("preco", p.preco ? String(p.preco) : "");
-        setValue("tags", p.tags ?? "");
-        setValue(
-          "limiteEstoque",
-          p.limiteEstoque !== undefined ? String(p.limiteEstoque) : ""
-        );
-        setValue("categoria", p.categoria_id ? String(p.categoria_id) : "");
-        setValue("fornecedor", p.fornecedor_id ? String(p.fornecedor_id) : "");
-        setValue(
-          "unimed",
-          p.unimed_id ? String(p.unimed_id) : p.unimed ? String(p.unimed) : ""
-        );
-      } catch (err) {
-        console.error("Erro ao buscar produto:", err);
-        alert("Erro ao carregar produto. Veja console.");
-        navigate(-1);
-      } finally {
-        setLoadingProduct(false);
+      // normaliza/obtém valor do limite vindo do backend (0 é válido)
+      const prodLimit =
+        p.limiteEstoque !== undefined && p.limiteEstoque !== null
+          ? p.limiteEstoque
+          : p.limite_estoque !== undefined && p.limite_estoque !== null
+          ? p.limite_estoque
+          : p.limite !== undefined && p.limite !== null
+          ? p.limite
+          : null;
+
+      // preenche form (casts para string)
+      setValue("nome", p.nome ?? "");
+      setValue("preco", p.preco ? String(p.preco) : "");
+      setValue("tags", p.tags ?? "");
+
+      // só atualiza o campo limite se o produto realmente retornou algo (incluindo 0)
+      if (prodLimit !== null) {
+        setValue("limiteEstoque", String(prodLimit));
       }
-    })();
-    return () => {
-      mountedRef.current = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [comercioId, produtoId, setValue]);
+      // caso contrário, mantemos o que já existe (pode ser default do comércio ou vazio)
+
+      setValue("categoria", p.categoria_id ? String(p.categoria_id) : "");
+      setValue("fornecedor", p.fornecedor_id ? String(p.fornecedor_id) : "");
+      setValue(
+        "unimed",
+        p.unimed_id ? String(p.unimed_id) : p.unimed ? String(p.unimed) : ""
+      );
+    } catch (err) {
+      console.error("Erro ao buscar produto:", err);
+      alert("Erro ao carregar produto. Veja console.");
+      navigate(-1);
+    } finally {
+      setLoadingProduct(false);
+    }
+  })();
+  return () => {
+    mountedRef.current = false;
+  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [comercioId, produtoId, setValue]);
+
 
   // utilitários
   const safeNumberFromInputString = useCallback(
