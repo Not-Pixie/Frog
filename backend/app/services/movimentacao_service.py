@@ -76,48 +76,81 @@ def adicionar_produto_em_carrinho(db: Session,
     if desconto_percentual is not None and not (Decimal('0.00') <= desconto_percentual < Decimal('100.00')):
         raise ValueError("Desconto deve ser entre 0 e 99.9999%.")
 
-    carrinho = db.query(Carrinho).filter_by(carrinho_id=carrinho_id).first()
-    if not carrinho or int(carrinho.comercio_id) != int(comercio_id):
-        raise ValueError("Carrinho inválido.")
+    mov = db.query(Movimentacao).filter(
+        Movimentacao.carrinho_id == carrinho_id
+    ).with_for_update().first()
+
+    if not mov:
+        raise ValueError("Carrinho/Movimentação não encontrada.")
 
     produto = (
         db.query(Produto)
-          .options(load_only(Produto.produto_id, Produto.preco, Produto.quantidade_estoque, Produto.comercio_id))
-          .filter_by(produto_id=produto_id)
-          .first()
+        .options(load_only(Produto.produto_id, Produto.preco, Produto.comercio_id))
+        .filter_by(produto_id=produto_id)
+        .first()
     )
+
     if not produto or int(produto.comercio_id) != int(comercio_id):
-        raise ValueError("Produto não encontrado ou pertence a outro comercio.")
-
+        raise ValueError("Produto inválido.")
+    
     preco_unitario = Decimal(produto.preco)
-
+    desconto = desconto_percentual if desconto_percentual is not None else Decimal(0)
+    
     item_existente = db.query(CarrinhoItem).filter_by(
-        carrinho_id=carrinho_id,
+        carrinho_id=carrinho_id, 
         produto_id=produto_id
     ).first()
 
+    item_final = None
+
     if item_existente:
+        mov.valor_total -= item_existente.subtotal
+        
+
         item_existente.quantidade += quantidade
+        item_existente.preco_unitario = preco_unitario 
         if desconto_percentual is not None:
-            item_existente.desconto_percentual = desconto_percentual
-        item_existente.preco_unitario = preco_unitario
-        item_existente.subtotal = (preco_unitario * item_existente.quantidade) * (Decimal(1) - (item_existente.desconto_percentual or Decimal(0)) / 100)
-        item = item_existente
+            item_existente.desconto_percentual = desconto
+            
+        novo_subtotal = (
+            item_existente.preco_unitario * item_existente.quantidade * (Decimal(1) - (item_existente.desconto_percentual or Decimal(0)) / 100)
+        )
+        item_existente.subtotal = novo_subtotal
+        
+        mov.total_itens += quantidade 
+        mov.valor_total += novo_subtotal
+        
+        item_final = item_existente
+
     else:
-        item = CarrinhoItem(
+        subtotal = (
+            preco_unitario * Decimal(quantidade) * (Decimal(1) - (desconto / 100))
+        )
+        
+        novo_item = CarrinhoItem(
             carrinho_id=carrinho_id,
             produto_id=produto_id,
             quantidade=quantidade,
             comercio_id=comercio_id,
             desconto_percentual=desconto_percentual,
             preco_unitario=preco_unitario,
-            subtotal=(preco_unitario * Decimal(quantidade) * (Decimal(1) - (desconto_percentual or Decimal(0)) / 100))
+            subtotal=subtotal
         )
-        db.add(item)
+        db.add(novo_item)
+        
+        mov.total_itens += quantidade
+        mov.valor_total += subtotal
+        
+        item_final = novo_item
 
-    db.flush()
-    db.refresh(item)
-    return item
+    # Só por garantia, né? Vai que
+    if mov.valor_total < 0: mov.valor_total = 0
+
+    db.flush() 
+    db.commit() 
+    
+    db.refresh(item_final) 
+    return item_final
 
 
 def get_itens_carrinho(db: Session, carrinho_id: int) -> list[CarrinhoItem]:
@@ -189,18 +222,18 @@ def finalizar_movimentacao(db: Session, mov_id: int, comercio_id: int, tipo: Lit
 
     return mov
 
-def deletar_item_de_carrinho(db: Session, item_id: int) -> bool:
+def deletar_item_de_carrinho(db: Session, item_id: int) -> Carrinho:
     """
     Remove item e atualiza totais.
     Retorna True se sucesso, lança exceção se falhar.
     """
     item: CarrinhoItem = db.query(CarrinhoItem).get(item_id)
     if not item:
-        return False
+        return None
 
     mov: Movimentacao = db.query(Movimentacao).get(item.carrinho_id)
     if not mov:
-        return False
+        return None
 
     novo_total_itens = Movimentacao.total_itens - item.quantidade
     novo_valor_total = Movimentacao.valor_total - (item.quantidade * item.preco_unitario)
@@ -215,10 +248,13 @@ def deletar_item_de_carrinho(db: Session, item_id: int) -> bool:
         (novo_valor_total < 0, 0),
         else_=novo_valor_total
     )
+    
+    cart = db.query(Carrinho).get(item.carrinho_id)
 
     db.delete(item)
-    db.commit() 
-    return True
+    db.commit()
+    db.refresh(cart)
+    return cart
 
     
     
@@ -250,7 +286,6 @@ def _format_cart_with_items(db: Session, cart: Carrinho):
             "carrinho_id": item.carrinho_id,
             "produto_id": produto.produto_id,
             "nome_produto": produto.nome,
-            "imagem": getattr(produto, "imagem", None),
             "preco_unitario": str(preco.quantize(Decimal("0.01"))),
             "quantidade": int(item.quantidade),
             "desconto_percentual": (str(item.desconto_percentual)
@@ -261,5 +296,4 @@ def _format_cart_with_items(db: Session, cart: Carrinho):
     cart_dict = model_to_dict(cart)
     cart_dict["itens"] = itens_formatados
     cart_dict["valor_total"] = str(total_carrinho.quantize(Decimal("0.01")))
-    cart_dict["total_itens"] = len(itens_formatados)
     return cart_dict

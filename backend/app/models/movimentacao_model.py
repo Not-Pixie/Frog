@@ -15,7 +15,8 @@ class Movimentacao(Base):
     carrinho_id = Column(Integer, ForeignKey("carrinhos.carrinho_id", ondelete="CASCADE", onupdate="CASCADE"), nullable=False)
     comercio_id = Column(Integer, ForeignKey("comercios.comercio_id", ondelete="CASCADE"), nullable=False)
     
-    valor_total = Column(Numeric(12, 4), nullable=False)
+    total_itens = Column(Integer, nullable=False)
+    valor_total = Column(Numeric(18, 4), nullable=False)
     forma_pagamento = Column(String(100), nullable=True)
     
     criado_em = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -25,7 +26,7 @@ class Movimentacao(Base):
     __table_args__ = (
         CheckConstraint("tipo IN ('entrada','saida')", name='ck_movimentacoes_tipo'),
         CheckConstraint("estado IN ('aberta','fechada')", name='ck_movimentacoes_estado'),
-        UniqueConstraint("comercio_id", "tipo", "codigo", name="uq_movimentacoes_comercio_codigo")
+        UniqueConstraint("comercio_id", "tipo", "codigo", name="uq_movimentacoes_comercio_tipo_codigo")
     )
 
     # relacionamentos (opcionais)
