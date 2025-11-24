@@ -67,6 +67,18 @@
   margin-top: 4px;
 }
 
+/* sugestivo, mas não errado */
+.mid-err{
+  color: color-mix(in oklab, var(--warning) 100%, rgb(255, 166, 0) 30%);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.mid-err > a {
+  color: var(--warning);
+  text-decoration: underline;
+}
+
 .form-actions {
   grid-column: 1 / -1;
   margin-top: 18px;
@@ -88,6 +100,29 @@
 
 .btn-edit:hover {
   cursor: pointer;
+}
+
+.btn-movs {
+  display: flex;
+  flex-direction: row;
+  width: 40%;
+  gap: 12px
+}
+
+.fields-movs{
+  display: flex;
+  flex-direction: row;
+  width: 50%;
+  gap: 10px;
+}
+
+.quantidade {
+  width: 50% !important;
+}
+
+.btn-adicionar {
+  width: 50%;
+  padding: 1rem;
 }
 
 /* responsivo: uma coluna em telas pequenas */

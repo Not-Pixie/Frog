@@ -260,7 +260,7 @@ body {
 
   --danger: rgb(244, 89, 89);
   --success: #2BAF8F;
-  --warning: #E2A800;
+  --warning: oklab(0.644132 0.146652 0.129714);
   --info: #2D8BF0;
 
   --titleFont: "Cocogoose", sans-serif;
