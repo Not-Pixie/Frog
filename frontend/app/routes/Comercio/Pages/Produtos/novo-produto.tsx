@@ -194,7 +194,17 @@ useEffect(() => {
             }))
             .filter((x) => x.id !== undefined);
 
-          setFornecedores(mappedForn);
+            const Forn: OptionItem[] = [
+            { id: -1, nome: "Sem fornecedor", raw: {
+              categoria_id: -1,
+              codigo: -1,
+              nome: "Sem fornecedor",
+              comercio_id: -1,
+            } },
+            ...mappedForn,
+          ];
+
+          setFornecedores(Forn);
 
           if (mountedRef.current && mappedForn.length > 0 && !getValues("fornecedor")) {
             setValue("fornecedor", String(mappedForn[0].id));
@@ -472,9 +482,8 @@ useEffect(() => {
     }
   }
 
-  // helper para saber se só temos a opção "Sem Categoria"
-  const hasRealCategories = categorias.filter((c) => c.id !== -1).length > 0;
-  const hasFornecedores = fornecedores.length > 0;
+  const hasCategories = categorias.filter((c) => c.id !== -1).length > 0;
+  const hasFornecedores = fornecedores.filter((f) => f.id !== -1).length > 0;
 
   return (
     <div className="conteudo-item produto-cadastro">
@@ -484,7 +493,7 @@ useEffect(() => {
           className="back-link"
           aria-label="Voltar"
         >
-          <FaArrowLeft color="#35AC97" />
+          <FaArrowLeft />
         </button>
         </Link>
         <h1>Produtos</h1>
@@ -529,13 +538,11 @@ useEffect(() => {
             <span className="err">{errors.categoria.message}</span>
           )}
 
-          {/* Aviso se não houver categorias reais */}
-          {!hasRealCategories && (
-            <div className="err" style={{ marginTop: 8 }}>
+          {!hasCategories && (
+            <div className="mid-err" style={{ marginTop: 8 }}>
               Nenhuma categoria encontrada. {" "}
               <Link
               to={`/comercio/${comercioId}/produtos/categorias`}
-              style={{ color: "#8B0000", textDecoration: "underline" }}
               >
               Cadastre uma categoria
               </Link>.
@@ -577,11 +584,10 @@ useEffect(() => {
 
           {/* Aviso se não houver fornecedores */}
           {!hasFornecedores && (
-            <div className="err" style={{ marginTop: 8 }}>
+            <div className="mid-err" style={{ marginTop: 8 }}>
               Nenhum fornecedor encontrado.{" "}
                 <Link
                 to={`/comercio/${comercioId}/fornecedores`}
-                style={{ color: "#8B0000", textDecoration: "underline" }}
                 >
                 Cadastre um fornecedor
                 </Link>.

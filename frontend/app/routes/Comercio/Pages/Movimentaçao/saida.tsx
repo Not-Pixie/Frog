@@ -38,7 +38,10 @@ type Carrinho = {
 };
 
 export default function Saidas() {
-  const { comercioId, link } = useParams<{ comercioId: string; link: string }>();
+  const { comercioId, link } = useParams<{
+    comercioId: string;
+    link: string;
+  }>();
   const navigate = useNavigate();
   const mountedRef = React.useRef(false);
 
@@ -81,7 +84,9 @@ export default function Saidas() {
     setError(null);
     setLoading(true);
     try {
-      const resp = await api.get(`/movimentacoes/${link}/carrinho`, { params: { comercio_id: comercioId } });
+      const resp = await api.get(`/movimentacoes/${link}/carrinho`, {
+        params: { comercio_id: comercioId },
+      });
       const carrinho = resp.data?.carrinho;
       const movimentacao = resp.data?.movimentacao;
       if (!carrinho) throw new Error("Resposta inválida do servidor");
@@ -95,9 +100,15 @@ export default function Saidas() {
       return carrinho;
     } catch (err: any) {
       const msg = err?.response?.data?.msg ?? err?.message ?? "";
-      if (String(msg).includes("mov não encontrado") || err?.response?.status === 404 || err?.response?.status === 400) {
+      if (
+        String(msg).includes("mov não encontrado") ||
+        err?.response?.status === 404 ||
+        err?.response?.status === 400
+      ) {
         try {
-          const resp2 = await api.post(`/movimentacoes/${link}/carrinho`, { comercio_id: Number(comercioId) });
+          const resp2 = await api.post(`/movimentacoes/${link}/carrinho`, {
+            comercio_id: Number(comercioId),
+          });
           if (resp2.status >= 200 && resp2.status < 300) {
             const carrinho = resp2.data?.carrinho;
             const movimentacao = resp2.data?.movimentacao;
@@ -131,78 +142,117 @@ export default function Saidas() {
       await fetchProdutos();
       await fetchCart();
     })();
-    return () => { mountedRef.current = false; };
+    return () => {
+      mountedRef.current = false;
+    };
   }, [comercioId, link, fetchProdutos, fetchCart, navigate]);
 
   // Validação simples feita manualmente (sem zodResolver)
-  const onAdd = React.useCallback(async (values: FormValues) => {
-    setError(null);
-    if (!link) return;
-    const produtoId = Number(values.produto);
-    const quantidade = Number(values.quantidade);
+  const onAdd = React.useCallback(
+    async (values: FormValues) => {
+      setError(null);
+      if (!link) return;
+      const produtoId = Number(values.produto);
+      const quantidade = Number(values.quantidade);
 
-    if (!produtoId) { setError("Selecione um produto."); return; }
-    if (!Number.isFinite(quantidade) || quantidade <= 0) { setError("Quantidade inválida."); return; }
-
-    // cliente: checa estoque e previne adicionar se estiver faltando
-    const prodObj = produtos.find(p => Number(p.produto_id) === produtoId);
-    if (prodObj && typeof prodObj.quantidade_estoque === "number" && prodObj.quantidade_estoque < quantidade) {
-      setError(`Estoque insuficiente (${prodObj.quantidade_estoque} disponível).`);
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // passamos um campo opcional tipo=saida no body para facilitar validações server-side opcionais
-      const resp = await api.post(`/movimentacoes/${link}/carrinho/p/${produtoId}`, {
-        comercio_id: Number(comercioId),
-        quantidade,
-        tipo: "saida" // informativo — backend pode usar para validação prematura
-      });
-      if (resp.status < 200 || resp.status >= 300) throw new Error("Erro ao adicionar item");
-
-      const carrinho = resp.data?.carrinho;
-      if (!carrinho) {
-        await fetchCart();
-      } else {
-        setCart(carrinho);
+      if (!produtoId) {
+        setError("Selecione um produto.");
+        return;
       }
-      reset({ produto: "", quantidade: 1 });
-    } catch (err: any) {
-      console.error("addProduto error", err);
-      setError(err?.response?.data?.msg ?? err?.message ?? "Erro ao adicionar produto");
-    } finally {
-      setLoading(false);
-    }
-  }, [link, comercioId, fetchCart, reset, produtos]);
+      if (!Number.isFinite(quantidade) || quantidade <= 0) {
+        setError("Quantidade inválida.");
+        return;
+      }
 
-  const onRemoveItem = React.useCallback(async (itemId: number) => {
-    if (!link) return;
-    setError(null);
-    setLoading(true);
-    try {
-      const resp = await api.delete(`/movimentacoes/${link}/carrinho/item/${itemId}`, { params: { comercio_id: Number(comercioId) } });
-      if (resp.status >= 200 && resp.status < 300) {
+      // cliente: checa estoque e previne adicionar se estiver faltando
+      const prodObj = produtos.find((p) => Number(p.produto_id) === produtoId);
+      if (
+        prodObj &&
+        typeof prodObj.quantidade_estoque === "number" &&
+        prodObj.quantidade_estoque < quantidade
+      ) {
+        setError(
+          `Estoque insuficiente (${prodObj.quantidade_estoque} disponível).`
+        );
+        return;
+      }
+
+      setLoading(true);
+      try {
+        // passamos um campo opcional tipo=saida no body para facilitar validações server-side opcionais
+        const resp = await api.post(
+          `/movimentacoes/${link}/carrinho/p/${produtoId}`,
+          {
+            comercio_id: Number(comercioId),
+            quantidade,
+            tipo: "saida", // informativo — backend pode usar para validação prematura
+          }
+        );
+        if (resp.status < 200 || resp.status >= 300)
+          throw new Error("Erro ao adicionar item");
+
         const carrinho = resp.data?.carrinho;
-        if (carrinho) setCart(carrinho);
-        else await fetchCart();
-      } else throw new Error("Falha ao remover item");
-    } catch (err: any) {
-      console.error("removeItem error", err);
-      setError(err?.response?.data?.msg ?? err?.message ?? "Erro ao remover item");
-    } finally {
-      setLoading(false);
-    }
-  }, [link, comercioId, fetchCart]);
+        if (!carrinho) {
+          await fetchCart();
+        } else {
+          setCart(carrinho);
+        }
+        reset({ produto: "", quantidade: 1 });
+      } catch (err: any) {
+        console.error("addProduto error", err);
+        setError(
+          err?.response?.data?.msg ??
+            err?.message ??
+            "Erro ao adicionar produto"
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+    [link, comercioId, fetchCart, reset, produtos]
+  );
+
+  const onRemoveItem = React.useCallback(
+    async (itemId: number) => {
+      if (!link) return;
+      setError(null);
+      setLoading(true);
+      try {
+        const resp = await api.delete(
+          `/movimentacoes/${link}/carrinho/item/${itemId}`,
+          { params: { comercio_id: Number(comercioId) } }
+        );
+        if (resp.status >= 200 && resp.status < 300) {
+          const carrinho = resp.data?.carrinho;
+          if (carrinho) setCart(carrinho);
+          else await fetchCart();
+        } else throw new Error("Falha ao remover item");
+      } catch (err: any) {
+        console.error("removeItem error", err);
+        setError(
+          err?.response?.data?.msg ?? err?.message ?? "Erro ao remover item"
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+    [link, comercioId, fetchCart]
+  );
 
   const onSave = React.useCallback(async () => {
     setError(null);
-    if (!cart) { setError("Nenhum carrinho ativo para salvar."); return; }
-    if (!link) { setError("Link inválido"); return; }
+    if (!cart) {
+      setError("Nenhum carrinho ativo para salvar.");
+      return;
+    }
+    if (!link) {
+      setError("Link inválido");
+      return;
+    }
     setLoading(true);
     try {
       const payload = {
-        tipo: "saida", // aqui dizemos que é saída
+        tipo: "saida", 
         carrinho_id: cart.carrinho_id,
         comercio_id: Number(comercioId),
       };
@@ -214,7 +264,9 @@ export default function Saidas() {
       }
     } catch (err: any) {
       console.error("saveExit error", err);
-      setError(err?.response?.data?.msg ?? err?.message ?? "Erro ao salvar saída");
+      setError(
+        err?.response?.data?.msg ?? err?.message ?? "Erro ao salvar saída"
+      );
     } finally {
       setLoading(false);
     }
@@ -223,46 +275,72 @@ export default function Saidas() {
   return (
     <div className="conteudo-item produto-cadastro">
       <div className="page-header">
-        <button className="back-link" onClick={() => navigate(-1)} aria-label="Voltar">
-          <FaArrowLeft style={{ fontSize: 20, color: "#35AC97" }} />
+        <button
+          className="back-link"
+          onClick={() => navigate(-1)}
+          aria-label="Voltar"
+        >
+          <FaArrowLeft />
         </button>
         <h1>Saídas</h1>
       </div>
 
-      {error && <div className="err" style={{ marginBottom: 12 }}>{error}</div>}
+      {error && (
+        <div className="err" style={{ marginBottom: 12 }}>
+          {error}
+        </div>
+      )}
 
-      <form className="cadastro-form" onSubmit={handleSubmit(onAdd)} noValidate>
-        <div style={{ display: "flex", gap: 12, alignItems: "flex-end", marginBottom: 16 }}>
-          <div style={{ flex: "0 0 360px", minWidth: 360 }}>
-            <Input label="Produto" type="select" {...register("produto")} disabled={loadingOptions}>
+      <form style={{ width: "100%" }} onSubmit={handleSubmit(onAdd)} noValidate>
+        <div
+          style={{
+            display: "flex",
+            gap: 12,
+            alignItems: "flex-end",
+            marginBottom: 16,
+            justifyContent: "space-between",
+          }}
+        >
+          <div className="fields-movs">
+            <Input
+              label="Produto"
+              type="select"
+              {...register("produto")}
+              disabled={loadingOptions}
+            >
               <option value="">Selecione um produto</option>
-              {produtos.map(p => (
+              {produtos.map((p) => (
                 <option key={String(p.produto_id)} value={String(p.produto_id)}>
                   {p.nome}
                 </option>
               ))}
             </Input>
+
+            <Input
+              label="Quantidade"
+              type="number"
+              {...register("quantidade")}
+              wrapperClassName="quantidade form-field"
+            />
           </div>
 
-          <Input
-            label="Quantidade"
-            type="number"
-            {...register("quantidade")}
-            inputClassName="small-input"
-            style={{ minWidth: 100, paddingRight: 10 }}
-          />
-
-          <div style={{ display: "flex", gap: 8, marginLeft: 402 }}>
+          <div className="btn-movs">
             <Button
               theme="green"
               type="submit"
               disabled={formState.isSubmitting || loading || loadingOptions}
-              style={{ minWidth: 180 }}
+              className="btn-adicionar"
             >
               {loading ? "Carregando..." : "Adicionar ao carrinho"}
             </Button>
 
-            <Button theme="light" type="button" onClick={() => reset({ produto: "", quantidade: 1 })}>Limpar</Button>
+            <Button
+              theme="light"
+              type="button"
+              onClick={() => reset({ produto: "", quantidade: 1 })}
+            >
+              Limpar
+            </Button>
           </div>
         </div>
       </form>
@@ -272,14 +350,29 @@ export default function Saidas() {
         columns={[
           { key: "nome_produto", label: "Nome" },
           { key: "quantidade", label: "Quantidade" },
+          { key: "unidade", label: "Unnidade" },
           { key: "preco_unitario", label: "Preço unit." },
-          { key: "subtotal", label: "Subtotal" }
+          { key: "subtotal", label: "Subtotal" },
         ]}
         keyField="item_id"
         emptyMessage="Nenhum item no carrinho"
-        renderCell={(value: any, row: Record<PropertyKey, any>, column: string) => {
-          if (column === "quantidade") return <span style={{ textAlign: "right", display: "block" }}>{Number(value)}</span>;
-          if (column === "preco_unitario" || column === "subtotal") return <span style={{ textAlign: "right", display: "block" }}>R$ {safeTwoDecimals(value ?? "0")}</span>;
+        renderCell={(
+          value: any,
+          row: Record<PropertyKey, any>,
+          column: string
+        ) => {
+          if (column === "quantidade")
+            return (
+              <span style={{ textAlign: "right", display: "block" }}>
+                {Number(value)}
+              </span>
+            );
+          if (column === "preco_unitario" || column === "subtotal")
+            return (
+              <span style={{ textAlign: "right", display: "block" }}>
+                R$ {safeTwoDecimals(value ?? "0")}
+              </span>
+            );
           return value === null || value === undefined ? "—" : String(value);
         }}
         rowActions={(row: Record<PropertyKey, any>) => {
@@ -288,7 +381,10 @@ export default function Saidas() {
             <div style={{ display: "flex", gap: 8 }}>
               <button
                 type="button"
-                onClick={() => { if (confirm("Excluir item do carrinho?")) onRemoveItem(r.item_id); }}
+                onClick={() => {
+                  if (confirm("Excluir item do carrinho?"))
+                    onRemoveItem(r.item_id);
+                }}
                 className="btn-delete"
                 aria-label="Excluir item"
                 title="Excluir item"
@@ -301,7 +397,10 @@ export default function Saidas() {
         actionHeader="Opções"
       />
 
-      <div className="form-actions" style={{ marginTop: 16, display: "flex", gap: 8 }}>
+      <div
+        className="form-actions"
+        style={{ marginTop: 16, display: "flex", gap: 8 }}
+      >
         <Button theme="green" onClick={onSave} disabled={loading || !cart}>
           {loading ? "Efetuando..." : "Efetuar saída"}
         </Button>

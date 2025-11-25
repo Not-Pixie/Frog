@@ -38,15 +38,20 @@
 .back-link {
   background: transparent;
   border: none;
-  font-size: 20px;
   cursor: pointer;
   padding: 4px 8px;
+  color: var(--primary-500);
+}
+
+.back-link svg {
+  font-size: 22px;
 }
 
 .subtitulo {
   font-weight: 600;
-  margin: 18px 0;
-  color: var(--primaryColor); 
+  margin-bottom: 6px;
+  color: var(--primaryColor);
+  text-align: left;
 }
 
 .cadastro-form {
@@ -65,6 +70,18 @@
   color: var(--danger);
   font-size: 12px;
   margin-top: 4px;
+}
+
+/* sugestivo, mas não errado */
+.mid-err{
+  color: color-mix(in oklab, var(--warning) 100%, rgb(255, 166, 0) 30%);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.mid-err > a {
+  color: var(--warning);
+  text-decoration: underline;
 }
 
 .form-actions {
@@ -89,6 +106,26 @@
 .btn-edit:hover {
   cursor: pointer;
 }
+
+.btn-movs {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 12px
+}
+
+.fields-movs{
+  display: flex;
+  flex-direction: row;
+  width: 70%;
+  gap: 10px;
+}
+
+.quantidade {
+  width: 25% !important;
+  min-width: 80px !important;
+}
+
 
 /* responsivo: uma coluna em telas pequenas */
 @media (max-width: 900px) {
