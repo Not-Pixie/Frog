@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import ProtectedRoute from "src/api/auth/ProtectedRoute"; 
+import ProtectedRoute from "src/api/auth/ProtectedRoute";
 import "./MeusComercios.css";
 import { useAuth } from "src/api/auth/AuthProvider";
 import CommerceCard from "src/components/CommerceCard";
@@ -9,6 +9,9 @@ import type { Comercio } from "src/types/comercio";
 import api from "src/api/axios";
 import { ME } from "src/api/enpoints";
 import { AxiosError } from "axios";
+
+import { GoHomeFill } from "react-icons/go";
+import { Link } from "react-router";
 
 interface Response {
   comercios: Comercio[];
@@ -22,7 +25,7 @@ function MeusComercios() {
   const [error, setError] = useState<string>("");
   const isMountedRef = useRef(false);
 
-  const fetchComercios =  useCallback(async () => {
+  const fetchComercios = useCallback(async () => {
     setError("");
     setIsRefreshing(true);
 
@@ -30,7 +33,7 @@ function MeusComercios() {
       const res = await api.get<Response>(`${ME}/comercios`);
       const data = res.data;
 
-      if (!isMountedRef.current) {return;};
+      if (!isMountedRef.current) { return; };
       setComercios(Array.isArray(data?.comercios) ? data.comercios : []);
     } catch (err) {
       const axiosErr = err as AxiosError<any>;
@@ -46,7 +49,7 @@ function MeusComercios() {
 
   useEffect(() => {
     isMountedRef.current = true; //Resetando pro safemode; aumenta robustez
-    return () => {isMountedRef.current = false}
+    return () => { isMountedRef.current = false }
   }, []);
 
   useEffect(() => {
@@ -54,7 +57,7 @@ function MeusComercios() {
   }, [fetchComercios]);
 
   useEffect(() => {
-    if(!isModalOpen) fetchComercios();
+    if (!isModalOpen) fetchComercios();
   }, [isModalOpen, fetchComercios]);
 
 
@@ -64,6 +67,12 @@ function MeusComercios() {
   return (
     <ProtectedRoute>
       <div className="user-page">
+
+<div className="btn-home">
+  <Link to="/">
+  <GoHomeFill />
+  </Link>
+</div>
         <header>
           <h1 className="user-page_title">Seja bem-vindo, {user?.nome}</h1>
           <p className="user-page_subtitle">
@@ -78,11 +87,11 @@ function MeusComercios() {
                 const comercio = comercios?.[idx];
                 return comercio ? (
                   <CommerceCard
-                    key={ `c-${idx}`}
+                    key={`c-${idx}`}
                     comercio={comercio}
                   />
                 ) : (
-                  <CommerceCard key={`cn-${idx}`} onClick={openModal}/>
+                  <CommerceCard key={`cn-${idx}`} onClick={openModal} />
                 );
               })}
             </div>
@@ -95,7 +104,7 @@ function MeusComercios() {
                     comercio={comercio}
                   />
                 ) : (
-                  <CommerceCard key={`cn-${idx}`} onClick={openModal}/>
+                  <CommerceCard key={`cn-${idx}`} onClick={openModal} />
                 );
               })}
             </div>
@@ -104,7 +113,7 @@ function MeusComercios() {
 
         <PopupCreateCompany
           isOpen={isModalOpen}
-          onClose={() => {setIsModalOpen(false);}}
+          onClose={() => { setIsModalOpen(false); }}
           onCreated={(c: Company) => { setIsModalOpen(false); }}
         />
       </div>

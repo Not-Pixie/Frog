@@ -141,3 +141,20 @@ header {
   display: flex;
   justify-content: space-between;
 }
+
+.btn-home {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+
+.btn-home svg {
+  height: 32px;
+  width: 32px;
+  color: var(--primaryColor);
+}
+
+.btn-home:hover {
+  cursor: pointer;
+}
