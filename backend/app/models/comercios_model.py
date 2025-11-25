@@ -1,5 +1,5 @@
 # app/models/comercios_model.py
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, func
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, UniqueConstraint, func
 from sqlalchemy.orm import relationship
 from app.database.database import Base
 
@@ -8,7 +8,7 @@ class Comercio(Base):
 
     comercio_id = Column(Integer, primary_key=True, autoincrement=True)
     proprietario_id = Column(Integer, ForeignKey("usuarios.usuario_id", ondelete="RESTRICT"), nullable=False)
-    nome = Column(String(50), nullable=False, unique=True)
+    nome = Column(String(50), nullable=False, unique=False)
 
     configuracao_id = Column(Integer, ForeignKey("configuracoes_comercio.id", ondelete="SET NULL"), nullable=True)
 
@@ -32,3 +32,7 @@ class Comercio(Base):
     movimentacoes = relationship("Movimentacao", back_populates="comercio", cascade="all, delete-orphan", passive_deletes=True)
     carrinhos = relationship("Carrinho", back_populates="comercio", cascade="all, delete-orphan", passive_deletes=True)
     carrinhoitens = relationship("CarrinhoItem", back_populates="comercio", cascade="all, delete-orphan", passive_deletes=True)
+
+    __table_args__ = (
+        UniqueConstraint("nome", "proprietario_id", name="uq_nome_proprietario_id"),
+    )
