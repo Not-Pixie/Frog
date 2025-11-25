@@ -128,6 +128,7 @@ export default function Historico() {
           }}
           actionHeader="Opções"
           emptyMessage={loading ? "Carregando movimentações..." : "Nenhuma movimentação encontrada"}
+          maxHeight={"65vh"} // Assim, flex: 1 seria melhor, mas ei tô com preguiça de implementar isso, então meh :)
         />
       </div>
     </>
