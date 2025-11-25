@@ -342,7 +342,7 @@ export default function Configuracao() {
     <main className="conteudo-item">
       {/* Cabeçalho da página — fora do form */}
       <header className="page-header" role="banner">
-        <h1 id="page-title">Configurações</h1>
+        <h1 id="page-title" style={{ marginBottom: '2rem' }}>Configurações</h1>
       </header>
 
       {/* Formulário principal: salvar configurações */}
@@ -438,42 +438,49 @@ export default function Configuracao() {
         <div>
 
               <fieldset
-              className="cadastro-form mb-medium"
-              disabled={loadingLink || creatingLink || deleting}
-              aria-busy={loadingLink || creatingLink}
-              aria-live="polite"
-              aria-describedby={loadingLink ? "comercio-link-loading" : undefined}
+                className="cadastro-form mb-medium"
+                disabled={loadingLink || creatingLink || deleting}
+                aria-busy={loadingLink || creatingLink}
+                aria-live="polite"
+                aria-describedby={loadingLink ? "comercio-link-loading" : undefined}
               >
-                <Button
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
+                  <div style={{ display: 'flex', gap: '1rem', alignItems: 'stretch' }}>
+                  <div style={{ flex: 1 }}>
+                  <CopyTextBox tooltip="Copiar Link">
+                  {comercioLink ?? ""}
+                  </CopyTextBox>
+                  </div>
+                  <Button
                   theme="green"
                   type="button"
                   onClick={handleGenerateLink}
                   disabled={loadingLink || creatingLink}
                   aria-disabled={loadingLink || creatingLink}
                   aria-label="Gerar link para o comércio"
-                >
-                  {creatingLink ? "Gerando..." : "Gerar link para comércio"}
-                </Button>
-                {loadingLink && (
+                  >
+                  {creatingLink ? "Gerando..." : "Convidar para comércio"}
+                  </Button>
+                  </div>
+                  {loadingLink && (
                   <small id="comercio-link-loading" role="status" aria-live="polite">Carregando link...</small>
-                )}
-                <CopyTextBox tooltip="Copiar Link">
-                  {comercioLink ?? ""}
-                </CopyTextBox>
+                  )}
+                  <div style={{ marginTop: '2rem' }}>
+                  <Button
+                  theme="red"
+                  type="button"
+                  onClick={handleDeleteComercio}
+                  disabled={deleting}
+                  aria-disabled={deleting}
+                  aria-label="Excluir comércio"
+                  >
+                  {deleting ? "Excluindo..." : "Excluir comércio"}
+                  </Button>
+                  </div>
+                </div>
               </fieldset>
-
-           <Button
-             theme="red"
-             type="button"
-             onClick={handleDeleteComercio}
-             disabled={deleting}
-             aria-disabled={deleting}
-             aria-label="Excluir comércio"
-           >
-             {deleting ? "Excluindo..." : "Excluir comércio"}
-           </Button>
          </div>
        </section>
      </main>
-   );
- }
+  );
+}
