@@ -103,7 +103,7 @@ body{
 .imgCaixa {
   position: fixed;
   bottom: 0;
-  right: -115px;
+  right: -125px;
   width: 100%;    
   pointer-events: none;
   user-select: none;
