@@ -69,7 +69,7 @@ function MeusComercios() {
     <ProtectedRoute>
       <div className="user-page">
 
-<div className="btn-home">
+<div className="btn-home" data-tooltip="Deslogar">
   <Link to="/" onClick={logout}>
   <GoHomeFill />
   </Link>
