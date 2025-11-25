@@ -1,5 +1,5 @@
-// src/pages/comercio/Configuracao.tsx
 import "../geral.css";
+import "./configuracoes.css"
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import api from "src/api/axios";
@@ -7,6 +7,7 @@ import Input from "src/components/Input/Input.tsx";
 import Button from "src/components/Button/button.tsx";
 import { COMERCIOS, UNIDADES_GLOBAIS } from "src/api/enpoints";
 import { useForm } from "react-hook-form";
+import CopyTextBox from "./customComponents/CopyTextBox";
 
 type OptionItem = {
   id?: number;
@@ -32,6 +33,10 @@ export default function Configuracao() {
   const [loadingConfig, setLoadingConfig] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  // commerce link states
+  const [comercioLink, setComercioLink] = useState<string>("");
+  const [loadingLink, setLoadingLink] = useState(false);
+  const [creatingLink, setCreatingLink] = useState(false);
 
   const {
     register,
@@ -66,9 +71,14 @@ export default function Configuracao() {
           setUnidades(mapped);
           // se ainda não há valor no form, coloca a primeira unidade como default
           const current = getValues("configs.campo1");
-          if ((!current || String(current).trim() === "") && mapped.length > 0) {
+          if (
+            (!current || String(current).trim() === "") &&
+            mapped.length > 0
+          ) {
             const first = mapped[0];
-            const firstValue = first.id ? String(first.id) : String(first.sigla ?? first.nome ?? "");
+            const firstValue = first.id
+              ? String(first.id)
+              : String(first.sigla ?? first.nome ?? "");
             setValue("configs.campo1", firstValue);
           }
         }
@@ -96,38 +106,19 @@ export default function Configuracao() {
         const resp = await api.get(`${COMERCIOS}/${comercioId}/config`);
         const data = resp.data ?? {};
 
-        // Extrair limite de vários aliases
-        const limiteVal = Number(
-          data.limite_padrao ??
-            data.limitePadrao ??
-            data.limite ??
-            data.nivel_alerta_minimo ??
-            data.configs?.campo4 ??
-            data.config?.campo4 ??
-            0
-        );
+        const limiteVal = Number(data.limite_padrao ?? 0);
         if (!Number.isNaN(limiteVal)) {
           setValue("configs.campo4", String(limiteVal));
         }
 
-        // Extrair unidade — tenta várias formas
-        const candidate =
-          data.unidade_padrao ??
-          data.unidade ??
-          data.configs?.unidade ??
-          data.configs?.campo1 ??
-          data.config?.campo1 ??
-          data.unimed_id ??
-          data.unimed ??
-          data.unidade_sigla ??
-          null;
+        const candidate = data.unidade_padrao ?? null;
 
-        // Se veio um objeto (ex: { unimed_id: 5, sigla: 'kg' })
         let candidateNormalized: string | null = null;
         if (candidate && typeof candidate === "object") {
           const asId = candidate.unimed_id ?? candidate.id ?? candidate.pk;
           if (asId) candidateNormalized = String(asId);
-          else if (candidate.sigla) candidateNormalized = String(candidate.sigla);
+          else if (candidate.sigla)
+            candidateNormalized = String(candidate.sigla);
           else if (candidate.nome) candidateNormalized = String(candidate.nome);
         } else if (candidate != null) {
           candidateNormalized = String(candidate);
@@ -143,19 +134,35 @@ export default function Configuracao() {
               return;
             }
             const lower = candidateNormalized!.toLowerCase();
-            const matchById = unidades.find((u) => u.id && String(u.id) === candidateNormalized);
+            const matchById = unidades.find(
+              (u) => u.id && String(u.id) === candidateNormalized
+            );
             if (matchById) {
               setValue("configs.campo1", String(matchById.id));
               return;
             }
-            const matchBySigla = unidades.find((u) => u.sigla && String(u.sigla).toLowerCase() === lower);
+            const matchBySigla = unidades.find(
+              (u) => u.sigla && String(u.sigla).toLowerCase() === lower
+            );
             if (matchBySigla) {
-              setValue("configs.campo1", matchBySigla.id ? String(matchBySigla.id) : String(matchBySigla.sigla ?? ""));
+              setValue(
+                "configs.campo1",
+                matchBySigla.id
+                  ? String(matchBySigla.id)
+                  : String(matchBySigla.sigla ?? "")
+              );
               return;
             }
-            const matchByNome = unidades.find((u) => u.nome && String(u.nome).toLowerCase() === lower);
+            const matchByNome = unidades.find(
+              (u) => u.nome && String(u.nome).toLowerCase() === lower
+            );
             if (matchByNome) {
-              setValue("configs.campo1", matchByNome.id ? String(matchByNome.id) : String(matchByNome.sigla ?? matchByNome.nome ?? ""));
+              setValue(
+                "configs.campo1",
+                matchByNome.id
+                  ? String(matchByNome.id)
+                  : String(matchByNome.sigla ?? matchByNome.nome ?? "")
+              );
               return;
             }
             // se não casou, simplesmente setamos o candidateNormalized (backend pode aceitar sigla)
@@ -177,6 +184,55 @@ export default function Configuracao() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [comercioId, unidades]);
 
+  // Carrega link do comércio
+  useEffect(() => {
+    if (!comercioId) return;
+    let mounted = true;
+    setLoadingLink(true);
+
+    (async () => {
+      try {
+        const res = await api.get(`${COMERCIOS}/${comercioId}/link`);
+        const link = res?.data?.link ??  "";
+        if (mounted) setComercioLink(link ? `localhost:5173/convite/${link}` : "");
+      } catch (err) {
+        console.error("Erro ao carregar link do comércio:", err);
+      } finally {
+        if (mounted) setLoadingLink(false);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [comercioId]);
+
+  // Gera um novo link para o comércio (POST)
+  async function handleGenerateLink() {
+    if (!comercioId) {
+      alert("ID do comércio não encontrado na URL.");
+      return;
+    }
+
+    setCreatingLink(true);
+    try {
+      const res = await api.post(`${COMERCIOS}/${comercioId}/link`);
+      const link = res?.data?.link ?? "";
+      setComercioLink(link ? `localhost:5173/convite/${link}` : "");
+      alert("Link gerado com sucesso.");
+    } catch (err: any) {
+      console.error("Erro ao gerar link:", err);
+      const msg =
+        err?.response?.data?.msg ??
+        err?.response?.data?.message ??
+        err?.message ??
+        "Erro ao conectar com o servidor.";
+      alert("Erro: " + msg);
+    } finally {
+      setCreatingLink(false);
+    }
+  }
+
   // submit
   async function onSubmit(values: FormValues) {
     if (!comercioId) {
@@ -188,12 +244,24 @@ export default function Configuracao() {
     try {
       const selected = values.configs?.campo1;
       const limiteRaw = values.configs?.campo4;
-      const limiteNum = (limiteRaw && String(limiteRaw).trim() !== "") ? Number(String(limiteRaw).replace(",", ".")) : null;
+      const limiteNum =
+        limiteRaw && String(limiteRaw).trim() !== ""
+          ? Number(String(limiteRaw).replace(",", "."))
+          : null;
 
       // tenta achar unidade nas unidades carregadas
-      const found = unidades.find((u) => String(u.id) === String(selected) || u.sigla === selected || u.nome === selected);
+      const found = unidades.find(
+        (u) =>
+          String(u.id) === String(selected) ||
+          u.sigla === selected ||
+          u.nome === selected
+      );
 
-      const unidadeParaEnvio = found?.sigla ? found.sigla : (found?.id ? String(found.id) : selected);
+      const unidadeParaEnvio = found?.sigla
+        ? found.sigla
+        : found?.id
+          ? String(found.id)
+          : selected;
 
       const payload: any = {
         unidade_padrao: unidadeParaEnvio ?? undefined,
@@ -206,9 +274,13 @@ export default function Configuracao() {
       };
 
       // limpa undefineds
-      Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k]);
+      Object.keys(payload).forEach(
+        (k) => payload[k] === undefined && delete payload[k]
+      );
       if (payload.configs) {
-        Object.keys(payload.configs).forEach((k) => payload.configs[k] === undefined && delete payload.configs[k]);
+        Object.keys(payload.configs).forEach(
+          (k) => payload.configs[k] === undefined && delete payload.configs[k]
+        );
         if (Object.keys(payload.configs).length === 0) delete payload.configs;
       }
 
@@ -234,7 +306,11 @@ export default function Configuracao() {
       return;
     }
 
-    if (!window.confirm("Tem certeza que deseja excluir comércio? Essa ação não pode ser desfeita.")) {
+    if (
+      !window.confirm(
+        "Tem certeza que deseja excluir comércio? Essa ação não pode ser desfeita."
+      )
+    ) {
       return;
     }
 
@@ -251,7 +327,11 @@ export default function Configuracao() {
       }
     } catch (err: any) {
       console.error("Erro ao excluir comércio:", err);
-      const msg = err?.response?.data?.msg ?? err?.response?.data?.message ?? err?.message ?? "Erro ao conectar com o servidor.";
+      const msg =
+        err?.response?.data?.msg ??
+        err?.response?.data?.message ??
+        err?.message ??
+        "Erro ao conectar com o servidor.";
       alert("Erro: " + msg);
     } finally {
       setDeleting(false);
@@ -259,65 +339,141 @@ export default function Configuracao() {
   }
 
   return (
-    <div className="conteudo-item">
-      <div className="page-header"><h1>Configurações</h1></div>
+    <main className="conteudo-item">
+      {/* Cabeçalho da página — fora do form */}
+      <header className="page-header" role="banner">
+        <h1 id="page-title">Configurações</h1>
+      </header>
 
-      <h2 style={{ marginTop: 30, marginBottom: 8, color: "#35AC97", fontSize: "1.3rem", fontWeight: 600 }}>
-        Parâmetros de estoque
-      </h2>
-
-      <form className="cadastro-form" onSubmit={handleSubmit(onSubmit)} noValidate>
-      <div className="grid-item">
-      <Input
-      label="Unidade de medida padrão"
-      id="config-unimed"
-      type="select"
-      {...register("configs.campo1")}
-      disabled={loadingUnidades || loadingConfig}
+      {/* Formulário principal: salvar configurações */}
+      <form
+      className=" form-wrapper"
+        onSubmit={handleSubmit(onSubmit)}
+        noValidate
+        aria-labelledby="stock-params"
       >
-      {unidades.map((u) => {
-      const value = u.id ? String(u.id) : String(u.sigla ?? u.nome ?? "");
-      const label = (u.nome ? `${u.nome}` : u.sigla ? `${u.sigla}` : `#${value}`) + (u.sigla ? ` (${u.sigla})` : "");
-      return <option key={value} value={value}>{label}</option>;
-      })}
-      </Input>
-      {loadingUnidades && <small>Carregando unidades...</small>}
-      </div>
-        <div className="grid-item">
-          <Input
-        label="Limite mínimo de estoque padrão"
-        id="config-limite"
-        type="number"
-        placeholder="0"
-        {...register("configs.campo4")}
-        disabled={loadingConfig}
-          />
-        </div>
+        <section
+          id="stock-params-section"
+          className="section-config"
+          aria-labelledby="stock-params"
+          aria-describedby={loadingUnidades ? "unidades-loading" : undefined}
+        >
+          <h2 id="stock-params" className="header-config">
+            Parâmetros de estoque
+          </h2>
 
-        <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-          <Button
-        theme="green"
-        type="submit"
-        disabled={saving || loadingUnidades || loadingConfig || isSubmitting}
+          <fieldset
+            disabled={loadingConfig || saving}
+            aria-busy={loadingUnidades || loadingConfig}
+            className="cadastro-form mb-medium"
           >
-        {saving ? "Salvando..." : "Salvar configurações"}
-          </Button>
+            <div className="grid-item">
+              <Input
+                label="Unidade de medida padrão"
+                id="config-unimed"
+                type="select"
+                {...register("configs.campo1")}
+                disabled={loadingUnidades || loadingConfig}
+              >
+                {unidades.map((u) => {
+                  const value = u.id
+                    ? String(u.id)
+                    : String(u.sigla ?? u.nome ?? "");
+                  const label =
+                    (u.nome ? `${u.nome}` : u.sigla ? `${u.sigla}` : `#${value}`) +
+                    (u.sigla ? ` (${u.sigla})` : "");
+                  return (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  );
+                })}
+              </Input>
 
-      <h2 style={{ marginTop: 100, marginBottom: 8, color: "#35AC97", fontSize: "1.3rem", fontWeight: 600 }}>
-        Opções do comércio
-      </h2>
+              {loadingUnidades && (
+                <small id="unidades-loading" role="status" aria-live="polite">
+                  Carregando unidades...
+                </small>
+              )}
+            </div>
 
-          <Button
-        theme="red"
-        type="button"
-        onClick={handleDeleteComercio}
-        disabled={deleting}
-        style={{ marginTop: 8 }} // Add margin to separate the buttons
+            <div className="grid-item">
+              <Input
+                label="Limite mínimo de estoque padrão"
+                id="config-limite"
+                type="number"
+                placeholder="0"
+                {...register("configs.campo4")}
+                disabled={loadingConfig}
+              />
+            </div>
+          </fieldset>
+
+          <div
+            className="form-actions"
           >
-        {deleting ? "Excluindo..." : "Excluir comércio"}
-          </Button>
-        </div>
+            <Button
+              theme="green"
+              type="submit"
+              disabled={saving || loadingUnidades || loadingConfig || isSubmitting}
+              aria-disabled={saving || isSubmitting}
+              aria-live="polite"
+            >
+              {saving ? "Salvando..." : "Salvar configurações"}
+            </Button>
+          </div>
+        </section>
       </form>
-    </div>
-  );
-}
+
+      {/* Seção separada para ações do comércio — fora do form de salvar */}
+      <section
+        id="comercio-options-section"
+        className="section-config"
+        aria-labelledby="comercio-options"
+      >
+        <h2 id="comercio-options" className="header-config">
+          Opções do comércio
+        </h2>
+
+        <div>
+
+              <fieldset
+              className="cadastro-form mb-medium"
+              disabled={loadingLink || creatingLink || deleting}
+              aria-busy={loadingLink || creatingLink}
+              aria-live="polite"
+              aria-describedby={loadingLink ? "comercio-link-loading" : undefined}
+              >
+                <Button
+                  theme="green"
+                  type="button"
+                  onClick={handleGenerateLink}
+                  disabled={loadingLink || creatingLink}
+                  aria-disabled={loadingLink || creatingLink}
+                  aria-label="Gerar link para o comércio"
+                >
+                  {creatingLink ? "Gerando..." : "Gerar link para comércio"}
+                </Button>
+                {loadingLink && (
+                  <small id="comercio-link-loading" role="status" aria-live="polite">Carregando link...</small>
+                )}
+                <CopyTextBox tooltip="Copiar Link">
+                  {comercioLink ?? ""}
+                </CopyTextBox>
+              </fieldset>
+
+           <Button
+             theme="red"
+             type="button"
+             onClick={handleDeleteComercio}
+             disabled={deleting}
+             aria-disabled={deleting}
+             aria-label="Excluir comércio"
+           >
+             {deleting ? "Excluindo..." : "Excluir comércio"}
+           </Button>
+         </div>
+       </section>
+     </main>
+   );
+ }

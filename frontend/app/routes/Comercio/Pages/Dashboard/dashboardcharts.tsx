@@ -1,4 +1,3 @@
-// src/pages/DashboardCharts.tsx
 import React, { useEffect, useState } from "react";
 import {
   ResponsiveContainer,
