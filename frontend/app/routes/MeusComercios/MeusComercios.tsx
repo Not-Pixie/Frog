@@ -7,18 +7,19 @@ import PopupCreateCompany from "./customComponents/PopUpCreateCompany";
 import type { Company } from "./customComponents/schemas";
 import type { Comercio } from "src/types/comercio";
 import api from "src/api/axios";
-import { ME } from "src/api/enpoints";
+import { LOGOUT, ME } from "src/api/enpoints";
 import { AxiosError } from "axios";
 
 import { GoHomeFill } from "react-icons/go";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 interface Response {
   comercios: Comercio[];
 }
 
 function MeusComercios() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [comercios, setComercios] = useState<Comercio[]>([]);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
@@ -69,7 +70,7 @@ function MeusComercios() {
       <div className="user-page">
 
 <div className="btn-home">
-  <Link to="/">
+  <Link to="/" onClick={logout}>
   <GoHomeFill />
   </Link>
 </div>
