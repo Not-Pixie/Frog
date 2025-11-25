@@ -16,7 +16,7 @@ import { handleUpdate } from "../../comercio";
 export default function EditarFornecedor() {
   const navigate = useNavigate();
   const { comercioId, fornecedorId } = useParams() as { comercioId?: string; fornecedorId?: string };
-  const [error, setError] = useState("")
+  const [error, setError] = useState("");
 
   const { register, handleSubmit, formState: { errors, isSubmitting }, setValue } = useForm({
     resolver: zodResolver(fornecedorSchema),
