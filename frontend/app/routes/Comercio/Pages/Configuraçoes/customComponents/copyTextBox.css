@@ -1,0 +1,99 @@
+/* Base do componente, extende as classes do seu projeto */
+.copy-textbox {
+  /* mantém relativa a estrutura .form-field já definida no seu CSS */
+}
+
+/* botão sobreposto */
+.copy-textbox .copy-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  /* tamanho do botão */
+  height: 40px;
+  min-width: 48px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: rgba(240,240,240,0.65); /* parecido com btn-secondary */
+  color: #222;
+  cursor: pointer;
+  transition: background-color 0.12s ease, transform 0.06s ease, box-shadow 0.12s ease;
+  box-shadow: 0 0 0 0 transparent;
+  font-weight: 600;
+  /* evita que o botão esconda o texto ao usar tab */
+  z-index: 3;
+}
+
+/* hover/focus — aumentar alpha e sombra leve */
+.copy-textbox .copy-btn:hover,
+.copy-textbox .copy-btn:focus {
+  background: rgba(200,200,200,0.95); /* tom de cinza mais forte ao hover */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+  outline: none;
+  transform: translateY(-50%) translateY(-1px);
+}
+
+/* feedback de ativo */
+.copy-textbox .copy-btn:active:not(:disabled) {
+  transform: translateY(-50%) translateY(0);
+}
+
+/* ícone alinhado */
+.copy-textbox .copy-btn .icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Tooltip que aparece ao hover/focus do botão.
+   Por motivos de acessibilidade, também aparece no :focus (teclado). */
+.copy-textbox .copy-tooltip {
+  position: absolute;
+  right: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%) translateX(6px);
+  background: rgba(20,20,20,0.9);
+  color: #fff;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  z-index: 4;
+}
+
+/* mostra tooltip em hover do botão e em focus (teclado) */
+.copy-textbox .copy-btn:hover .copy-tooltip,
+.copy-textbox .copy-btn:focus .copy-tooltip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+  pointer-events: auto;
+}
+
+/* ajusta tooltip para telas pequenas (evita overflow) */
+@media (max-width: 420px) {
+  .copy-textbox .copy-tooltip {
+    right: 8px;
+    left: 8px;
+    transform: translateY(-120%);
+  }
+}
+
+/* utility: screen-reader only (visually hidden) */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}

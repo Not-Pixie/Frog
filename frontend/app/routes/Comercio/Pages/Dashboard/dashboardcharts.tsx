@@ -1,4 +1,3 @@
-// src/pages/DashboardCharts.tsx
 import React, { useEffect, useState } from "react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line, PieChart, Pie, Cell } from "recharts";
 import { useParams } from "react-router";

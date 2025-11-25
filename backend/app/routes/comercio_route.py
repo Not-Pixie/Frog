@@ -22,12 +22,87 @@ from app.services.produto_service import create_produto, get_produto_por_id, upd
 from app.services.fornecedor_service import create_fornecedor, get_fornecedor_por_id, update_fornecedor, delete_fornecedor
 from app.services.categoria_service import create_categoria, delete_categoria, get_categoria_por_id, update_categoria
 from app.models.movimentacao_model import Movimentacao
+from app.models.convites_model import Convite
 from decimal import ROUND_HALF_UP, InvalidOperation
 from app.services.movimentacao_service import criar_movimentacao_vazia
 from app.models.carrinho_model import Carrinho
+from sqlalchemy.exc import IntegrityError
+from app.services.convite_services import novo_link_convite
 
 
 bp = Blueprint("comercios", __name__, url_prefix="/comercios")
+
+
+
+@bp.route('/<int:comercio_id>/link', methods=['GET'])
+@token_required
+def rota_get_comercio_link(comercio_id: int):
+    usuario = g.get("usuario")
+    usuario_id = usuario.get("usuario_id") if usuario else None
+    if usuario is None or usuario_id is None:
+        return jsonify({"msg": "erro de autenticação"}), 401
+
+    db = SessionLocal()
+    try:
+        if not usuario_tem_acesso_ao_comercio(db, usuario_id, comercio_id):
+            return jsonify({"msg": "Usuário não tem acesso a este comércio."}), 403
+
+        convite = db.query(Convite).filter(Convite.comercio_id == comercio_id).order_by(Convite.criado_em.desc()).first()
+        if not convite:
+            return jsonify({"link": None}), 200
+
+        return jsonify({"link": convite.link}), 200
+
+    except SQLAlchemyError:
+        db.rollback()
+        current_app.logger.exception("Erro ao buscar link do comércio")
+        return jsonify({"error": "Erro interno"}), 500
+    finally:
+        try:
+            db.close()
+        except Exception:
+            current_app.logger.exception("Erro ao fechar sessão do DB em rota_get_comercio_link")
+
+
+@bp.route('/<int:comercio_id>/link', methods=['POST'])
+@token_required
+def rota_create_comercio_link(comercio_id: int):
+    usuario = g.get("usuario")
+    usuario_id = usuario.get("usuario_id") if usuario else None
+    if usuario is None or usuario_id is None:
+        return jsonify({"msg": "erro de autenticação"}), 401
+
+    db = SessionLocal()
+    try:
+        if not usuario_tem_acesso_ao_comercio(db, usuario_id, comercio_id):
+            return jsonify({"msg": "Usuário não tem acesso a este comércio."}), 403
+
+        try:
+            novo_link = novo_link_convite(db)
+        except ValueError as ve:
+            current_app.logger.exception("Falha ao gerar link único")
+            return jsonify({"msg": str(ve)}), 500
+
+        convite = Convite(comercio_id=comercio_id, link=novo_link)
+        db.add(convite)
+        db.commit()
+        db.refresh(convite)
+
+        return jsonify({"link": convite.link}), 201
+
+    except IntegrityError:
+        db.rollback()
+        current_app.logger.exception("IntegrityError ao criar convite")
+        return jsonify({"msg": "Não foi possível criar link. Tente novamente."}), 500
+    except SQLAlchemyError:
+        db.rollback()
+        current_app.logger.exception("Erro ao criar link do comércio")
+        return jsonify({"error": "Erro interno"}), 500
+    finally:
+        try:
+            db.close()
+        except Exception:
+            current_app.logger.exception("Erro ao fechar sessão do DB em rota_create_comercio_link")
 
 @bp.route("", methods=["POST"])
 @token_required
@@ -1505,3 +1580,4 @@ def rota_movimentacoes_mensais(comercio_id: int):
         return jsonify({"error": "Erro interno"}), 500
     finally:
         db.close()
+

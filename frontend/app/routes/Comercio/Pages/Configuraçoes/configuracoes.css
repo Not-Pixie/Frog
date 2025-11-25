@@ -1,0 +1,21 @@
+.header-config {
+    font-family: var(--titleFont);
+    margin-bottom: 2vh;
+    color: var(--primary-500);
+    font-size: 1.3rem;
+    font-weight: 800,
+}
+
+.section-config{
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 8vh;
+}
+
+.form-wrapper {
+
+}
+
+.mb-medium {
+    margin-bottom: 2vh;
+}
