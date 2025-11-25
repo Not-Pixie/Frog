@@ -1,28 +1,36 @@
-// src/pages/Dashboard.tsx
+// src/pages/Dashboard.tsx  (trecho completo com inclusion de DashboardCharts)
 import React, { useEffect, useState } from "react";
-import "../geral.css"; // mantém regras globais
+import "../geral.css";
+import "./dashboard.css";
 import { useParams } from "react-router";
 import api from "src/api/axios";
+import DashboardCharts from "./dashboardcharts"; // ajuste o nome/case se necessário
 
-/**
- * Serviço embutido: faz a chamada ao endpoint que implementamos no backend
- */
 async function fetchDashboardCards(comercioId: number | string) {
   const res = await api.get(`/comercios/${comercioId}/dashboard/cards`);
-  return res.data; // { zero_count, low_count, limite_global }
+  return res.data;
 }
 
-/**
- * Dashboard component (cards + estilo embutido)
- * - contém CSS inline (inserido via <style>) para manter tudo em um arquivo
- */
+function formatBRL(value: number | null | undefined) {
+  try {
+    const v = Number(value ?? 0);
+    return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
+  } catch {
+    return "R$ 0,00";
+  }
+}
+
 export default function Dashboard() {
   const { comercioId } = useParams() as { comercioId?: string };
   const [zeroCount, setZeroCount] = useState<number | null>(null);
   const [lowCount, setLowCount] = useState<number | null>(null);
   const [limiteGlobal, setLimiteGlobal] = useState<number | null>(null);
+  const [faturamentoTotal, setFaturamentoTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // opcional: state do ano para passar para DashboardCharts
+  const [year, setYear] = useState<number>(new Date().getFullYear());
 
   async function loadCards() {
     if (!comercioId) return;
@@ -33,6 +41,7 @@ export default function Dashboard() {
       setZeroCount(Number(data.zero_count ?? 0));
       setLowCount(Number(data.low_count ?? 0));
       setLimiteGlobal(data.limite_global !== undefined ? (data.limite_global === null ? null : Number(data.limite_global)) : null);
+      setFaturamentoTotal(data.faturamento_total !== undefined ? Number(data.faturamento_total) : null);
     } catch (err: any) {
       console.error("Erro ao carregar cards:", err);
       setError(err?.response?.data?.error ?? err?.message ?? "Erro ao carregar dados.");
@@ -48,24 +57,9 @@ export default function Dashboard() {
 
   return (
     <div className="conteudo-item">
-      {/* Estilos locais para os cards — você pode mover isso pro seu CSS depois */}
-      <style>{`
-        .dashboard-cards { display:flex; gap:16px; margin-top:18px; flex-wrap:wrap; }
-        .card { flex: 1 1 260px; min-width:220px; border-radius:12px; padding:18px; color:#fff; box-shadow:0 4px 10px rgba(0,0,0,0.04); display:flex; flex-direction:column; justify-content:center; align-items:flex-start; }
-        .card-title { font-size:14px; opacity:0.95; margin-bottom:6px; }
-        .card-value { font-size:36px; font-weight:700; line-height:1; }
-        .card-sub { font-size:12px; opacity:0.9; margin-top:6px; }
-        .card-danger { background: linear-gradient(180deg, #ff6b6b 0%, #ff4b4b 100%); }
-        .card-warning { background: linear-gradient(180deg, #ffb74d 0%, #ff9f24 100%); }
-        @media (max-width:720px) {
-          .dashboard-cards { flex-direction:column; }
-          .card { width:100%; min-width:unset; }
-        }
-      `}</style>
-
       <h1>Dashboard</h1>
 
-      <div className="dashboard-cards">
+      <div className="dashboard-cards" role="region" aria-label="Resumo do comércio">
         <div className="card card-danger" aria-live="polite">
           <div className="card-title">Produtos com estoque zerado</div>
           <div className="card-value">{loading ? "..." : (zeroCount ?? 0)}</div>
@@ -76,9 +70,35 @@ export default function Dashboard() {
           <div className="card-value">{loading ? "..." : (lowCount ?? 0)}</div>
           <div className="card-sub">Limite global: {limiteGlobal ?? "—"}</div>
         </div>
+
+        <div className="card card-success" aria-live="polite">
+          <div className="card-title">Faturamento</div>
+          <div className="card-value">{loading ? "..." : formatBRL(faturamentoTotal ?? 0)}</div>
+          <div className="card-sub">Total acumulado</div>
+        </div>
       </div>
 
       {error && <div style={{ color: "crimson", marginTop: 12 }}>{error}</div>}
+
+      {/* ---------------------------
+          Aqui vem os gráficos (componente importado)
+          Passe o 'year' se quiser filtrar por ano
+         --------------------------- */}
+      <div style={{ marginTop: 24 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+          <label style={{ fontSize: 14 }}>Ano:</label>
+          <select value={year} onChange={(e) => setYear(Number(e.target.value))}>
+            {Array.from({length:5}).map((_,i) => {
+              const y = new Date().getFullYear() - 2 + i; // ex: -2,-1,0,+1,+2
+              return <option key={y} value={y}>{y}</option>;
+            })}
+          </select>
+        </div>
+
+        {/* componente de gráficos - ele usa useParams pra pegar comercioId por si só,
+            e aceita prop year (conforme seu DashboardCharts) */}
+        <DashboardCharts year={year} />
+      </div>
     </div>
   );
 }

@@ -31,7 +31,7 @@ def upgrade() -> None:
         op.create_check_constraint(
             "ck_movimentacoes_estado",
             "movimentacoes",
-            sa.Column("estado")._in(["aberta", "fechada"]))
+            "estado IN ('aberta', 'fechada')")
 
     if "fechado_em" not in existing_cols:
         op.add_column(

@@ -1,3 +1,5 @@
+import api from "src/api/axios";
+
 export const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
   day: "2-digit", 
   month: "2-digit", 
@@ -49,3 +51,12 @@ export const formatCurrencyBRLRoundedDown =
         maximumFractionDigits: 2,
       });
     }
+
+
+export async function fetchMovimentacoesMensais(comercioId: number | string, year?: number, tipo: "all"|"entrada"|"saida" = "all") {
+  const params: any = {};
+  if (year) params.year = year;
+  if (tipo) params.tipo = tipo;
+  const res = await api.get(`/comercios/${comercioId}/dashboard/movimentacoes_mensais`, { params });
+  return res.data; // { year, tipo, data: [...] }
+}

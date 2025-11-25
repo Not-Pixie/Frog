@@ -1,6 +1,6 @@
 from decimal import Decimal
 from flask import Blueprint, current_app, request, jsonify, g
-from sqlalchemy import and_, func, or_
+from sqlalchemy import and_, extract, func, or_
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.middleware.auth import token_required
@@ -898,6 +898,8 @@ def get_movimentacoes_de_comercio(comercio_id):
         itens = []
         for m in movimentacoes:
             item = model_to_dict(m)
+            item["tipo"] = m.tipo.capitalize().replace('i', 'í')
+            item["estado"] = m.estado.capitalize()
             itens.append(item)
         
         return jsonify({"movs": itens}), 200
@@ -1333,58 +1335,67 @@ def rota_dashboard_cards(comercio_id: int):
         if comercio and getattr(comercio, "configuracao_id", None):
             config = db.query(ConfiguracaoComercio).filter(ConfiguracaoComercio.id == comercio.configuracao_id).first()
             if config is not None:
-                # nome do campo que você já usava: nivel_alerta_minimo
                 try:
                     lv = getattr(config, "nivel_alerta_minimo", None)
                     limite_num = int(lv) if lv is not None else None
                 except Exception:
                     limite_num = None
 
-        # conto produtos com estoque exatamente zero
+        # contar produtos com estoque exatamente zero
         zero_count = db.query(func.count(Produto.produto_id)).filter(
             Produto.comercio_id == comercio_id,
             Produto.quantidade_estoque == 0
         ).scalar() or 0
 
-        # conto produtos com estoque baixo:
-        # regra: produto.Quantidade > 0 E (
-        #   (produto.limite_estoque IS NOT NULL and produto.limite_estoque > 0 and quantidade < produto.limite_estoque)
-        #   OR
-        #   (produto.limite_estoque IS NULL and limite_num > 0 and quantidade < limite_num)
-        # )
-        low_count = 0
-        # só avalia se há algum critério (produto.limite_estoque ou limite_num > 0)
-        if True:
-            cond_prod_limite = and_(
-                Produto.limite_estoque != None,
-                Produto.limite_estoque > 0,
+        # contar produtos com estoque baixo (leva em conta limite_estoque do produto ou limite_global)
+        cond_prod_limite = and_(
+            Produto.limite_estoque != None,
+            Produto.limite_estoque > 0,
+            Produto.quantidade_estoque > 0,
+            Produto.quantidade_estoque < Produto.limite_estoque
+        )
+        cond_global_limite = None
+        if limite_num is not None and limite_num > 0:
+            cond_global_limite = and_(
+                Produto.limite_estoque == None,
                 Produto.quantidade_estoque > 0,
-                Produto.quantidade_estoque < Produto.limite_estoque
+                Produto.quantidade_estoque < limite_num
             )
-            cond_global_limite = None
-            if limite_num is not None and limite_num > 0:
-                cond_global_limite = and_(
-                    Produto.limite_estoque == None,
-                    Produto.quantidade_estoque > 0,
-                    Produto.quantidade_estoque < limite_num
-                )
 
-            if cond_global_limite is not None:
-                low_count = db.query(func.count(Produto.produto_id)).filter(
-                    Produto.comercio_id == comercio_id,
-                    or_(cond_prod_limite, cond_global_limite)
-                ).scalar() or 0
-            else:
-                # não há limite global, conta apenas os produtos que têm limite_estoque definido
-                low_count = db.query(func.count(Produto.produto_id)).filter(
-                    Produto.comercio_id == comercio_id,
-                    cond_prod_limite
-                ).scalar() or 0
+        if cond_global_limite is not None:
+            low_count = db.query(func.count(Produto.produto_id)).filter(
+                Produto.comercio_id == comercio_id,
+                or_(cond_prod_limite, cond_global_limite)
+            ).scalar() or 0
+        else:
+            low_count = db.query(func.count(Produto.produto_id)).filter(
+                Produto.comercio_id == comercio_id,
+                cond_prod_limite
+            ).scalar() or 0
+
+        # --- NOVO: faturamento ---
+        # soma valor_total das movimentações que são 'saida' e 'fechada' para o comercio
+        faturamento_total_raw = db.query(func.coalesce(func.sum(Movimentacao.valor_total), 0)).filter(
+            Movimentacao.comercio_id == comercio_id,
+            func.lower(Movimentacao.tipo) == 'saida',
+            func.lower(Movimentacao.estado) == 'fechada'
+        ).scalar() or 0
+
+        # faturamento_total_raw pode ser Decimal; convertemos para float para serializar
+        try:
+            faturamento_total = float(faturamento_total_raw)
+        except Exception:
+            # fallback: str -> float
+            try:
+                faturamento_total = float(str(faturamento_total_raw))
+            except Exception:
+                faturamento_total = 0.0
 
         return jsonify({
             "zero_count": int(zero_count),
             "low_count": int(low_count),
-            "limite_global": int(limite_num) if limite_num is not None else None
+            "limite_global": int(limite_num) if limite_num is not None else None,
+            "faturamento_total": faturamento_total
         }), 200
 
     except SQLAlchemyError:
@@ -1400,3 +1411,97 @@ def rota_dashboard_cards(comercio_id: int):
             db.close()
         except Exception:
             current_app.logger.exception("Erro ao fechar sessão do DB em rota_dashboard_cards")
+
+@bp.route("/<int:comercio_id>/dashboard/movimentacoes_mensais", methods=["GET"])
+@token_required
+def rota_movimentacoes_mensais(comercio_id: int):
+    """
+    Retorna agregações por mês (1..12) para um comércio:
+    - total_itens: soma das quantidades dos itens das movimentações fechadas (por mês)
+    - valor_total: soma dos valor_total das movimentações fechadas (por mês)
+    Query params:
+      - year (int) optional, default ano atual
+      - tipo (string) optional: 'all'|'entrada'|'saida' (aplica filtro em Movimentacao.tipo)
+    """
+    usuario = g.get("usuario")
+    usuario_id = usuario.get("usuario_id") if usuario else None
+    if usuario is None or usuario_id is None:
+        return jsonify({"msg": "erro de autenticação"}), 401
+
+    year = request.args.get("year", None)
+    tipo = (request.args.get("tipo") or "all").lower()  # 'all', 'entrada', 'saida'
+    try:
+        year_int = int(year) if year is not None else None
+    except Exception:
+        return jsonify({"msg": "Parâmetro 'year' inválido"}), 400
+
+    db = SessionLocal()
+    try:
+        # autorização
+        if not usuario_tem_acesso_ao_comercio(db, usuario_id, comercio_id):
+            return jsonify({"msg": "Usuário não tem acesso a este comércio."}), 403
+
+        # base filter: movimentações do comércio e que estejam fechadas (fechado_em não nulo)
+        base_filters = [Movimentacao.comercio_id == comercio_id, Movimentacao.fechado_em != None]
+
+        if year_int:
+            base_filters.append(extract('year', Movimentacao.fechado_em) == year_int)
+
+        if tipo in ("entrada", "saida"):
+            base_filters.append(func.lower(Movimentacao.tipo) == tipo)
+
+        # 1) soma valor_total por mês (usando Movimentacao.fechado_em)
+        q_valor = db.query(
+            extract('month', Movimentacao.fechado_em).label('month'),
+            func.coalesce(func.sum(Movimentacao.valor_total), 0).label('valor_total'),
+            func.count(Movimentacao.mov_id).label('mov_count')
+        ).filter(*base_filters).group_by('month').order_by('month')
+
+        rows_valor = q_valor.all()
+
+        # 2) soma total_itens por mês
+        # primeiro tentamos usar Movimentacao.total_itens caso exista a coluna
+        total_itens_rows = []
+        has_total_itens = hasattr(Movimentacao, "total_itens")
+        if has_total_itens:
+            q_itens = db.query(
+                extract('month', Movimentacao.fechado_em).label('month'),
+                func.coalesce(func.sum(Movimentacao.total_itens), 0).label('total_itens')
+            ).filter(*base_filters).group_by('month').order_by('month')
+            total_itens_rows = q_itens.all()
+
+        # build dicts month -> values
+        valor_map = { int(r.month): { "valor_total": float(r.valor_total or 0), "mov_count": int(r.mov_count or 0) } for r in rows_valor }
+        itens_map = { int(r.month): int(r.total_itens or 0) for r in total_itens_rows }
+
+        # assemble final array 1..12 (labels pt-BR)
+        labels = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"]
+        data = []
+        for m in range(1, 13):
+            v = valor_map.get(m, {"valor_total": 0.0, "mov_count": 0})
+            itens = itens_map.get(m, 0)
+            data.append({
+                "month": m,
+                "label": labels[m-1],
+                "total_itens": int(itens),
+                "valor_total": float(v["valor_total"]),
+                "mov_count": int(v["mov_count"])
+            })
+
+        # resposta
+        return jsonify({
+            "year": year_int,
+            "tipo": tipo,
+            "data": data
+        }), 200
+
+    except SQLAlchemyError:
+        db.rollback()
+        current_app.logger.exception("Erro ao agregar movimentações")
+        return jsonify({"error": "Erro interno ao agregar movimentações"}), 500
+    except Exception:
+        db.rollback()
+        current_app.logger.exception("Erro inesperado ao agregar movimentações")
+        return jsonify({"error": "Erro interno"}), 500
+    finally:
+        db.close()

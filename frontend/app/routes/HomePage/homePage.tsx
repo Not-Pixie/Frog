@@ -4,13 +4,16 @@ import PublicRoute from "src/api/auth/PublicRoute";
 import "./homePage.css";
 import { useState } from "react";
 
+import sapinho from "src/imgs/sapinho.png"
+import caixa from "src/imgs/caixa.png";
+
 export default function HomePage() {
-  const [texto, setTexto] = useState(""); // começa vazio
+  const [texto, setTexto] = useState("");
 
   const textos = [
-    "Frog é uma plataforma inovadora para controle de estoque.",
-    "Organize seus produtos com eficiência usando Frog.",
-    "Frog simplifica a gestão e aumenta sua produtividade."
+    "Frog é um sistema digital para auxiliar o controle de estoque, oferecendo praticidade, organização e uma visão clara de tudo o que acontece no negócio.",
+    "Organize não só seus produtos com eficiência, mas também seus fornecedores, com o auxílio de um dashboard e com o monitoramento de entradas, saídas e histórico.",
+    "Frog simplifica a gestão, aumenta sua produtividade e ajuda você a manter um controle preciso e eficiente do seu estoque."
   ];
 
   const handleClick = (index: any) => {
@@ -36,10 +39,13 @@ export default function HomePage() {
         </div>
 
         <div className="CorpoHome">
-          <h1 className="TituloHome">Frog, uma nova forma de organizar</h1>
-          {texto && <p className="TextoHome">{texto}</p>}
-        </div>
+  <h1 className="TituloHome fadeInFull">Frog, inovação ao organizar</h1>
+  {texto && <p key={texto} className="TextoHome fadeInFull">{texto}</p>}
+</div>
       </div>
+
+      <img src={sapinho} className="imgSapinho" />
+      <img src={caixa} className="imgCaixa" />
     </PublicRoute>
   );
 }
