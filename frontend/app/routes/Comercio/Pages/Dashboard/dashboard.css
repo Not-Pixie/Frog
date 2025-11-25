@@ -1,60 +1,26 @@
+/* dashboard.css - pequenos refinamentos visuais */
 .dashboard-cards {
-    display: flex;
-    gap: 16px;
-    margin-top: 18px;
-    flex-wrap: wrap;
-    align-items: stretch;
+  display:flex;
+  gap:24px;               /* maior espaço entre cards */
+  margin-top:18px;
+  flex-wrap:wrap;
+  align-items:stretch;
+  margin-bottom:32px;     /* espaço extra entre cards e gráfico 1 */
 }
-
-.card {
-    flex: 1 1 260px;
-    min-width: 220px;
-    border-radius: 12px;
-    padding: 18px;
-    color: #fff;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-}
-
-.card-title {
-    font-size: 14px;
-    opacity: 0.95;
-    margin-bottom: 6px;
-}
-
-.card-value {
-    font-size: 36px;
-    font-weight: 700;
-    line-height: 1;
-}
-
-.card-sub {
-    font-size: 12px;
-    opacity: 0.9;
-    margin-top: 6px;
-}
-
-.card-danger {
-    background: linear-gradient(180deg, #ff6b6b 0%, #ff4b4b 100%);
-}
-
-.card-warning {
-    background: linear-gradient(180deg, #ffb74d 0%, #ff9f24 100%);
-}
-
-.card-success {
-    background: linear-gradient(180deg, #35ac97 0%, #2a9b85 100%);
-}
+.card { flex: 1 1 260px; min-width:220px; border-radius:12px; padding:18px; color:#fff; box-shadow:0 6px 22px rgba(0,0,0,0.04); display:flex; flex-direction:column; justify-content:flex-start; align-items:flex-start; }
+.card-title { font-size:14px; opacity:0.95; margin-bottom:6px; }
+.card-value { font-size:36px; font-weight:700; line-height:1; margin:auto 0; }
+.card-sub { font-size:12px; opacity:0.9; margin-top:6px; }
+.card-danger { background: linear-gradient(180deg, #ff6b6b 0%, #ff4b4b 100%); }
+.card-warning { background: linear-gradient(180deg, #ffb74d 0%, #ff9f24 100%); }
+.card-success { background: linear-gradient(180deg, #35ac97 0%, #2a9b85 100%); }
 
 @media (max-width:720px) {
-    .dashboard-cards {
-        flex-direction: column;
-    }
+  .dashboard-cards { flex-direction:column; }
+  .card { width:100%; min-width:unset; }
+}
 
-    .card {
-        width: 100%;
-        min-width: unset;
-    }}
+/* Pequeno ajuste para legendas e labels do recharts */
+.recharts-legend-item text, .recharts-legend-wrapper { color: #ffffff !important; }
+.recharts-tooltip-wrapper { z-index: 9999; }
+.recharts-legend-wrapper { font-size: 13px; }
