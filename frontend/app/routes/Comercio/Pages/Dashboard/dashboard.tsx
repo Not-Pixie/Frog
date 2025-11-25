@@ -62,6 +62,7 @@ export default function Dashboard() {
         <div className="card card-danger" aria-live="polite">
           <div className="card-title">Produtos com estoque zerado</div>
           <div className="card-value">{loading ? "..." : (zeroCount ?? 0)}</div>
+          <div className="card-sub">ㅤㅤ</div>
         </div>
 
         <div className="card card-warning" aria-live="polite">
