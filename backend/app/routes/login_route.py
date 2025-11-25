@@ -104,7 +104,7 @@ def refresh():
 # === rota de logout ===
 @auth.route('/logout', methods=['POST'])
 def logout():
-    resp = make_response(jsonify({'mensagem': 'Deslogado'}))
+    resp = make_response(jsonify({'msg': 'Deslogado'}))
     resp.delete_cookie('refresh_token')
-    return resp
+    return resp, 200
 
