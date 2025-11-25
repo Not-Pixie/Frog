@@ -9,11 +9,13 @@ import { COMERCIOS } from "src/api/enpoints.ts";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { fornecedorSchema, type FornecedorForm } from "./schemas";
+import { useState } from "react";
 
 
 export default function NovoFornecedor() {
   const navigate = useNavigate();
   const { comercioId } = useParams() as { comercioId?: string };
+  const [error, setError] = useState("");
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(fornecedorSchema),
@@ -21,12 +23,6 @@ export default function NovoFornecedor() {
   });
 
   const onSubmit = async (values: FornecedorForm) => {
-    console.log("tá enviando")
-    if (!comercioId) {
-      alert("ID do comércio não encontrado na URL.");
-      return;
-    }
-
     const payload = {
       nome: values.nome,
       cnpj: values.cnpj,
@@ -40,16 +36,17 @@ export default function NovoFornecedor() {
       const resp = await api.post(`${COMERCIOS}/${comercioId}/fornecedores`, payload);
       if (resp.status === 201) {
         alert("Fornecedor criado com sucesso.");
+        setError("");
         navigate(`/comercio/${comercioId}/fornecedores`);
       } else {
-        alert("Erro: " + JSON.stringify(resp.data));
+        setError(`Erro! ${resp.data.msg}`);
       }
     } catch (err: any) {
       console.error("Erro ao criar fornecedor:", err);
       if (err.response?.data) {
-        alert("Erro: " + (err.response.data.msg ?? JSON.stringify(err.response.data)));
+        setError("Erro! " + (err.response.data.msg ?? JSON.stringify(err.response.data)));
       } else {
-        alert("Erro ao conectar com o servidor.");
+        setError("Erro inesperado (mórbido)!");
       }
     }
   }
@@ -60,12 +57,13 @@ export default function NovoFornecedor() {
     <div className="conteudo-item produto-cadastro">
       <div className="page-header">
         <button className="back-link" onClick={() => navigate(-1)} aria-label="Voltar">
-          <FaArrowLeft color="#35AC97"/>
+          <FaArrowLeft/>
         </button>
         <h1>Fornecedores</h1>
       </div>
 
       <p className="subtitulo">Adicionar fornecedor:</p>
+      {!(error === "") && <span className="err">{error}</span> }
 
       <form className="cadastro-form" onSubmit={handleSubmit(onSubmit, onError)} noValidate>
         <div className="grid-item">

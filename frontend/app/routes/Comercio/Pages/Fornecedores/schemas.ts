@@ -32,12 +32,11 @@ export const fornecedorSchema = z.object({
   nome: z.string().min(1, "Nome é obrigatório"),
   cnpj: z.preprocess(
     (val) => (typeof val === "string" ? val.replace(/\D/g, "") : val),
-    optionalNonEmptyString(
-      z
-        .string()
-        .length(14, "CNPJ deve ter 14 dígitos")
-        .refine((v) => validateCNPJ(v), { message: "CNPJ inválido" })
-    )
+    z
+      .string()
+      .min(1, "CNPJ é obrigatório")
+      .length(14, "CNPJ deve ter 14 dígitos")
+      .refine((v) => validateCNPJ(v), { message: "CNPJ inválido" })
   ),
   telefone: optionalNonEmptyString(
     z.string().min(8, "Telefone inválido").max(15, "Telefone inválido")

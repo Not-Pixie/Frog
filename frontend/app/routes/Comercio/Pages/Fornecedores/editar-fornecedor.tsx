@@ -16,6 +16,7 @@ import { handleUpdate } from "../../comercio";
 export default function EditarFornecedor() {
   const navigate = useNavigate();
   const { comercioId, fornecedorId } = useParams() as { comercioId?: string; fornecedorId?: string };
+  const [error, setError] = useState("")
 
   const { register, handleSubmit, formState: { errors, isSubmitting }, setValue } = useForm({
     resolver: zodResolver(fornecedorSchema),
@@ -67,14 +68,14 @@ export default function EditarFornecedor() {
     try {
       const res = await handleUpdate("fornecedores", Number(fornecedorId), Number(comercioId), payload);
       if (res.success) {
-        alert("Fornecedor atualizado com sucesso.");
+        setError("");
         navigate(`/comercio/${comercioId}/fornecedores`);
       } else {
-        alert("Erro ao atualizar fornecedor: " + (res.error ?? "erro desconhecido"));
+        setError("Erro ao atualizar fornecedor: " + (res.error ?? "erro desconhecido"));
       }
     } catch (err) {
       console.error("Erro atualizar fornecedor:", err);
-      alert("Erro inesperado. Veja console.");
+      setError("Erro inesperado. Veja console.");
     }
   };
 
@@ -82,12 +83,13 @@ export default function EditarFornecedor() {
     <div className="conteudo-item produto-cadastro">
       <div className="page-header">
         <button className="back-link" onClick={() => navigate(-1)} aria-label="Voltar">
-          <FaArrowLeft color="#35AC97"/>
+          <FaArrowLeft/>
         </button>
         <h1>Fornecedores</h1>
       </div>
 
       <p className="subtitulo">Editar fornecedor:</p>
+      {!(error === "") && <span className="err">{error}</span> }
 
       <form className="cadastro-form" onSubmit={handleSubmit(onSubmit)} noValidate>
         <div className="grid-item">
