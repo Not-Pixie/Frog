@@ -27,6 +27,8 @@ type TableProps = {
   rowActions?: (row: Record<PropertyKey, any>, rowIndex: number) => React.ReactNode;
   // rótulo do header da coluna de ações
   actionHeader?: string;
+  // valor máximo da tabela usando qualquer padrão css
+  maxHeight?: string | number;
 };
 
 /**
@@ -42,6 +44,7 @@ export default function Table({
   renderCell,
   rowActions,
   actionHeader = "Ações",
+  maxHeight
 }: TableProps) {
   // uniformiza detectedColumns para { key, label }
   const detectedColumns = React.useMemo(() => {
@@ -56,8 +59,22 @@ export default function Table({
 
   const tableAriaLabel = ariaLabel ?? caption ?? "Tabela de dados";
 
+  const toCssSize = React.useCallback((v?: string | number) => {
+    if (v === undefined || v === null) return undefined;
+    return typeof v === "number" ? `${v}px` : v;
+  }, []);
+
+  const wrapperStyle: React.CSSProperties = React.useMemo(() => {
+    const s: React.CSSProperties = {};
+     if (maxHeight !== undefined) {
+      s.maxHeight = toCssSize(maxHeight);
+    } 
+    return s;
+  }, [maxHeight]);
+
+
   return (
-    <div className="frog-table-wrapper">
+    <div className="frog-table-wrapper" style={wrapperStyle}>
       <table role="table" aria-label={tableAriaLabel} className="frog-table">
         {caption ? <caption>{caption}</caption> : null}
 
