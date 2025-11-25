@@ -29,7 +29,6 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // opcional: state do ano para passar para DashboardCharts
   const [year, setYear] = useState<number>(new Date().getFullYear());
 
   async function loadCards() {
@@ -80,25 +79,10 @@ export default function Dashboard() {
 
       {error && <div style={{ color: "crimson", marginTop: 12 }}>{error}</div>}
 
-      {/* ---------------------------
-          Aqui vem os gráficos (componente importado)
-          Passe o 'year' se quiser filtrar por ano
-         --------------------------- */}
-      <div style={{ marginTop: 24 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-          <label style={{ fontSize: 14 }}>Ano:</label>
-          <select value={year} onChange={(e) => setYear(Number(e.target.value))}>
-            {Array.from({length:5}).map((_,i) => {
-              const y = new Date().getFullYear() - 2 + i; // ex: -2,-1,0,+1,+2
-              return <option key={y} value={y}>{y}</option>;
-            })}
-          </select>
-        </div>
 
         {/* componente de gráficos - ele usa useParams pra pegar comercioId por si só,
             e aceita prop year (conforme seu DashboardCharts) */}
         <DashboardCharts year={year} />
       </div>
-    </div>
   );
 }
