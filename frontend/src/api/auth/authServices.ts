@@ -3,7 +3,7 @@ import { LOGOUT, ME, REFRESH } from '../enpoints';
 
 const raw = axios.create(
     {
-        baseURL: import.meta.env.ViTE_API_URL || "http://localhost:3001",
+        baseURL: import.meta.env.VITE_API_URL || "http://localhost:3001",
         headers:
         {
             "Content-Type": "application/json",
