@@ -1,7 +1,7 @@
 import { type RouteConfig, index, route } from "@react-router/dev/routes";
 
 export default [
-  index("./routes/HomePage/HomePage.tsx"),
+  index("./routes/HomePage/homePage.tsx"),
 
    route("", "./routes/AcessarLayout/acessarLayout.tsx", [
     route("entrar", "../src/pages/formLogin/formLogin.tsx"),
