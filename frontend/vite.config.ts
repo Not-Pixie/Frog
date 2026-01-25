@@ -17,7 +17,8 @@ export default defineConfig(({ mode }) => {
       hmr: {
         clientPort: 443,
         protocol: 'wss'
-      }
+      },
+      cors: true
     },
     optimizeDeps: {
     include: ["@hookform/resolvers/zod",
