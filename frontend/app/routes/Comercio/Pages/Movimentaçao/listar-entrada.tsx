@@ -29,7 +29,7 @@ export default function ListarEntradas() {
     setError(null);
     try {
       const res = await api.get<APIResponse>(
-        `/comercios/${comercioId}/movimentacoes/abertas`
+        `/api/comercios/${comercioId}/movimentacoes/abertas`
       );
       if (!mountedRef.current) return;
       
@@ -79,7 +79,7 @@ export default function ListarEntradas() {
     setError(null);
     try {
       const res = await api.post<any>(
-        `/comercios/${comercioId}/movimentacoes`,
+        `/api/comercios/${comercioId}/movimentacoes`,
         { tipo: "entrada" }
       );
       const newMov = res.data;

@@ -7,7 +7,7 @@ import api from "src/api/axios";
 import DashboardCharts from "./dashboardcharts"; // ajuste o nome/case se necessário
 
 async function fetchDashboardCards(comercioId: number | string) {
-  const res = await api.get(`/comercios/${comercioId}/dashboard/cards`);
+  const res = await api.get(`/api/comercios/${comercioId}/dashboard/cards`);
   return res.data;
 }
 

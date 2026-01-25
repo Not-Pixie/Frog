@@ -31,7 +31,7 @@ export default function ListarSaidas() {
     setError(null);
     try {
       // usa rota existente que retorna movimentações abertas
-      const res = await api.get<APIResponse>(`/comercios/${comercioId}/movimentacoes/abertas`);
+      const res = await api.get<APIResponse>(`/api/comercios/${comercioId}/movimentacoes/abertas`);
       if (!mountedRef.current) return;
       const all = res.data?.movs ?? [];
 
@@ -79,7 +79,7 @@ export default function ListarSaidas() {
     setError(null);
     try {
       // usa a rota que você já tem para criar saída
-      const res = await api.post<any>(`/comercios/${comercioId}/movimentacoes`, { tipo: "saida" });
+      const res = await api.post<any>(`/api/comercios/${comercioId}/movimentacoes`, { tipo: "saida" });
       const newMov = res.data;
       const newLink = newMov?.link;
       if (!newLink)

@@ -23,7 +23,7 @@ export async function handleDelete(
   if (!ok) return { success: false, cancelled: true };
 
   try {
-    const resp = await api.delete(`/comercios/${comercioId}/${itemType}/${id}`);
+    const resp = await api.delete(`/api/comercios/${comercioId}/${itemType}/${id}`);
     if (resp.status === 204 || resp.status === 200) {
       return { success: true };
     }
@@ -51,7 +51,7 @@ export async function handleUpdate(
   };
 
   try {
-    const resp = await api.put(`/comercios/${comercioId}/${itemType}/${id}`, payload);
+    const resp = await api.put(`/api/comercios/${comercioId}/${itemType}/${id}`, payload);
     if (resp.status === 200) {
       return { success: true, data: resp.data };
     }

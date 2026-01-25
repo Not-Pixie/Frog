@@ -57,6 +57,6 @@ export async function fetchMovimentacoesMensais(comercioId: number | string, yea
   const params: any = {};
   if (year) params.year = year;
   if (tipo) params.tipo = tipo;
-  const res = await api.get(`/comercios/${comercioId}/dashboard/movimentacoes_mensais`, { params });
+  const res = await api.get(`/api/comercios/${comercioId}/dashboard/movimentacoes_mensais`, { params });
   return res.data; // { year, tipo, data: [...] }
 }

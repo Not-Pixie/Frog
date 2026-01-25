@@ -458,7 +458,7 @@ useEffect(() => {
       } else {
         // criação
         const resp = await api.post(
-          `/comercios/${comercioId}/produtos`,
+          `/api/comercios/${comercioId}/produtos`,
           payload
         );
         if (resp.status === 201) {

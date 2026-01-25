@@ -84,7 +84,7 @@ export default function Saidas() {
     setError(null);
     setLoading(true);
     try {
-      const resp = await api.get(`/movimentacoes/${link}/carrinho`, {
+      const resp = await api.get(`/api/movimentacoes/${link}/carrinho`, {
         params: { comercio_id: comercioId },
       });
       const carrinho = resp.data?.carrinho;
@@ -106,7 +106,7 @@ export default function Saidas() {
         err?.response?.status === 400
       ) {
         try {
-          const resp2 = await api.post(`/movimentacoes/${link}/carrinho`, {
+          const resp2 = await api.post(`/api/movimentacoes/${link}/carrinho`, {
             comercio_id: Number(comercioId),
           });
           if (resp2.status >= 200 && resp2.status < 300) {
@@ -181,7 +181,7 @@ export default function Saidas() {
       try {
         // passamos um campo opcional tipo=saida no body para facilitar validações server-side opcionais
         const resp = await api.post(
-          `/movimentacoes/${link}/carrinho/p/${produtoId}`,
+          `/api/movimentacoes/${link}/carrinho/p/${produtoId}`,
           {
             comercio_id: Number(comercioId),
             quantidade,
@@ -219,7 +219,7 @@ export default function Saidas() {
       setLoading(true);
       try {
         const resp = await api.delete(
-          `/movimentacoes/${link}/carrinho/item/${itemId}`,
+          `/api/movimentacoes/${link}/carrinho/item/${itemId}`,
           { params: { comercio_id: Number(comercioId) } }
         );
         if (resp.status >= 200 && resp.status < 300) {
@@ -256,7 +256,7 @@ export default function Saidas() {
         carrinho_id: cart.carrinho_id,
         comercio_id: Number(comercioId),
       };
-      const resp = await api.post("/movimentacoes", payload);
+      const resp = await api.post("/api/movimentacoes", payload);
       if (resp.status >= 200 && resp.status < 300) {
         navigate(`/comercio/${comercioId}/saidas`);
       } else {

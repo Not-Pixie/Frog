@@ -27,7 +27,7 @@ export default function Historico() {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.get<APIResponse>(`/comercios/${comercioId}/movimentacoes`);
+      const res = await api.get<APIResponse>(`/api/comercios/${comercioId}/movimentacoes`);
       if (!mountedRef.current) return;
       setMovimentacoes(res.data?.movs ?? []);
     } catch (err: any) {
