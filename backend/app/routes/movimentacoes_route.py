@@ -18,7 +18,7 @@ from app.models.carrinho_model import Carrinho
 from app.models.carrinho_item_model import CarrinhoItem
 from app.models.produtos_model import Produto
 
-bp = Blueprint("movimentacoes", __name__, url_prefix="/movimentacoes")
+bp = Blueprint("movimentacoes", __name__, url_prefix="/api/movimentacoes")
 
 
 

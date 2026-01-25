@@ -7,7 +7,7 @@ from datetime import datetime, timezone, timedelta
 import os
 import uuid
 
-auth = Blueprint("auth", __name__)
+auth = Blueprint("auth", __name__, url_prefix="/api")
 SECRET_KEY = os.getenv("SECRET_KEY", "muda_esse_segredo")
 
 # === utilitário para criar tokens (timezone-aware) ===

@@ -30,7 +30,7 @@ from sqlalchemy.exc import IntegrityError
 from app.services.convite_services import novo_link_convite
 
 
-bp = Blueprint("comercios", __name__, url_prefix="/comercios")
+bp = Blueprint("comercios", __name__, url_prefix="/api/comercios")
 
 
 

@@ -6,7 +6,7 @@ from app.database.database import SessionLocal, get_db
 from app.utils.convites_utils import validar_convite, aceitar_convite
 from sqlalchemy.exc import SQLAlchemyError
 
-bp = Blueprint("convites", __name__, url_prefix="/convites")
+bp = Blueprint("convites", __name__, url_prefix="/api/convites")
 
 @bp.route('/', methods=['GET'])
 @bp.route('/<invite_code>', methods=['GET'])

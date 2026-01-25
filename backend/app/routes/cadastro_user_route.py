@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from ..services.cadastro_user_service import cadastrar_usuario
 from app.database.database import SessionLocal
 
-cadastro_bp = Blueprint("cadastro", __name__, url_prefix="/cadastro")
+cadastro_bp = Blueprint("cadastro", __name__, url_prefix="/api/cadastro")
 
 
 @cadastro_bp.route("/", methods=["POST"])
