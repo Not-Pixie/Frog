@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => {
       host: "0.0.0.0",
       port: port,
       strictPort: true,
+      allowedHosts: ["frogi.com.br", "www.frogi.com.br", "localhost"],
       hmr: {
         clientPort: 443,
         protocol: 'wss'
