@@ -26,8 +26,13 @@ export const links: Route.LinksFunction = () => [
   {
     rel: "stylesheet",
     href: "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css",
+    crossOrigin: "anonymous",
   },
-
+  {
+    rel: "stylesheet",
+    href: "https://cdn-uicons.flaticon.com/3.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css",
+    crossOrigin: "anonymous",
+  },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -35,8 +40,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <html lang="pt-br">
       <head>
         <meta charSet="utf-8" />
-        <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/3.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css'></link>
-        <script src="https://kit.fontawesome.com/659ed49748.js" crossOrigin="anonymous"></script>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />

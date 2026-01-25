@@ -21,10 +21,17 @@ export default defineConfig(({ mode }) => {
       },
       cors: true
     },
+    build: {
+      sourcemap: false,
+      rollupOptions: {
+        onwarn(warning, warn) {
+          if (warning.code === 'MODULE_LEVEL_DIRECTIVE') return;
+          warn(warning);
+        }
+      }
+    },
     optimizeDeps: {
-    include: ["@hookform/resolvers/zod",
-    "recharts"
-    ],
+      include: ["@hookform/resolvers/zod", "recharts"],
     },
   };
 });
