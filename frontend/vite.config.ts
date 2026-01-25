@@ -11,9 +11,13 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
     server: {
-      host: true,
+      host: "0.0.0.0",
       port: port,
-      strictPort: true
+      strictPort: true,
+      hmr: {
+        clientPort: 443,
+        protocol: 'wss'
+      }
     },
     optimizeDeps: {
     include: ["@hookform/resolvers/zod",
