@@ -1,9 +1,9 @@
-export const LOGIN = '/login';
-export const CONVITES = '/convites';
-export const CADASTRO = '/cadastro';
+export const LOGIN = '/api/login';
+export const CONVITES = '/api/convites';
+export const CADASTRO = '/api/cadastro';
 export const ME = '/api/me';
-export const LOGOUT = '/logout';
-export const REFRESH = '/refresh'
-export const COMERCIOS = '/comercios'
-export const CATEGORIAS = "/categorias"
-export const UNIDADES_GLOBAIS = '/comercios/unidades/globais';
+export const LOGOUT = '/api/logout';
+export const REFRESH = '/api/refresh'
+export const COMERCIOS = '/api/comercios'
+export const CATEGORIAS = "/api/categorias"
+export const UNIDADES_GLOBAIS = '/api/comercios/unidades/globais';
