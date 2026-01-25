@@ -10,7 +10,7 @@ export default [
 
   route("meus-comercios", "./routes/MeusComercios/MeusComercios.tsx"), 
 
-  route("convite/:inviteCode", "./routes/Convite/Convite.tsx"),
+  route("convite/:inviteCode", "./routes/Convite/convite.tsx"),
 
   route("comercio/:comercioId", "./routes/Comercio/comercioLayout.tsx", [
     index("./routes/Comercio/Pages/Dashboard/dashboard.tsx"),        
