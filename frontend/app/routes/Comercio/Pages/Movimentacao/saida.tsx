@@ -92,7 +92,7 @@ export default function Saidas() {
       if (!carrinho) throw new Error("Resposta inválida do servidor");
 
       if (movimentacao?.link && movimentacao.link !== link) {
-        navigate(`/comercio/${comercioId}/saida/${movimentacao.link}`);
+        navigate(`/comercio/${comercioId}/saidas/${movimentacao.link}`);
         return null;
       }
 
@@ -113,7 +113,7 @@ export default function Saidas() {
             const carrinho = resp2.data?.carrinho;
             const movimentacao = resp2.data?.movimentacao;
             if (movimentacao?.link && movimentacao.link !== link) {
-              navigate(`/comercio/${comercioId}/saida/${movimentacao.link}`);
+              navigate(`/comercio/${comercioId}/saidas/${movimentacao.link}`);
               return null;
             }
             setCart(carrinho);

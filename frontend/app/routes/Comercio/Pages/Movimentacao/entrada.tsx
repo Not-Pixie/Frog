@@ -92,7 +92,7 @@ export default function Entrada() {
       if (!carrinho) throw new Error("Resposta inválida do servidor");
 
       if (movimentacao?.link && movimentacao.link !== link) {
-        navigate(`/comercio/${comercioId}/entrada/${movimentacao.link}`);
+        navigate(`/comercio/${comercioId}/entradas/${movimentacao.link}`);
         return null;
       }
 
@@ -113,7 +113,7 @@ export default function Entrada() {
             const carrinho = resp2.data?.carrinho;
             const movimentacao = resp2.data?.movimentacao;
             if (movimentacao?.link && movimentacao.link !== link) {
-              navigate(`/comercio/${comercioId}/entrada/${movimentacao.link}`);
+              navigate(`/comercio/${comercioId}/entradas/${movimentacao.link}`);
               return null;
             }
             setCart(carrinho);
