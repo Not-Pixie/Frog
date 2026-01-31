@@ -1,6 +1,6 @@
 import React, { useEffect, useId, useRef, useState } from "react";
 import { FiCopy, FiCheck } from "react-icons/fi";
-import "./CopyTextBox.css";
+import "./copyTextBox.css";
 
 type CopyTextBoxProps = {
   /** Texto mostrado (via children). Preferível passar string. */
