@@ -7,6 +7,7 @@ export default [
     route("entrar", "../src/pages/formLogin/formLogin.tsx"),
     route("cadastrar", "../src/pages/formCriarConta/formCriarConta.tsx"),
   ]),
+  //teste
 
   route("meus-comercios", "./routes/MeusComercios/MeusComercios.tsx"),
 
