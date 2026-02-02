@@ -32,6 +32,13 @@ body {
     align-items: center;
     justify-content: center;
     height: 25%;
+    max-height: 120px;
+    pointer-events: none;
+}
+
+.logo img {
+    pointer-events: auto;
+    cursor: pointer;
 }
 
 .menu {
